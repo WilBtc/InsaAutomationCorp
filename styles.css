@@ -44,7 +44,7 @@ main {
     font-size: 1.2rem;
     color: #333;
     max-width: 600px;
-    margin: 0 auto;
+    margin: 0 auto 1rem;
 }
 
 .services h2 {
