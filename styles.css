@@ -1,7 +1,12 @@
-body {
-    font-family: Arial, sans-serif;
+/* Basic Reset */
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -17,6 +22,7 @@ header {
 
 header h1 {
     margin: 0;
+    font-size: 2rem;
 }
 
 main {
@@ -29,31 +35,64 @@ main {
     margin-bottom: 2rem;
 }
 
+.intro h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.intro p {
+    font-size: 1.2rem;
+    color: #333;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
 .services h2 {
+    font-size: 1.6rem;
     margin-bottom: 1rem;
 }
 
 .service-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 2rem;
+    padding: 1rem;
 }
 
 .service {
     background-color: white;
     border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 1rem;
-    width: 200px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    text-align: center;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .service i {
-    font-size: 2rem;
+    font-size: 2.5rem;
     color: #0044cc;
     margin-bottom: 1rem;
+    transition: color 0.3s ease;
+}
+
+.service:hover i {
+    color: #003399;
+}
+
+.service h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    color: #0044cc;
+}
+
+.service p {
+    font-size: 1rem;
+    color: #666;
 }
 
 footer {
@@ -61,6 +100,7 @@ footer {
     color: white;
     text-align: center;
     padding: 1rem;
+    margin-top: auto;
 }
 
 footer p {
