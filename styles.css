@@ -5,17 +5,64 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    background-color: #f4f4f9;
 }
 
-header, footer {
-    background-color: #333;
+header {
+    background-color: #0044cc;
     color: white;
     text-align: center;
     padding: 1rem;
+}
+
+header h1 {
+    margin: 0;
 }
 
 main {
     flex: 1;
     padding: 2rem;
     text-align: center;
+}
+
+.intro {
+    margin-bottom: 2rem;
+}
+
+.services h2 {
+    margin-bottom: 1rem;
+}
+
+.service-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.service {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1rem;
+    width: 200px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.service i {
+    font-size: 2rem;
+    color: #0044cc;
+    margin-bottom: 1rem;
+}
+
+footer {
+    background-color: #0044cc;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+}
+
+footer p {
+    margin: 0;
 }
