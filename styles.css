@@ -25,6 +25,23 @@ header h1 {
     font-size: 2rem;
 }
 
+nav {
+    background-color: #003399;
+    padding: 0.5rem 1rem;
+    text-align: center;
+}
+
+nav a {
+    color: white;
+    margin: 0 1rem;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
 main {
     flex: 1;
     padding: 2rem;
@@ -78,10 +95,23 @@ main {
     color: #0044cc;
     margin-bottom: 1rem;
     transition: color 0.3s ease;
+    animation: bounce 1s infinite;
 }
 
 .service:hover i {
     color: #003399;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
 }
 
 .service h3 {
