@@ -170,3 +170,132 @@ footer {
 footer p {
     margin: 0;
 }
+
+/* Cybersecurity Section Styles */
+.cybersecurity {
+    margin-top: 3rem;
+    padding: 2rem;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+}
+
+.cybersecurity h2 {
+    font-size: 1.8rem;
+    color: #0044cc;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.cybersecurity > p {
+    font-size: 1.1rem;
+    color: #333;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 2rem;
+}
+
+/* AI Systems Section Styles */
+.ai-systems {
+    margin-top: 3rem;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.ai-systems h2 {
+    font-size: 1.8rem;
+    color: #0044cc;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.feature-highlight {
+    background-color: #e6f2ff;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.feature-highlight h3 {
+    font-size: 1.6rem;
+    color: #003399;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.feature-highlight > p {
+    font-size: 1.1rem;
+    color: #333;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.rta-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.feature {
+    background-color: white;
+    border: 2px solid #0044cc;
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 68, 204, 0.3);
+}
+
+.feature h4 {
+    color: #0044cc;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.feature p {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.other-ai-tools {
+    margin-top: 2rem;
+}
+
+.other-ai-tools h3 {
+    font-size: 1.4rem;
+    color: #003399;
+    margin-bottom: 1rem;
+}
+
+.other-ai-tools ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.other-ai-tools li {
+    background-color: #f4f4f9;
+    margin-bottom: 0.8rem;
+    padding: 1rem;
+    border-left: 4px solid #0044cc;
+    border-radius: 4px;
+}
+
+.other-ai-tools strong {
+    color: #0044cc;
+}
+
+/* Responsive Design Updates */
+@media (max-width: 768px) {
+    nav a {
+        display: block;
+        margin: 0.5rem 0;
+    }
+    
+    .rta-features {
+        grid-template-columns: 1fr;
+    }
+}
