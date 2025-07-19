@@ -40,6 +40,13 @@ header {
     margin-bottom: 0.2rem;
 }
 
+.sdvosb {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #fbbf24;
+    vertical-align: super;
+}
+
 .tagline {
     font-size: 0.9rem;
     opacity: 0.9;
