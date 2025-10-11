@@ -1,5 +1,5 @@
 # iac1 Server - Quick Reference
-# Version: 3.4 | Updated: October 11, 2025
+# Version: 3.5 | Updated: October 11, 2025
 # Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps Automation
 
 ## 🚨 CRITICAL RULES
@@ -65,6 +65,12 @@ Infrastructure Docs (on INSA ERP):
 Project Docs (on Workstation):
   Full MCP: /tmp/FULLSTACK_MCP_SETUP_COMPLETE.md
   Performance: /tmp/PERFORMANCE_OPTIMIZATION_COMPLETE.md
+
+Security (iac1):
+  Hardening Report: ~/devops/devsecops-automation/docs/SECURITY_HARDENING_2025-10-11.md
+  Wazuh Config: /var/ossec/etc/ossec.conf
+  Suricata Config: /etc/suricata/suricata.yaml
+  Security Logs: /var/log/{suricata,aide_check,rkhunter_scan,lynis_audit}.log
 ```
 
 ## 🤖 MCP SERVERS (2 Active - Azure Focus)
@@ -108,6 +114,25 @@ Monitoring Targets:
   - PostgreSQL backups
 ```
 
+## 🔒 SECURITY STACK (Hardened Oct 11, 2025)
+```yaml
+Active Defense:
+  ✅ Suricata IDS/IPS - 45,777 rules (ET Open + OT protocols)
+  ✅ Wazuh Agent - FIM (15+ dirs) + Log collection (10 files)
+  ✅ ClamAV - Weekly full scans
+  ✅ Fail2ban - Brute-force protection
+  ✅ UFW Firewall - SSH via Tailscale only (100.0.0.0/8)
+  ✅ AppArmor - 116 profiles
+  ✅ Auditd - System call auditing
+
+Automated Scans:
+  Weekly: Lynis (Sun 2AM), ClamAV (Sat 1AM)
+  Daily: AIDE (3AM), Rkhunter (4AM), Suricata rules (midnight)
+  Every 6h: Disk space monitoring
+
+Full Report: ~/devops/devsecops-automation/docs/SECURITY_HARDENING_2025-10-11.md
+```
+
 ## 🔧 KEY SCRIPTS & SERVICES
 ```yaml
 Monitoring:
@@ -143,8 +168,9 @@ Git:
 - ✅ Azure VM: Integrated into Tailscale (100.107.50.52)
 - ✅ DefectDojo SOC: 24/7 AI-powered triage (zero API costs)
 - ✅ Container Orchestrator: 24/7 lifecycle management
+- ✅ Security Hardening: Suricata IDS + Wazuh FIM + SSH restricted
 - ✅ MCP Servers: 2 servers (42MB active)
-- ✅ Documentation: Updated to v3.4 + Tailscale integration
+- ✅ Documentation: Updated to v3.5 + Security hardening report
 - ✅ Learning System: Evolutionary AI with SQLite
 - ⚠️ INSA ERP: Offline (Tailscale relay)
 - 💾 Disk: 672MB unused MCP servers (can be cleaned)
@@ -175,7 +201,7 @@ SMTP: Gmail (w.aroca@insaing.com)
 **Role:** Azure VM Monitoring + DevSecOps Automation
 **Access:** ssh 100.100.101.1
 **Sudo:** 110811081108***
-**Version:** 3.4 | Updated: October 11, 2025
+**Version:** 3.5 | Updated: October 11, 2025
 
 ## 🎯 QUICK LINKS
 - DefectDojo SOC Docs: `~/devops/devsecops-automation/defectdojo/README.md`
