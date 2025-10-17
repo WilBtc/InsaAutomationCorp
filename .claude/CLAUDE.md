@@ -1,5 +1,5 @@
 # iac1 Server - Quick Reference
-# Version: 4.2 | Updated: October 17, 2025 20:45 UTC
+# Version: 4.3 | Updated: October 17, 2025 21:30 UTC
 # Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + AI Agents
 
 ## 🚨 CRITICAL RULES
@@ -71,15 +71,16 @@ Host Configuration Agent (DEPLOYED):
   Architecture: ~/host-config-agent/ARCHITECTURE.txt
   Database: /var/lib/host-config-agent/host_config.db
 
-ERPNext CRM (DEPLOYED - Phase 2 Complete - Oct 17, 2025):
+ERPNext CRM (DEPLOYED - Phase 3 Complete - Oct 17, 2025):
   Implementation Guide: ~/QUOTATION_TOOLS_ADDED.md
+  Phase 3 Commit: 606429c (complete sales cycle - 10 new tools)
   Phase 2 Commit: f50392b (get_customer, update_customer, list_items)
   Gap Analysis: ~/ERPNEXT_CRM_GAP_ANALYSIS.md
   Docker Fix: ~/ERPNEXT_CRM_FIXED.md
   Web UI: http://100.100.101.1:9000
   Git Repo: ~/mcp-servers/erpnext-crm/
   MCP Server: ~/mcp-servers/erpnext-crm/server.py
-  Tools: 19 (65% complete - customer details + catalog ready)
+  Tools: 29 (100% complete - full sales cycle ready)
 
 INSA CRM System (DEPLOYED - Oct 17, 2025):
   Project Root: ~/insa-crm-system/
@@ -157,15 +158,18 @@ tailscale-devops:
   Purpose: Network management for INSA infrastructure
   Tools: 10 tools (network status, SSH, tunnels, routing)
 
-erpnext-crm (Phase 2 Complete - Oct 17, 2025):
+erpnext-crm (Phase 3 Complete - Oct 17, 2025):
   Path: ~/mcp-servers/erpnext-crm/server.py
-  Size: ~16MB
-  Purpose: CRM automation for INSA Automation Corp
-  Tools: 19 tools (leads, opportunities, quotations, customers, contacts, items, analytics)
-  Status: 65% complete (Phase 2) - customer details + product catalog ready
-  New: get_customer, update_customer, list_items
+  Size: ~20MB
+  Purpose: CRM automation for INSA Automation Corp - COMPLETE SALES CYCLE
+  Tools: 29 tools (100% complete)
+  Status: ✅ PRODUCTION READY - Full sales cycle automation
+  Phase 3: Sales orders, delivery notes, invoices, payments (10 tools)
+  Phase 2: Customer details + product catalog (3 tools)
+  Phase 1: Core CRM (16 tools)
   Web UI: http://100.100.101.1:9000
   Docs: ~/QUOTATION_TOOLS_ADDED.md
+  Commit: 606429c
 ```
 
 ## ⚡ ACTIVE SYSTEMS
@@ -268,12 +272,14 @@ Git:
   - Service: defectdojo-compliance-agent.service ACTIVE
   - Dashboard: http://100.100.101.1:3004 ONLINE
   - Full Docs: ~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md
-- ✅ ERPNext CRM: Phase 2 Complete (19 tools, 65% complete)
+- ✅ ERPNext CRM: Phase 3 Complete (29 tools, 100% complete) ✅ PRODUCTION READY
   - Web UI: http://100.100.101.1:9000 ✅ ACTIVE
   - Container: frappe_docker_backend_1 (Docker exec method)
-  - Phase 2: get_customer, update_customer, list_items
+  - Phase 3: Sales orders, delivery notes, invoices, payments (10 tools)
+  - Phase 2: Customer details + product catalog (3 tools)
+  - Complete Sales Cycle: Lead → Opportunity → Quotation → SO → DN → Invoice → Payment
   - Docs: ~/QUOTATION_TOOLS_ADDED.md
-  - Git: ~/mcp-servers/erpnext-crm/ (commit f50392b)
+  - Git: ~/mcp-servers/erpnext-crm/ (commit 606429c)
 - ✅ INSA CRM System: AI-powered lead qualification (Phase 0 MVP)
   - FastAPI: http://100.100.101.1:8003 ✅ ACTIVE
   - Database: PostgreSQL (insa_crm) - 2 tables
@@ -286,7 +292,7 @@ Git:
   - Claude Code subprocess integration working
 - ✅ Security Hardening: Suricata IDS + Wazuh FIM + SSH restricted
 - ✅ MCP Servers: 7 active servers
-- ✅ Documentation: v4.1 - Added INSA CRM System
+- ✅ Documentation: v4.3 - ERPNext CRM Phase 3 Complete (100%)
 - ✅ Learning System: Evolutionary AI with SQLite (3 databases)
 - ⚠️ INSA ERP: Offline (Tailscale relay)
 - 🐳 Docker: 28 containers tracked
@@ -320,7 +326,7 @@ Test Results: 4/4 email templates working
 **Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + AI Agents
 **Access:** ssh 100.100.101.1
 **Sudo:** [REDACTED]***
-**Version:** 4.2 | Updated: October 17, 2025 20:45 UTC
+**Version:** 4.3 | Updated: October 17, 2025 21:30 UTC
 
 ## 🎯 QUICK LINKS
 - **INSA CRM System:** http://100.100.101.1:8003 (✅ NEW - AI Agents)
@@ -349,3 +355,4 @@ When deploying services, Claude Code can now:
 - Request deployment approval: Use `request_deployment` MCP tool
 - Ask questions: Use `ask_inventory_agent` with natural language
 See: `~/host-config-agent/README.md` for all 10 MCP tools
+- only use free ports , dont change port config for other apps
