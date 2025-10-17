@@ -1,6 +1,6 @@
 # iac1 Server - Quick Reference
-# Version: 3.9 | Updated: October 17, 2025 14:30 UTC
-# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation
+# Version: 4.0 | Updated: October 17, 2025 19:00 UTC
+# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -71,6 +71,15 @@ Host Configuration Agent (DEPLOYED):
   Architecture: ~/host-config-agent/ARCHITECTURE.txt
   Database: /var/lib/host-config-agent/host_config.db
 
+ERPNext CRM (DEPLOYED - Oct 17, 2025):
+  Implementation Guide: ~/QUOTATION_TOOLS_ADDED.md
+  Gap Analysis: ~/ERPNEXT_CRM_GAP_ANALYSIS.md
+  Docker Fix: ~/ERPNEXT_CRM_FIXED.md
+  Web UI: http://100.100.101.1:9000
+  Git Repo: ~/mcp-servers/erpnext-crm/
+  MCP Server: ~/mcp-servers/erpnext-crm/server.py
+  Tools: 16 (48% complete - quotations ready)
+
 Infrastructure Docs (on INSA ERP):
   Network: ~/INSA_INFRASTRUCTURE_MAP_2025.md
   Status: ~/INSA_INFRASTRUCTURE_STATUS_2025.md
@@ -87,11 +96,11 @@ Security (iac1):
   Security Logs: /var/log/{suricata,aide_check,rkhunter_scan,lynis_audit}.log
 ```
 
-## 🤖 MCP SERVERS (4 Active)
+## 🤖 MCP SERVERS (7 Active)
 ```yaml
 Config: ~/.mcp.json
 Backup: ~/.mcp.json.backup-*
-Total: 4 active MCP servers
+Total: 7 active MCP servers
 
 azure-vm-monitor:
   Path: ~/mcp-servers/azure-vm-monitor/
@@ -111,7 +120,7 @@ host-config-agent:
   Agents: Inventory Agent + Coordinator Agent (Claude Sonnet 4.5)
   Features: Real-time resource tracking, AI deployment decisions
 
-defectdojo-iec62443 (NEW - Oct 17, 2025):
+defectdojo-iec62443:
   Path: ~/mcp-servers/defectdojo-iec62443/server.py
   Size: 14KB
   Purpose: IEC 62443 industrial security compliance automation
@@ -120,6 +129,31 @@ defectdojo-iec62443 (NEW - Oct 17, 2025):
   Agent: defectdojo-compliance-agent.service (scans every hour)
   Dashboard: http://100.100.101.1:3004
   Full Docs: ~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md
+
+stackstorm-health-monitor:
+  Path: ~/mcp-servers/stackstorm-health-monitor/
+  Size: ~16MB
+  Purpose: Prevent runaway processes
+
+chrome-devtools:
+  Path: ~/mcp-servers/chrome-devtools/
+  Size: ~70MB
+  Purpose: UI/UX testing (screenshot, CSS inspection)
+
+tailscale-devops:
+  Path: ~/tailscale-devops-mcp.js
+  Size: ~10KB
+  Purpose: Network management for INSA infrastructure
+  Tools: 10 tools (network status, SSH, tunnels, routing)
+
+erpnext-crm (NEW - Oct 17, 2025):
+  Path: ~/mcp-servers/erpnext-crm/server.py
+  Size: ~16MB
+  Purpose: CRM automation for INSA Automation Corp
+  Tools: 16 tools (leads, opportunities, quotations, customers, contacts, analytics)
+  Status: 48% complete - quotation generation ready
+  Web UI: http://100.100.101.1:9000
+  Docs: ~/QUOTATION_TOOLS_ADDED.md
 ```
 
 ## ⚡ ACTIVE SYSTEMS
@@ -209,7 +243,7 @@ Git:
   Commit: "Commit with message: ..."
 ```
 
-## 🚦 STATUS (Oct 17, 2025 - 14:30 UTC)
+## 🚦 STATUS (Oct 17, 2025 - 19:00 UTC)
 - ✅ Azure Agent: 24/7 monitoring via Tailscale VPN
 - ✅ Azure VM: Integrated into Tailscale (100.107.50.52)
 - ✅ DefectDojo: **SIMPLIFIED** - Celery disabled due to Calico/K8s network conflict
@@ -222,13 +256,18 @@ Git:
   - Service: defectdojo-compliance-agent.service ACTIVE
   - Dashboard: http://100.100.101.1:3004 ONLINE
   - Full Docs: ~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md
+- ✅ ERPNext CRM: Quotation tools deployed (16 tools, 48% complete)
+  - Web UI: http://100.100.101.1:9000 ✅ ACTIVE
+  - Container: frappe_docker_backend_1 (Docker exec method)
+  - Docs: ~/QUOTATION_TOOLS_ADDED.md
+  - Git: ~/mcp-servers/erpnext-crm/ (committed)
 - ✅ Container Orchestrator: 24/7 lifecycle management
 - ✅ Host Config Agent: 24/7 resource tracking (ZERO API cost)
   - Database: /var/lib/host-config-agent/host_config.db
   - Claude Code subprocess integration working
 - ✅ Security Hardening: Suricata IDS + Wazuh FIM + SSH restricted
-- ✅ MCP Servers: 4 active servers
-- ✅ Documentation: v3.9 - Added Celery/Redis troubleshooting
+- ✅ MCP Servers: 7 active servers
+- ✅ Documentation: v4.0 - Added ERPNext CRM quotation tools
 - ✅ Learning System: Evolutionary AI with SQLite (2 databases)
 - ⚠️ INSA ERP: Offline (Tailscale relay)
 - 🐳 Docker: 28 containers tracked
@@ -259,22 +298,25 @@ Test Results: 4/4 email templates working
 ```
 
 ---
-**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation
+**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM
 **Access:** ssh 100.100.101.1
 **Sudo:** [REDACTED]***
-**Version:** 3.9 | Updated: October 17, 2025 14:30 UTC
+**Version:** 4.0 | Updated: October 17, 2025 19:00 UTC
 
 ## 🎯 QUICK LINKS
 - **DefectDojo Web UI:** http://100.100.101.1:8082 (✅ ACTIVE)
-- **Celery/Redis Fix:** `~/DEFECTDOJO_CELERY_REDIS_ISSUE_RESOLVED.md` (NEW - Oct 17)
-- **Email Reporting:** `~/EMAIL_SELF_HOSTED_SETUP_COMPLETE.md` (✅ CONFIGURED)
-- **Autonomous Remediation:** `~/AUTONOMOUS_REMEDIATION_SYSTEM.md` (Oct 17)
-- **IEC 62443 Compliance:** `~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md` (Oct 17)
+- **ERPNext CRM Web UI:** http://100.100.101.1:9000 (✅ ACTIVE)
 - **IEC 62443 Dashboard:** http://100.100.101.1:3004
+- **ERPNext CRM Guide:** `~/QUOTATION_TOOLS_ADDED.md` (NEW - Oct 17)
+- **CRM Gap Analysis:** `~/ERPNEXT_CRM_GAP_ANALYSIS.md`
+- **Celery/Redis Fix:** `~/DEFECTDOJO_CELERY_REDIS_ISSUE_RESOLVED.md`
+- **Email Reporting:** `~/EMAIL_SELF_HOSTED_SETUP_COMPLETE.md` (✅ CONFIGURED)
+- **Autonomous Remediation:** `~/AUTONOMOUS_REMEDIATION_SYSTEM.md`
+- **IEC 62443 Compliance:** `~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md`
 - **Container Orchestrator:** `~/devops/container-orchestrator/README.md`
 - **Host Config Agent:** `~/host-config-agent/README.md`
 - **Learning Databases:** `/var/lib/defectdojo/learning.db` + `/var/lib/host-config-agent/host_config.db`
-- **Git Repo:** `~/devops/devsecops-automation/defectdojo/` (always commit changes)
+- **Git Repos:** `~/devops/devsecops-automation/defectdojo/` + `~/mcp-servers/erpnext-crm/`
 - **Always:** Update docs in git, keep CLAUDE.md light with links
 - **Credit:** Made by Insa Automation Corp for OpSec
 
