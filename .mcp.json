@@ -1,0 +1,72 @@
+{
+  "mcpServers": {
+    "azure-vm-monitor": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/azure-vm-monitor/venv/bin/python",
+      "args": ["/home/wil/mcp-servers/azure-vm-monitor/server.py"],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      }
+    },
+    "azure-alert": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/azure-alert/venv/bin/python",
+      "args": ["/home/wil/mcp-servers/azure-alert/server.py"],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      }
+    },
+    "stackstorm-health-monitor": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/stackstorm-health-monitor/venv/bin/python",
+      "args": ["/home/wil/mcp-servers/stackstorm-health-monitor/server.py"],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "_description": "StackStorm Health Monitor - Prevents runaway processes"
+    },
+    "chrome-devtools": {
+      "transport": "stdio",
+      "command": "node",
+      "args": ["/home/wil/mcp-servers/chrome-devtools/server.js"],
+      "env": {},
+      "_description": "Chrome DevTools for UI/UX testing - screenshot, inspect CSS, inject CSS, get page info"
+    },
+    "defectdojo-iec62443": {
+      "transport": "stdio",
+      "command": "/usr/bin/python3",
+      "args": ["/home/wil/mcp-servers/defectdojo-iec62443/server.py"],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "_description": "DefectDojo IEC 62443 Compliance - Import scans, tag findings with FR/SR requirements, generate compliance reports"
+    },
+    "tailscale-devops": {
+      "transport": "stdio",
+      "command": "/usr/bin/node",
+      "args": ["/home/wil/tailscale-devops-mcp.js"],
+      "env": {
+        "NODE_ENV": "production",
+        "NODE_PATH": "/home/wil/mcp-servers/node_modules"
+      },
+      "_description": "Tailscale DevOps automation and network management for INSA infrastructure - 10 tools for network status, SSH, tunnels, routing, access control, service discovery, traffic analysis, health checks, deployment, and optimization"
+    },
+    "erpnext-crm": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/erpnext-crm/venv/bin/python",
+      "args": ["/home/wil/mcp-servers/erpnext-crm/server.py"],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1",
+        "ERPNEXT_URL": "http://100.100.101.1:9000",
+        "ERPNEXT_USERNAME": "Administrator",
+        "ERPNEXT_PASSWORD": "admin"
+      },
+      "_description": "ERPNext CRM automation for INSA Automation (LOCAL on iac1) - 19 tools for lead management, opportunity tracking, quotation/proposal generation, customer/contact details, item catalog browsing, and CRM analytics"
+    }
+  }
+}
