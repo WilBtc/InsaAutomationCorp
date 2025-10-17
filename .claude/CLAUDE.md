@@ -1,5 +1,5 @@
 # iac1 Server - Quick Reference
-# Version: 4.1 | Updated: October 17, 2025 20:00 UTC
+# Version: 4.2 | Updated: October 17, 2025 20:45 UTC
 # Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + AI Agents
 
 ## 🚨 CRITICAL RULES
@@ -71,14 +71,15 @@ Host Configuration Agent (DEPLOYED):
   Architecture: ~/host-config-agent/ARCHITECTURE.txt
   Database: /var/lib/host-config-agent/host_config.db
 
-ERPNext CRM (DEPLOYED - Oct 17, 2025):
+ERPNext CRM (DEPLOYED - Phase 2 Complete - Oct 17, 2025):
   Implementation Guide: ~/QUOTATION_TOOLS_ADDED.md
+  Phase 2 Commit: f50392b (get_customer, update_customer, list_items)
   Gap Analysis: ~/ERPNEXT_CRM_GAP_ANALYSIS.md
   Docker Fix: ~/ERPNEXT_CRM_FIXED.md
   Web UI: http://100.100.101.1:9000
   Git Repo: ~/mcp-servers/erpnext-crm/
   MCP Server: ~/mcp-servers/erpnext-crm/server.py
-  Tools: 16 (48% complete - quotations ready)
+  Tools: 19 (65% complete - customer details + catalog ready)
 
 INSA CRM System (DEPLOYED - Oct 17, 2025):
   Project Root: ~/insa-crm-system/
@@ -108,7 +109,7 @@ Security (iac1):
 
 ## 🤖 MCP SERVERS (7 Active)
 ```yaml
-Config: ~/.mcp.json
+Config: ~/.mcp.json (commit 4143b93)
 Backup: ~/.mcp.json.backup-*
 Total: 7 active MCP servers
 
@@ -156,12 +157,13 @@ tailscale-devops:
   Purpose: Network management for INSA infrastructure
   Tools: 10 tools (network status, SSH, tunnels, routing)
 
-erpnext-crm (NEW - Oct 17, 2025):
+erpnext-crm (Phase 2 Complete - Oct 17, 2025):
   Path: ~/mcp-servers/erpnext-crm/server.py
   Size: ~16MB
   Purpose: CRM automation for INSA Automation Corp
-  Tools: 16 tools (leads, opportunities, quotations, customers, contacts, analytics)
-  Status: 48% complete - quotation generation ready
+  Tools: 19 tools (leads, opportunities, quotations, customers, contacts, items, analytics)
+  Status: 65% complete (Phase 2) - customer details + product catalog ready
+  New: get_customer, update_customer, list_items
   Web UI: http://100.100.101.1:9000
   Docs: ~/QUOTATION_TOOLS_ADDED.md
 ```
@@ -266,11 +268,12 @@ Git:
   - Service: defectdojo-compliance-agent.service ACTIVE
   - Dashboard: http://100.100.101.1:3004 ONLINE
   - Full Docs: ~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md
-- ✅ ERPNext CRM: Quotation tools deployed (16 tools, 48% complete)
+- ✅ ERPNext CRM: Phase 2 Complete (19 tools, 65% complete)
   - Web UI: http://100.100.101.1:9000 ✅ ACTIVE
   - Container: frappe_docker_backend_1 (Docker exec method)
+  - Phase 2: get_customer, update_customer, list_items
   - Docs: ~/QUOTATION_TOOLS_ADDED.md
-  - Git: ~/mcp-servers/erpnext-crm/ (committed)
+  - Git: ~/mcp-servers/erpnext-crm/ (commit f50392b)
 - ✅ INSA CRM System: AI-powered lead qualification (Phase 0 MVP)
   - FastAPI: http://100.100.101.1:8003 ✅ ACTIVE
   - Database: PostgreSQL (insa_crm) - 2 tables
@@ -317,7 +320,7 @@ Test Results: 4/4 email templates working
 **Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + AI Agents
 **Access:** ssh 100.100.101.1
 **Sudo:** 110811081108***
-**Version:** 4.1 | Updated: October 17, 2025 20:00 UTC
+**Version:** 4.2 | Updated: October 17, 2025 20:45 UTC
 
 ## 🎯 QUICK LINKS
 - **INSA CRM System:** http://100.100.101.1:8003 (✅ NEW - AI Agents)
