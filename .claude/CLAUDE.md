@@ -1,6 +1,6 @@
 # iac1 Server - Quick Reference
-# Version: 4.0 | Updated: October 17, 2025 19:00 UTC
-# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM
+# Version: 4.1 | Updated: October 17, 2025 20:00 UTC
+# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + AI Agents
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -79,6 +79,16 @@ ERPNext CRM (DEPLOYED - Oct 17, 2025):
   Git Repo: ~/mcp-servers/erpnext-crm/
   MCP Server: ~/mcp-servers/erpnext-crm/server.py
   Tools: 16 (48% complete - quotations ready)
+
+INSA CRM System (DEPLOYED - Oct 17, 2025):
+  Project Root: ~/insa-crm-system/
+  FastAPI Server: http://100.100.101.1:8003
+  API Docs: http://100.100.101.1:8003/api/docs
+  Database: PostgreSQL (insa_crm)
+  Lead Qualification: AI-powered (0-100 scoring)
+  Git Repo: ~/insa-crm-system/ (committed)
+  Docs: ~/insa-crm-system/README.md
+  Quick Start: ~/insa-crm-system/QUICKSTART.md
 
 Infrastructure Docs (on INSA ERP):
   Network: ~/INSA_INFRASTRUCTURE_MAP_2025.md
@@ -243,7 +253,7 @@ Git:
   Commit: "Commit with message: ..."
 ```
 
-## 🚦 STATUS (Oct 17, 2025 - 19:00 UTC)
+## 🚦 STATUS (Oct 17, 2025 - 20:00 UTC)
 - ✅ Azure Agent: 24/7 monitoring via Tailscale VPN
 - ✅ Azure VM: Integrated into Tailscale (100.107.50.52)
 - ✅ DefectDojo: **SIMPLIFIED** - Celery disabled due to Calico/K8s network conflict
@@ -261,14 +271,20 @@ Git:
   - Container: frappe_docker_backend_1 (Docker exec method)
   - Docs: ~/QUOTATION_TOOLS_ADDED.md
   - Git: ~/mcp-servers/erpnext-crm/ (committed)
+- ✅ INSA CRM System: AI-powered lead qualification (Phase 0 MVP)
+  - FastAPI: http://100.100.101.1:8003 ✅ ACTIVE
+  - Database: PostgreSQL (insa_crm) - 2 tables
+  - Lead Scoring: 0-100 (5 criteria, AI-powered)
+  - Process: nohup (PID 737557), logs: /tmp/insa-crm.log
+  - Git: ~/insa-crm-system/ (committed - 3,870 lines)
 - ✅ Container Orchestrator: 24/7 lifecycle management
 - ✅ Host Config Agent: 24/7 resource tracking (ZERO API cost)
   - Database: /var/lib/host-config-agent/host_config.db
   - Claude Code subprocess integration working
 - ✅ Security Hardening: Suricata IDS + Wazuh FIM + SSH restricted
 - ✅ MCP Servers: 7 active servers
-- ✅ Documentation: v4.0 - Added ERPNext CRM quotation tools
-- ✅ Learning System: Evolutionary AI with SQLite (2 databases)
+- ✅ Documentation: v4.1 - Added INSA CRM System
+- ✅ Learning System: Evolutionary AI with SQLite (3 databases)
 - ⚠️ INSA ERP: Offline (Tailscale relay)
 - 🐳 Docker: 28 containers tracked
 
@@ -298,16 +314,19 @@ Test Results: 4/4 email templates working
 ```
 
 ---
-**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM
+**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + AI Agents
 **Access:** ssh 100.100.101.1
 **Sudo:** 110811081108***
-**Version:** 4.0 | Updated: October 17, 2025 19:00 UTC
+**Version:** 4.1 | Updated: October 17, 2025 20:00 UTC
 
 ## 🎯 QUICK LINKS
+- **INSA CRM System:** http://100.100.101.1:8003 (✅ NEW - AI Agents)
+- **INSA CRM API Docs:** http://100.100.101.1:8003/api/docs
 - **DefectDojo Web UI:** http://100.100.101.1:8082 (✅ ACTIVE)
 - **ERPNext CRM Web UI:** http://100.100.101.1:9000 (✅ ACTIVE)
 - **IEC 62443 Dashboard:** http://100.100.101.1:3004
-- **ERPNext CRM Guide:** `~/QUOTATION_TOOLS_ADDED.md` (NEW - Oct 17)
+- **INSA CRM Guide:** `~/insa-crm-system/README.md` (NEW - Oct 17)
+- **ERPNext CRM Guide:** `~/QUOTATION_TOOLS_ADDED.md`
 - **CRM Gap Analysis:** `~/ERPNEXT_CRM_GAP_ANALYSIS.md`
 - **Celery/Redis Fix:** `~/DEFECTDOJO_CELERY_REDIS_ISSUE_RESOLVED.md`
 - **Email Reporting:** `~/EMAIL_SELF_HOSTED_SETUP_COMPLETE.md` (✅ CONFIGURED)
@@ -315,8 +334,8 @@ Test Results: 4/4 email templates working
 - **IEC 62443 Compliance:** `~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md`
 - **Container Orchestrator:** `~/devops/container-orchestrator/README.md`
 - **Host Config Agent:** `~/host-config-agent/README.md`
-- **Learning Databases:** `/var/lib/defectdojo/learning.db` + `/var/lib/host-config-agent/host_config.db`
-- **Git Repos:** `~/devops/devsecops-automation/defectdojo/` + `~/mcp-servers/erpnext-crm/`
+- **Learning Databases:** 3 total - DefectDojo, Host Config, INSA CRM
+- **Git Repos:** `~/devops/devsecops-automation/defectdojo/` + `~/mcp-servers/erpnext-crm/` + `~/insa-crm-system/`
 - **Always:** Update docs in git, keep CLAUDE.md light with links
 - **Credit:** Made by Insa Automation Corp for OpSec
 
