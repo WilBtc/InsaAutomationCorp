@@ -1,6 +1,6 @@
 # iac1 Server - Quick Reference
-# Version: 3.5 | Updated: October 11, 2025
-# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps Automation
+# Version: 3.9 | Updated: October 17, 2025 14:30 UTC
+# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -53,9 +53,23 @@ Azure VM Monitoring:
 
 DevSecOps Projects:
   DefectDojo SOC: ~/devops/devsecops-automation/defectdojo/README.md
+  DefectDojo Web UI: http://100.100.101.1:8082 (✅ ACTIVE)
+  Celery/Redis Fix: ~/DEFECTDOJO_CELERY_REDIS_ISSUE_RESOLVED.md (Oct 17, 2025)
+  IEC 62443 Compliance: ~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md (Oct 17, 2025)
+  Autonomous Remediation: ~/AUTONOMOUS_REMEDIATION_SYSTEM.md (Oct 17, 2025)
+  Email Reporting: ~/EMAIL_SELF_HOSTED_SETUP_COMPLETE.md (✅ CONFIGURED)
+  Compliance Dashboard: http://100.100.101.1:3004
   Container Orchestrator: ~/devops/container-orchestrator/README.md
-  Config: ~/devops/devsecops-automation/defectdojo/.env.defectdojo
   Learning DB: /var/lib/defectdojo/learning.db
+
+Host Configuration Agent (DEPLOYED):
+  Start Here: ~/host-config-agent/START_HERE.md
+  Deployment Success: ~/host-config-agent/DEPLOYMENT_SUCCESS.md
+  Zero API Cost: ~/host-config-agent/ZERO_API_COST_SUCCESS.md
+  Full Docs: ~/host-config-agent/README.md
+  Quick Start: ~/host-config-agent/QUICKSTART.md
+  Architecture: ~/host-config-agent/ARCHITECTURE.txt
+  Database: /var/lib/host-config-agent/host_config.db
 
 Infrastructure Docs (on INSA ERP):
   Network: ~/INSA_INFRASTRUCTURE_MAP_2025.md
@@ -73,11 +87,11 @@ Security (iac1):
   Security Logs: /var/log/{suricata,aide_check,rkhunter_scan,lynis_audit}.log
 ```
 
-## 🤖 MCP SERVERS (2 Active - Azure Focus)
+## 🤖 MCP SERVERS (4 Active)
 ```yaml
 Config: ~/.mcp.json
 Backup: ~/.mcp.json.backup-*
-Total: 2 Azure monitoring servers
+Total: 4 active MCP servers
 
 azure-vm-monitor:
   Path: ~/mcp-servers/azure-vm-monitor/
@@ -88,21 +102,42 @@ azure-alert:
   Path: ~/mcp-servers/azure-alert/
   Size: 16MB
   Purpose: Email alerts to w.aroca@insaing.com
+
+host-config-agent:
+  Path: ~/host-config-agent/mcp/server.js
+  Size: ~150MB (Node + Python + DB)
+  Purpose: Multi-agent server configuration management
+  Tools: 10 tools (get_server_status, request_deployment, etc)
+  Agents: Inventory Agent + Coordinator Agent (Claude Sonnet 4.5)
+  Features: Real-time resource tracking, AI deployment decisions
+
+defectdojo-iec62443 (NEW - Oct 17, 2025):
+  Path: ~/mcp-servers/defectdojo-iec62443/server.py
+  Size: 14KB
+  Purpose: IEC 62443 industrial security compliance automation
+  Tools: 8 tools (get_findings, tag_finding, auto_tag_findings, etc)
+  Features: Intelligent FR/SR tagging, compliance metrics, scan import
+  Agent: defectdojo-compliance-agent.service (scans every hour)
+  Dashboard: http://100.100.101.1:3004
+  Full Docs: ~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md
 ```
 
 ## ⚡ ACTIVE SYSTEMS
 ```yaml
 Services:
   - azure-monitor-agent.service (auto-start enabled)
-  - defectdojo-agent.service (24/7 SOC automation)
+  - defectdojo-agent.service (24/7 SOC automation - deprecated)
+  - defectdojo-compliance-agent.service (NEW - IEC 62443 compliance)
   - container-orchestrator.service (lifecycle mgmt)
+  - host-config-agent.service (24/7 resource tracking)
   - tailscaled.service (VPN)
   - ssh.service (remote access)
 
 Automation:
   - Azure VM Monitor: Every 5 min (READ-ONLY)
-  - DefectDojo SOC: Every 5 min + AI learning
+  - DefectDojo IEC 62443: Every 1 hour (Trivy scans + FR/SR tagging)
   - Container Orchestrator: Every 5 min
+  - Host Config Agent: Every 5 min (resource inventory)
   - Email Alerts: Disk, services, backups
   - Daily Reports: 8 AM comprehensive status
 
@@ -112,6 +147,7 @@ Monitoring Targets:
   - Docker Containers (22 active)
   - ThingsBoard Pro (7 devices on Azure VM)
   - PostgreSQL backups
+  - iac1 Resources: Ports, services, containers, CPU, memory, disk
 ```
 
 ## 🔒 SECURITY STACK (Hardened Oct 11, 2025)
@@ -140,17 +176,27 @@ Monitoring:
   Service: systemctl status azure-monitor-agent.service
   Logs: journalctl -u azure-monitor-agent -f
 
-DefectDojo SOC (24/7 AI-powered):
-  Service: systemctl status defectdojo-agent.service
-  Logs: tail -f /var/log/defectdojo_agent.log
-  Config: ~/devops/devsecops-automation/defectdojo/.env.defectdojo
-  Web UI: http://100.100.101.1:8082
+DefectDojo SOC (Simplified Architecture):
+  Web UI: http://100.100.101.1:8082 (✅ ACTIVE)
+  Containers: uwsgi + redis only (celery disabled - Calico/K8s conflict)
+  Remediation Agent: systemctl status defectdojo-remediation-agent.service
+  Logs: tail -f /var/log/defectdojo_remediation_agent.log
+  Issue Details: ~/DEFECTDOJO_CELERY_REDIS_ISSUE_RESOLVED.md
   MCP Tools: 8 tools (get_findings, triage_finding, etc)
 
 Container Orchestrator:
   Service: systemctl status container-orchestrator.service
   Config: ~/devops/container-orchestrator/config/containers.yml
   Logs: journalctl -u container-orchestrator -f
+
+Host Config Agent (DEPLOYED - Multi-Agent System):
+  Service: systemctl status host-config-agent.service (ACTIVE)
+  Logs: journalctl -u host-config-agent -f
+  Database: /var/lib/host-config-agent/host_config.db
+  MCP Tools: 10 tools (deployment guidance, resource queries)
+  Agents: Inventory + Coordinator (via Claude Code subprocess - ZERO API cost!)
+  Features: AI deployment decisions, conflict prevention
+  Status Docs: ~/host-config-agent/DEPLOYMENT_SUCCESS.md
 
 MCP Development:
   Servers: ~/mcp-servers/
@@ -163,24 +209,36 @@ Git:
   Commit: "Commit with message: ..."
 ```
 
-## 🚦 STATUS (Oct 11, 2025)
+## 🚦 STATUS (Oct 17, 2025 - 14:30 UTC)
 - ✅ Azure Agent: 24/7 monitoring via Tailscale VPN
 - ✅ Azure VM: Integrated into Tailscale (100.107.50.52)
-- ✅ DefectDojo SOC: 24/7 AI-powered triage (zero API costs)
+- ✅ DefectDojo: **SIMPLIFIED** - Celery disabled due to Calico/K8s network conflict
+  - Web UI: http://100.100.101.1:8082 ✅ ACTIVE
+  - Containers: uwsgi + redis (celerybeat/worker disabled)
+  - Remediation Agent: ✅ ACTIVE (defectdojo-remediation-agent.service)
+  - Issue Analysis: ~/DEFECTDOJO_CELERY_REDIS_ISSUE_RESOLVED.md
+  - Production Status: Core functionality working, scheduled tasks need cron
+- ✅ DefectDojo IEC 62443: Compliance automation (hourly scans, FR/SR tagging)
+  - Service: defectdojo-compliance-agent.service ACTIVE
+  - Dashboard: http://100.100.101.1:3004 ONLINE
+  - Full Docs: ~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md
 - ✅ Container Orchestrator: 24/7 lifecycle management
+- ✅ Host Config Agent: 24/7 resource tracking (ZERO API cost)
+  - Database: /var/lib/host-config-agent/host_config.db
+  - Claude Code subprocess integration working
 - ✅ Security Hardening: Suricata IDS + Wazuh FIM + SSH restricted
-- ✅ MCP Servers: 2 servers (42MB active)
-- ✅ Documentation: Updated to v3.5 + Security hardening report
-- ✅ Learning System: Evolutionary AI with SQLite
+- ✅ MCP Servers: 4 active servers
+- ✅ Documentation: v3.9 - Added Celery/Redis troubleshooting
+- ✅ Learning System: Evolutionary AI with SQLite (2 databases)
 - ⚠️ INSA ERP: Offline (Tailscale relay)
-- 💾 Disk: 672MB unused MCP servers (can be cleaned)
-- 🐳 Docker: 22 containers running, 0 stopped
+- 🐳 Docker: 28 containers tracked
 
 ## 🗂️ INSTALLED MCP SERVERS
 ```yaml
-Active (42MB):
+Active (~192MB):
   ✅ azure-vm-monitor (26MB)
   ✅ azure-alert (16MB)
+  ✅ host-config-agent (150MB) - NEW
 
 Installed but NOT configured (672MB):
   ⚠️ consolidated (524MB)
@@ -191,21 +249,39 @@ Installed but NOT configured (672MB):
 Recommendation: Clean unused servers to save space
 ```
 
-## 📞 CONTACTS
+## 📞 CONTACTS & EMAIL
 ```yaml
 Email Alerts: w.aroca@insaing.com
-SMTP: Gmail (w.aroca@insaing.com)
+SMTP: localhost:25 (Self-hosted Postfix)
+Status: ✅ CONFIGURED (Oct 17, 2025)
+Authentication: None required
+Test Results: 4/4 email templates working
 ```
 
 ---
-**Role:** Azure VM Monitoring + DevSecOps Automation
+**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation
 **Access:** ssh 100.100.101.1
 **Sudo:** [REDACTED]***
-**Version:** 3.5 | Updated: October 11, 2025
+**Version:** 3.9 | Updated: October 17, 2025 14:30 UTC
 
 ## 🎯 QUICK LINKS
-- DefectDojo SOC Docs: `~/devops/devsecops-automation/defectdojo/README.md`
-- Container Orchestrator: `~/devops/container-orchestrator/README.md`
-- Learning Database: `/var/lib/defectdojo/learning.db`
-- Service Logs: `journalctl -u defectdojo-agent -f`
-- always update docs git and keep claude code md light with paths and links to docs and git
+- **DefectDojo Web UI:** http://100.100.101.1:8082 (✅ ACTIVE)
+- **Celery/Redis Fix:** `~/DEFECTDOJO_CELERY_REDIS_ISSUE_RESOLVED.md` (NEW - Oct 17)
+- **Email Reporting:** `~/EMAIL_SELF_HOSTED_SETUP_COMPLETE.md` (✅ CONFIGURED)
+- **Autonomous Remediation:** `~/AUTONOMOUS_REMEDIATION_SYSTEM.md` (Oct 17)
+- **IEC 62443 Compliance:** `~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md` (Oct 17)
+- **IEC 62443 Dashboard:** http://100.100.101.1:3004
+- **Container Orchestrator:** `~/devops/container-orchestrator/README.md`
+- **Host Config Agent:** `~/host-config-agent/README.md`
+- **Learning Databases:** `/var/lib/defectdojo/learning.db` + `/var/lib/host-config-agent/host_config.db`
+- **Git Repo:** `~/devops/devsecops-automation/defectdojo/` (always commit changes)
+- **Always:** Update docs in git, keep CLAUDE.md light with links
+- **Credit:** Made by Insa Automation Corp for OpSec
+
+## 🤖 USING HOST CONFIG AGENT IN CLAUDE CODE
+When deploying services, Claude Code can now:
+- Check server resources: Use `get_server_status` MCP tool
+- Find available ports: Use `find_available_port` MCP tool
+- Request deployment approval: Use `request_deployment` MCP tool
+- Ask questions: Use `ask_inventory_agent` with natural language
+See: `~/host-config-agent/README.md` for all 10 MCP tools
