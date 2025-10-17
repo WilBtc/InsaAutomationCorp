@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for InvenTree (separate container with internal port)
+  inventree-db:
+    image: postgres:16-alpine
+    container_name: inventree_postgres
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      POSTGRES_DB: inventree
+      POSTGRES_USER: inventree
+      POSTGRES_PASSWORD: inventree_secure_2025
+      PGPORT: 5434  # Use non-standard port to avoid conflicts
+    volumes:
+      - inventree_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inventree -p 5434"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis cache for InvenTree (host network, custom port)
+  inventree-redis:
+    image: redis:7-alpine
+    container_name: inventree_redis
+    restart: unless-stopped
+    network_mode: host
+    command: redis-server --port 6380
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6380", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # InvenTree web application (host network on port 9600)
+  inventree-web:
+    image: inventree/inventree:0.16.6
+    container_name: inventree_web
+    restart: "no"
+    network_mode: host
+    depends_on:
+      inventree-db:
+        condition: service_healthy
+      inventree-redis:
+        condition: service_healthy
+    entrypoint: ["/bin/ash", "-c"]
+    command:
+      - |
+        set -e
+        cd /home/inventree
+        echo "Running database migrations..."
+        invoke migrate
+        echo "Updating static files..."
+        invoke static
+        echo "Creating superuser..."
+        invoke superuser --username admin --email w.aroca@insaing.com --password insaadmin2025 || true
+        echo "Starting web server on port 9600..."
+        gunicorn -c ./gunicorn.conf.py InvenTree.wsgi -b 0.0.0.0:9600 --chdir /home/inventree/src/backend/InvenTree
+    environment:
+      # Database settings (localhost due to host network)
+      INVENTREE_DB_ENGINE: postgresql
+      INVENTREE_DB_NAME: inventree
+      INVENTREE_DB_USER: inventree
+      INVENTREE_DB_PASSWORD: inventree_secure_2025
+      INVENTREE_DB_HOST: 127.0.0.1
+      INVENTREE_DB_PORT: 5434
+
+      # Redis cache settings (localhost due to host network)
+      INVENTREE_CACHE_HOST: 127.0.0.1
+      INVENTREE_CACHE_PORT: 6380
+
+      # Security settings
+      INVENTREE_SECRET_KEY: insa-inventree-production-key-2025-secure-random-string-change-in-production
+      INVENTREE_ADMIN_USER: admin
+      INVENTREE_ADMIN_EMAIL: w.aroca@insaing.com
+      INVENTREE_ADMIN_PASSWORD: insaadmin2025
+
+      # Application settings (bind to port 9600 on host network)
+      INVENTREE_WEB_ADDR: 0.0.0.0
+      INVENTREE_WEB_PORT: 9600
+      INVENTREE_DEBUG: 'False'
+      INVENTREE_LOG_LEVEL: INFO
+
+      # Plugin settings
+      INVENTREE_PLUGINS_ENABLED: 'True'
+
+      # Background workers
+      INVENTREE_BACKGROUND_WORKERS: 2
+
+      # Media and static files
+      INVENTREE_MEDIA_ROOT: /home/inventree/data/media
+      INVENTREE_STATIC_ROOT: /home/inventree/data/static
+    volumes:
+      - inventree_data:/home/inventree/data
+      - inventree_media:/home/inventree/data/media
+      - inventree_static:/home/inventree/data/static
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9600/api/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+volumes:
+  inventree_db_data:
+    driver: local
+  inventree_data:
+    driver: local
+  inventree_media:
+    driver: local
+  inventree_static:
+    driver: local
