@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to INSA Automation</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5; }
+        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #003366; padding: 30px 20px; text-align: center; }
+        .header .logo { color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 2px; }
+        .content { padding: 40px 30px; }
+        .content h1 { color: #003366; font-size: 24px; margin: 0 0 20px 0; }
+        .content p { margin: 0 0 15px 0; color: #333333; line-height: 1.6; }
+        .button { display: inline-block; padding: 15px 30px; background-color: #FF6600; color: #ffffff !important; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+        .highlights { background-color: #f9f9f9; padding: 20px; border-left: 4px solid #0066CC; margin: 20px 0; }
+        .highlights h3 { color: #0066CC; margin: 0 0 10px 0; font-size: 18px; }
+        .highlights ul { margin: 10px 0; padding-left: 20px; }
+        .highlights li { margin: 8px 0; }
+        .footer { background-color: #f5f5f5; padding: 30px 20px; text-align: center; font-size: 14px; color: #666666; }
+        .footer a { color: #0066CC; text-decoration: none; }
+        @media only screen and (max-width: 600px) {
+            .content { padding: 20px 15px !important; }
+            .content h1 { font-size: 20px !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" class="header">
+            <tr><td align="center"><div class="logo">INSA AUTOMATION</div></td></tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" class="content">
+            <tr>
+                <td>
+                    <h1>Welcome to INSA Automation, {contactfield=firstname}!</h1>
+
+                    <p>Thank you for your interest in industrial automation excellence. We're excited to have you join our community of forward-thinking professionals.</p>
+
+                    <p>At INSA Automation, we specialize in:</p>
+
+                    <div class="highlights">
+                        <h3>🏭 What We Do</h3>
+                        <ul>
+                            <li><strong>IEC 62443 Compliance</strong> - Industrial cybersecurity solutions</li>
+                            <li><strong>SCADA & HMI Systems</strong> - Real-time monitoring and control</li>
+                            <li><strong>Industrial IoT</strong> - Connected equipment and predictive maintenance</li>
+                            <li><strong>Process Automation</strong> - PLC programming and system integration</li>
+                            <li><strong>Cybersecurity</strong> - OT security and vulnerability management</li>
+                        </ul>
+                    </div>
+
+                    <p><strong>What's Next?</strong></p>
+                    <p>Over the next few weeks, we'll share valuable insights on industrial automation trends, cybersecurity best practices, and success stories from companies like yours.</p>
+
+                    <a href="https://insaing.com/getting-started" class="button">Get Started →</a>
+
+                    <div class="highlights">
+                        <h3>📚 Recommended Resources</h3>
+                        <ul>
+                            <li><a href="https://insaing.com/iec62443-guide">IEC 62443 Compliance Guide</a></li>
+                            <li><a href="https://insaing.com/case-studies">Customer Success Stories</a></li>
+                            <li><a href="https://insaing.com/products">Product Catalog</a></li>
+                            <li><a href="https://insaing.com/support">Technical Support</a></li>
+                        </ul>
+                    </div>
+
+                    <p>Questions? Our team is here to help. Simply reply to this email or call us at +1 (555) 123-4567.</p>
+
+                    <p>Best regards,<br>
+                    <strong>The INSA Automation Team</strong></p>
+                </td>
+            </tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" class="footer">
+            <tr>
+                <td align="center">
+                    <p><strong>INSA Automation Corp</strong></p>
+                    <p>Industrial Automation & Control Systems</p>
+                    <p>Email: <a href="mailto:info@insaing.com">info@insaing.com</a> | Web: <a href="https://insaing.com">insaing.com</a></p>
+                    <p style="font-size: 12px; color: #999999; margin-top: 20px;">
+                        <a href="{unsubscribe_url}">Unsubscribe</a> | <a href="{webview_url}">View in browser</a>
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

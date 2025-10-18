@@ -1,0 +1,256 @@
+{
+  "name": "2. Lead Score Update: Mautic → ERPNext",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mautic-score",
+        "options": {
+          "responseMode": "onReceived",
+          "responseData": "allEntries"
+        }
+      },
+      "name": "Webhook: Mautic Events",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "id": "webhook-mautic",
+      "webhookId": "mautic-score-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate webhook data from Mautic\nconst data = $input.first().json;\n\n// Mautic webhook structure varies by event type\nconst eventType = data['mautic.event_type'] || data.event || 'unknown';\nconst contact = data.contact || {};\nconst fields = contact.fields?.all || contact.fields || {};\n\n// Get ERPNext Lead ID from custom field\nconst erpnextLeadId = fields.erpnext_lead_id || fields.erpnext_id || null;\n\nif (!erpnextLeadId) {\n  throw new Error('No ERPNext Lead ID found in Mautic contact. Cannot sync.');\n}\n\n// Define scoring rules based on event type\nconst scoringRules = {\n  'email.open': 5,\n  'email.opened': 5,\n  'email.click': 10,\n  'email.clicked': 10,\n  'page.hit': 2,\n  'form.submit': 20,\n  'form.submitted': 20,\n  'asset.download': 15,\n  'webinar.attended': 25,\n  'webinar.registered': 10\n};\n\nconst scoreIncrease = scoringRules[eventType] || 1;\nconst currentPoints = contact.points || 0;\nconst newTotalScore = currentPoints + scoreIncrease;\n\n// Determine lead temperature based on total score\nlet leadTemperature = 'Cold';\nif (newTotalScore >= 80) leadTemperature = 'Hot';\nelse if (newTotalScore >= 50) leadTemperature = 'Warm';\n\nreturn [{\n  json: {\n    erpnext_lead_id: erpnextLeadId,\n    event_type: eventType,\n    score_increase: scoreIncrease,\n    previous_score: currentPoints,\n    new_total_score: newTotalScore,\n    lead_temperature: leadTemperature,\n    contact_email: contact.email || fields.email || 'unknown',\n    contact_name: `${fields.firstname || ''} ${fields.lastname || ''}`.trim() || 'Unknown',\n    timestamp: new Date().toISOString(),\n    // Additional engagement data\n    engagement_data: {\n      total_emails_opened: contact.email_opens || 0,\n      total_links_clicked: contact.email_clicks || 0,\n      last_active: contact.last_active || null\n    }\n  }\n}];"
+      },
+      "name": "Calculate Score & Extract Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "id": "calculate-score"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=http://100.100.101.1:9000/api/resource/Lead/{{ $json.erpnext_lead_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "custom_lead_score",
+              "value": "={{ $json.new_total_score }}"
+            },
+            {
+              "name": "custom_lead_temperature",
+              "value": "={{ $json.lead_temperature }}"
+            },
+            {
+              "name": "custom_last_engagement",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "custom_last_engagement_type",
+              "value": "={{ $json.event_type }}"
+            },
+            {
+              "name": "custom_total_emails_opened",
+              "value": "={{ $json.engagement_data.total_emails_opened }}"
+            },
+            {
+              "name": "custom_total_links_clicked",
+              "value": "={{ $json.engagement_data.total_links_clicked }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "name": "Update ERPNext Lead Score",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300],
+      "id": "update-erpnext-lead",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "erpnext-api",
+          "name": "ERPNext API"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.new_total_score }}",
+              "operation": "largerEqual",
+              "value2": 80
+            }
+          ]
+        }
+      },
+      "name": "Check if Hot Lead",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "id": "check-hot-lead"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.100.101.1:9000/api/resource/Comment",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "reference_doctype",
+              "value": "Lead"
+            },
+            {
+              "name": "reference_name",
+              "value": "={{ $('Calculate Score & Extract Data').item.json.erpnext_lead_id }}"
+            },
+            {
+              "name": "comment_type",
+              "value": "Comment"
+            },
+            {
+              "name": "content",
+              "value": "=🔥 HOT LEAD ALERT! Lead score reached {{ $('Calculate Score & Extract Data').item.json.new_total_score }} points. Recent activity: {{ $('Calculate Score & Extract Data').item.json.event_type }}. Immediate follow-up recommended!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Create Hot Lead Alert (Comment)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 200],
+      "id": "hot-lead-alert",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "erpnext-api",
+          "name": "ERPNext API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create execution summary\nconst scoreData = $('Calculate Score & Extract Data').item.json;\nconst updateResult = $('Update ERPNext Lead Score').item.json;\nconst isHotLead = $('Check if Hot Lead').item.json;\n\nreturn [{\n  json: {\n    workflow: 'Lead Score Update: Mautic → ERPNext',\n    execution_time: new Date().toISOString(),\n    lead_id: scoreData.erpnext_lead_id,\n    contact_name: scoreData.contact_name,\n    contact_email: scoreData.contact_email,\n    event_triggered: scoreData.event_type,\n    score_change: `${scoreData.previous_score} → ${scoreData.new_total_score} (+${scoreData.score_increase})`,\n    lead_temperature: scoreData.lead_temperature,\n    hot_lead_alert_created: isHotLead ? 'YES' : 'NO',\n    update_status: updateResult.data ? 'SUCCESS' : 'FAILED',\n    status: 'COMPLETED'\n  }\n}];"
+      },
+      "name": "Log Execution Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 400],
+      "id": "log-summary"
+    }
+  ],
+  "connections": {
+    "Webhook: Mautic Events": {
+      "main": [
+        [
+          {
+            "node": "Calculate Score & Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Score & Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Update ERPNext Lead Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update ERPNext Lead Score": {
+      "main": [
+        [
+          {
+            "node": "Check if Hot Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Hot Lead": {
+      "main": [
+        [
+          {
+            "node": "Create Hot Lead Alert (Comment)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Execution Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Hot Lead Alert (Comment)": {
+      "main": [
+        [
+          {
+            "node": "Log Execution Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "any",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "CRM",
+      "id": "crm-tag"
+    },
+    {
+      "name": "Lead Scoring",
+      "id": "scoring-tag"
+    },
+    {
+      "name": "ERPNext",
+      "id": "erpnext-tag"
+    },
+    {
+      "name": "Mautic",
+      "id": "mautic-tag"
+    },
+    {
+      "name": "Webhook",
+      "id": "webhook-tag"
+    }
+  ],
+  "meta": {
+    "instanceId": "n8n_mautic_erpnext"
+  },
+  "pinData": {},
+  "versionId": "1",
+  "triggerCount": 1,
+  "active": false
+}

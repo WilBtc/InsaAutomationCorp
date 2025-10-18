@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Aboard - Let's Get Started!</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5; }
+        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #003366 0%, #0066CC 100%); padding: 40px 20px; text-align: center; }
+        .header .logo { color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 2px; }
+        .header .welcome-badge { background-color: #FFD700; color: #003366; padding: 10px 20px; border-radius: 25px; display: inline-block; margin-top: 15px; font-weight: bold; }
+        .content { padding: 40px 30px; }
+        .content h1 { color: #003366; font-size: 28px; margin: 0 0 20px 0; }
+        .content h2 { color: #0066CC; font-size: 20px; margin: 30px 0 15px 0; }
+        .content p { margin: 0 0 15px 0; color: #333333; line-height: 1.6; }
+        .button { display: inline-block; padding: 15px 30px; background-color: #FF6600; color: #ffffff !important; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px 5px; }
+        .button:hover { background-color: #CC5200; }
+        .button-secondary { background-color: #0066CC; }
+        .button-secondary:hover { background-color: #004C99; }
+        .timeline { margin: 30px 0; }
+        .timeline-item { display: flex; margin: 20px 0; }
+        .timeline-number { background-color: #0066CC; color: #ffffff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .timeline-content { flex: 1; margin-left: 20px; }
+        .timeline-content h3 { color: #003366; margin: 0 0 5px 0; font-size: 18px; }
+        .timeline-content p { margin: 0; font-size: 14px; color: #666666; }
+        .checklist { background-color: #F0F8FF; padding: 20px; border-radius: 5px; margin: 20px 0; }
+        .checklist h3 { color: #0066CC; margin: 0 0 15px 0; }
+        .checklist-item { padding: 10px 0; border-bottom: 1px solid #D0E8FF; }
+        .checklist-item:last-child { border-bottom: none; }
+        .checklist-item label { display: flex; align-items: center; cursor: pointer; }
+        .checklist-item input { margin-right: 10px; }
+        .resources { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+        .resource-card { background-color: #f9f9f9; padding: 20px; border-radius: 5px; text-align: center; }
+        .resource-card .icon { font-size: 36px; margin-bottom: 10px; }
+        .resource-card h4 { color: #003366; margin: 10px 0; font-size: 16px; }
+        .resource-card a { color: #0066CC; text-decoration: none; font-size: 14px; }
+        .support-box { background-color: #E8F5E9; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center; }
+        .support-box h3 { color: #2E7D32; margin: 0 0 10px 0; }
+        .footer { background-color: #f5f5f5; padding: 30px 20px; text-align: center; font-size: 14px; color: #666666; }
+        .footer a { color: #0066CC; text-decoration: none; }
+        @media only screen and (max-width: 600px) {
+            .content { padding: 20px 15px !important; }
+            .content h1 { font-size: 22px !important; }
+            .resources { grid-template-columns: 1fr; }
+            .timeline-item { flex-direction: column; }
+            .timeline-content { margin-left: 0; margin-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" class="header">
+            <tr>
+                <td align="center">
+                    <div class="logo">INSA AUTOMATION</div>
+                    <div class="welcome-badge">🎉 Welcome Aboard!</div>
+                </td>
+            </tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" class="content">
+            <tr>
+                <td>
+                    <h1>Welcome to the INSA Family, {contactfield=firstname}!</h1>
+
+                    <p>We're thrilled to have you as a customer! Your decision to partner with INSA Automation marks the beginning of a transformative journey toward operational excellence and world-class industrial security.</p>
+
+                    <p>This email will guide you through your first 30 days and ensure you get the most value from your investment.</p>
+
+                    <h2>🚀 Your 30-Day Success Plan</h2>
+
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-number">1</div>
+                            <div class="timeline-content">
+                                <h3>Week 1: Getting Started</h3>
+                                <p>Access your customer portal, complete initial setup, and schedule your kickoff call with our implementation team.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-number">2</div>
+                            <div class="timeline-content">
+                                <h3>Week 2: System Integration</h3>
+                                <p>Connect your existing infrastructure, configure security policies, and complete the baseline assessment.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-number">3</div>
+                            <div class="timeline-content">
+                                <h3>Week 3: Training & Optimization</h3>
+                                <p>Attend personalized training sessions, learn best practices, and optimize your configuration.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-number">4</div>
+                            <div class="timeline-content">
+                                <h3>Week 4: Go Live!</h3>
+                                <p>Complete final testing, activate monitoring, and celebrate your successful deployment.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>✅ Your First-Week Checklist</h2>
+
+                    <div class="checklist">
+                        <h3>Complete these 5 quick tasks:</h3>
+
+                        <div class="checklist-item">
+                            <label>
+                                <input type="checkbox">
+                                <strong>Access your customer portal</strong> - Login at <a href="https://portal.insaing.com">portal.insaing.com</a>
+                            </label>
+                        </div>
+
+                        <div class="checklist-item">
+                            <label>
+                                <input type="checkbox">
+                                <strong>Schedule kickoff call</strong> - Book a time with your dedicated success manager
+                            </label>
+                        </div>
+
+                        <div class="checklist-item">
+                            <label>
+                                <input type="checkbox">
+                                <strong>Watch "Getting Started" video</strong> - 15-minute overview (see resources below)
+                            </label>
+                        </div>
+
+                        <div class="checklist-item">
+                            <label>
+                                <input type="checkbox">
+                                <strong>Complete system inventory</strong> - Document your PLC models, SCADA servers, and network topology
+                            </label>
+                        </div>
+
+                        <div class="checklist-item">
+                            <label>
+                                <input type="checkbox">
+                                <strong>Join community forum</strong> - Connect with other INSA customers and experts
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="https://portal.insaing.com/login" class="button">Access Portal →</a>
+                        <a href="https://calendly.com/insa-success" class="button button-secondary">Schedule Kickoff Call →</a>
+                    </div>
+
+                    <h2>📚 Essential Resources</h2>
+
+                    <div class="resources">
+                        <div class="resource-card">
+                            <div class="icon">📖</div>
+                            <h4>Quick Start Guide</h4>
+                            <a href="#">Download PDF →</a>
+                        </div>
+
+                        <div class="resource-card">
+                            <div class="icon">🎥</div>
+                            <h4>Video Tutorials</h4>
+                            <a href="#">Watch Now →</a>
+                        </div>
+
+                        <div class="resource-card">
+                            <div class="icon">💬</div>
+                            <h4>Community Forum</h4>
+                            <a href="#">Join Discussion →</a>
+                        </div>
+
+                        <div class="resource-card">
+                            <div class="icon">📊</div>
+                            <h4>Best Practices</h4>
+                            <a href="#">Read Guide →</a>
+                        </div>
+                    </div>
+
+                    <h2>👥 Meet Your Success Team</h2>
+
+                    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                        <p><strong>Your Dedicated Success Manager:</strong> {account_manager_name}</p>
+                        <p>Email: <a href="mailto:{account_manager_email}">{account_manager_email}</a><br>
+                        Phone: {account_manager_phone}<br>
+                        Schedule a call: <a href="{account_manager_calendar}">Book time</a></p>
+
+                        <p style="margin-top: 20px;"><strong>Technical Support:</strong></p>
+                        <p>Email: <a href="mailto:support@insaing.com">support@insaing.com</a><br>
+                        Phone: +1 (555) 123-4567<br>
+                        Live Chat: Available 24/7 in portal</p>
+                    </div>
+
+                    <div class="support-box">
+                        <h3>🆘 Need Help?</h3>
+                        <p>Our support team is available 24/7 to assist you.</p>
+                        <p><strong>Average Response Time: < 2 hours</strong></p>
+                        <a href="https://portal.insaing.com/support" style="color: #2E7D32; font-weight: bold;">Open Support Ticket →</a>
+                    </div>
+
+                    <h2>🎁 Exclusive Customer Benefits</h2>
+
+                    <p>As an INSA customer, you now have access to:</p>
+
+                    <ul style="line-height: 1.8;">
+                        <li>✅ <strong>Priority Support</strong> - 24/7 phone and chat support</li>
+                        <li>✅ <strong>Quarterly Business Reviews</strong> - Strategic planning sessions</li>
+                        <li>✅ <strong>Early Access</strong> - New features before general release</li>
+                        <li>✅ <strong>Training Credits</strong> - $5,000 annual training allowance</li>
+                        <li>✅ <strong>VIP Events</strong> - Exclusive workshops and webinars</li>
+                        <li>✅ <strong>Compliance Assistance</strong> - IEC 62443 audit support</li>
+                    </ul>
+
+                    <div style="background-color: #FFF4E6; border-left: 4px solid #FF6600; padding: 20px; margin: 30px 0;">
+                        <strong style="color: #FF6600; font-size: 18px;">💡 Pro Tip</strong>
+                        <p style="margin: 10px 0 0 0;">
+                            Start by focusing on your highest-risk assets. Prioritize PLCs with direct internet exposure or those running critical processes. This approach delivers 80% of the security value in 20% of the time.
+                        </p>
+                    </div>
+
+                    <h2>📅 What's Next?</h2>
+
+                    <p><strong>Tomorrow:</strong> Your success manager will send a detailed onboarding plan and schedule your kickoff call.</p>
+
+                    <p><strong>This Week:</strong> Complete the checklist above and watch the getting started videos.</p>
+
+                    <p><strong>Next Week:</strong> Begin system integration and attend your first training session.</p>
+
+                    <div style="text-align: center; margin: 40px 0;">
+                        <p style="font-size: 20px; color: #003366;"><strong>Ready to get started?</strong></p>
+                        <a href="https://portal.insaing.com/login" class="button">Access Your Portal →</a>
+                    </div>
+
+                    <p>Welcome to operational excellence!<br>
+                    <strong>The INSA Automation Team</strong></p>
+
+                    <hr style="border: none; border-top: 1px solid #EEEEEE; margin: 30px 0;">
+
+                    <p style="font-size: 14px; color: #666666;">
+                        <strong>P.S.</strong> Have questions before your kickoff call? Reply to this email - we're here to help!
+                    </p>
+                </td>
+            </tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" class="footer">
+            <tr>
+                <td align="center">
+                    <p><strong>INSA Automation Corp</strong></p>
+                    <p>Customer Success Team</p>
+                    <p>Email: <a href="mailto:success@insaing.com">success@insaing.com</a> | Web: <a href="https://insaing.com">insaing.com</a></p>
+                    <p style="font-size: 12px; color: #999999; margin-top: 20px;">
+                        <a href="{unsubscribe_url}">Unsubscribe</a> | <a href="{webview_url}">View in browser</a>
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
