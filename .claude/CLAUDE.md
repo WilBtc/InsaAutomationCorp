@@ -1,6 +1,6 @@
 # iac1 Server - Quick Reference
-# Version: 4.4 | Updated: October 18, 2025 00:30 UTC
-# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + Inventory + AI Agents
+# Version: 4.5 | Updated: October 18, 2025 01:30 UTC
+# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + Inventory + Projects + AI Agents
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -71,16 +71,18 @@ Host Configuration Agent (DEPLOYED):
   Architecture: ~/host-config-agent/ARCHITECTURE.txt
   Database: /var/lib/host-config-agent/host_config.db
 
-ERPNext CRM (DEPLOYED - Phase 3 Complete - Oct 17, 2025):
-  Implementation Guide: ~/QUOTATION_TOOLS_ADDED.md
-  Phase 3 Commit: 606429c (complete sales cycle - 10 new tools)
-  Phase 2 Commit: f50392b (get_customer, update_customer, list_items)
+ERPNext CRM (DEPLOYED - Phase 3 Complete - Oct 18, 2025):
+  Implementation Guide: ~/PHASE3_ERPNEXT_PROJECTS_COMPLETE.md (NEW)
+  Phase 3a: Sales orders, delivery notes, invoices, payments (10 tools - Oct 17)
+  Phase 3b: Project Management (4 tools - Oct 18) ⭐ NEW
+  Phase 2: Customer details + product catalog (3 tools)
+  Phase 1: Core CRM (16 tools)
   Gap Analysis: ~/ERPNEXT_CRM_GAP_ANALYSIS.md
   Docker Fix: ~/ERPNEXT_CRM_FIXED.md
   Web UI: http://100.100.101.1:9000
   Git Repo: ~/mcp-servers/erpnext-crm/
   MCP Server: ~/mcp-servers/erpnext-crm/server.py
-  Tools: 29 (100% complete - full sales cycle ready)
+  Tools: 33 (100% complete - full sales cycle + project management)
 
 INSA CRM System (DEPLOYED - Oct 17, 2025):
   Project Root: ~/insa-crm-system/
@@ -158,18 +160,19 @@ tailscale-devops:
   Purpose: Network management for INSA infrastructure
   Tools: 10 tools (network status, SSH, tunnels, routing)
 
-erpnext-crm (Phase 3 Complete - Oct 17, 2025):
+erpnext-crm (Phase 3b Complete - Oct 18, 2025):
   Path: ~/mcp-servers/erpnext-crm/server.py
   Size: ~20MB
-  Purpose: CRM automation for INSA Automation Corp - COMPLETE SALES CYCLE
-  Tools: 29 tools (100% complete)
-  Status: ✅ PRODUCTION READY - Full sales cycle automation
-  Phase 3: Sales orders, delivery notes, invoices, payments (10 tools)
+  Purpose: CRM automation for INSA Automation Corp - FULL LIFECYCLE
+  Tools: 33 tools (100% complete)
+  Status: ✅ PRODUCTION READY - Complete sales cycle + project management
+  Phase 3b: Project Management (4 tools - Oct 18) ⭐ NEW
+  Phase 3a: Sales orders, delivery notes, invoices, payments (10 tools - Oct 17)
   Phase 2: Customer details + product catalog (3 tools)
   Phase 1: Core CRM (16 tools)
   Web UI: http://100.100.101.1:9000
-  Docs: ~/QUOTATION_TOOLS_ADDED.md
-  Commit: 606429c
+  Docs: ~/PHASE3_ERPNEXT_PROJECTS_COMPLETE.md
+  Commit: Pending (Phase 3b)
 
 inventree-crm (Phase 2 Complete - Oct 18, 2025):
   Path: ~/mcp-servers/inventree-crm/server.py
@@ -284,14 +287,15 @@ Git:
   - Service: defectdojo-compliance-agent.service ACTIVE
   - Dashboard: http://100.100.101.1:3004 ONLINE
   - Full Docs: ~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md
-- ✅ ERPNext CRM: Phase 3 Complete (29 tools, 100% complete) ✅ PRODUCTION READY
+- ✅ ERPNext CRM: Phase 3b Complete (33 tools, 100% complete) ✅ PRODUCTION READY
   - Web UI: http://100.100.101.1:9000 ✅ ACTIVE
   - Container: frappe_docker_backend_1 (Docker exec method)
-  - Phase 3: Sales orders, delivery notes, invoices, payments (10 tools)
+  - Phase 3b: Project Management (4 tools - Oct 18) ⭐ NEW
+  - Phase 3a: Sales orders, delivery notes, invoices, payments (10 tools - Oct 17)
   - Phase 2: Customer details + product catalog (3 tools)
-  - Complete Sales Cycle: Lead → Opportunity → Quotation → SO → DN → Invoice → Payment
-  - Docs: ~/QUOTATION_TOOLS_ADDED.md
-  - Git: ~/mcp-servers/erpnext-crm/ (commit 606429c)
+  - Complete Lifecycle: Lead → Opportunity → Quotation → SO → Project → DN → Invoice → Payment
+  - Docs: ~/PHASE3_ERPNEXT_PROJECTS_COMPLETE.md
+  - Git: ~/mcp-servers/erpnext-crm/ (pending commit - Phase 3b)
 - ✅ InvenTree CRM: Phase 2 Complete (5 tools, 100% complete) ✅ PRODUCTION READY
   - Web UI: http://100.100.101.1:9600 ✅ ACTIVE
   - Containers: inventree_web + postgres:5434 + redis:6380 (host network mode)
@@ -355,7 +359,8 @@ Test Results: 4/4 email templates working
 - **InvenTree Inventory:** http://100.100.101.1:9600 (✅ NEW - OPERATIONAL)
 - **IEC 62443 Dashboard:** http://100.100.101.1:3004
 - **INSA CRM Guide:** `~/insa-crm-system/README.md` (NEW - Oct 17)
-- **ERPNext CRM Guide:** `~/QUOTATION_TOOLS_ADDED.md`
+- **ERPNext CRM Guide:** `~/PHASE3_ERPNEXT_PROJECTS_COMPLETE.md` (Phase 3b - NEW)
+- **ERPNext Phase 3a Guide:** `~/QUOTATION_TOOLS_ADDED.md`
 - **InvenTree Deployment:** `~/INVENTREE_DEPLOYMENT_RESOLVED.md` (✅ NEW - Blocker resolved)
 - **CRM Audit Report:** `~/CRM_AUDIT_REPORT_OCT2025.md`
 - **CRM Gap Analysis:** `~/ERPNEXT_CRM_GAP_ANALYSIS.md`
