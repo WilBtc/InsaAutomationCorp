@@ -1,6 +1,6 @@
 # iac1 Server - Quick Reference
-# Version: 6.0 | Updated: October 18, 2025 22:40 UTC (🎯 100% AUTONOMY ACHIEVED!)
-# Server: 100.100.101.1 | Role: 100% Autonomous Industrial Automation Sales Platform (Phases 0-9 Complete)
+# Version: 6.1 | Updated: October 18, 2025 23:15 UTC (🎯 PHASE 10: INSA DOMAIN EXPERTISE!)
+# Server: 100.100.101.1 | Role: INSA-Specific Intelligent Sales Platform (Oil & Gas)
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -77,20 +77,25 @@ INSA CRM Platform (CONSOLIDATED - Oct 18, 2025): ⭐ NEW UNIFIED LOCATION
   Consolidation Report: ~/INSA_CRM_CONSOLIDATION_COMPLETE.md
   Status: ✅ PRODUCTION READY - All components organized & tested
 
-  Core (100% Autonomous Sales Platform): ⭐ PHASES 1-9 COMPLETE
+  Core (INSA Oil & Gas Expert System): ⭐ PHASES 1-10 COMPLETE
     Path: ~/insa-crm-platform/core/
     FastAPI Server: http://100.100.101.1:8003
     API Docs: http://100.100.101.1:8003/api/docs
     Database: PostgreSQL (insa_crm)
-    Autonomy: 100% 🎯 TARGET ACHIEVED
+    Autonomy: 100% 🎯 | INSA Domain Expertise: ✅
     Features:
-      - Phase 1: AI lead scoring (0-100, auto-approve >80)
-      - Phase 7: AI quote generation (<1s, RAG-powered)
-      - Phase 8: Multi-channel communication (email/phone/SMS)
-      - Phase 9: End-to-end automation + monitoring ⭐ NEW
+      - Phase 1: AI lead scoring (INSA-optimized for Oil & Gas)
+      - Phase 7: AI quote generation (vendor catalog + RAG)
+      - Phase 8: Multi-channel communication (INSA-branded)
+      - Phase 9: End-to-end automation + monitoring
+      - Phase 10: INSA domain expertise (13 disciplines) ⭐ NEW
     Storage: /var/lib/insa-crm/ (ChromaDB + quotes + workflows)
+    Vendor Catalog: 5 parts → Goal: 200+ (Allen-Bradley, Rosemount, E+H)
     Monitoring: http://100.100.101.1:3002 (Grafana - 16 panels)
-    Docs: ~/insa-crm-platform/PHASE9_FULL_AUTONOMY_COMPLETE.md
+    Docs:
+      - ~/insa-crm-platform/PHASE10_COMPANY_CUSTOMIZATION_READY.md ⭐ NEW
+      - ~/insa-crm-platform/INSA_DOMAIN_KNOWLEDGE_INTEGRATION.md ⭐ NEW
+      - ~/insa-crm-platform/COMPANY_CUSTOMIZATION_ROADMAP.md ⭐ NEW
 
   MCP Servers (4 integrated platforms):
     ERPNext CRM:
