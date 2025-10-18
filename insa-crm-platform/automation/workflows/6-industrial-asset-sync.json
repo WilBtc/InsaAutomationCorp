@@ -1,0 +1,411 @@
+{
+  "name": "6. Industrial Asset Sync: PLC → InvenTree/ERPNext",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "name": "Every 5 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "id": "schedule-trigger"
+    },
+    {
+      "parameters": {
+        "command": "python3 /home/wil/industrial-asset-tracker.py --once 2>&1 | grep -E '(PLC-|Timestamp|Online|Offline)'"
+      },
+      "name": "Run PLC Health Check",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "id": "run-health-check"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse PLC health check output\nconst output = $input.first().json.stdout || '';\nconst lines = output.split('\\n');\n\n// Extract PLC status\nconst plcStatuses = [];\nfor (const line of lines) {\n  if (line.includes('PLC-')) {\n    const match = line.match(/(PLC-[A-Z]+-\\d+):\\s+(ONLINE|OFFLINE)\\s+\\(([\\d.]+)ms\\)/);\n    if (match) {\n      plcStatuses.push({\n        id: match[1],\n        status: match[2],\n        response_time_ms: parseFloat(match[3])\n      });\n    } else {\n      // Offline format\n      const offlineMatch = line.match(/(PLC-[A-Z]+-\\d+):\\s+(OFFLINE|ERROR)/);\n      if (offlineMatch) {\n        plcStatuses.push({\n          id: offlineMatch[1],\n          status: offlineMatch[2],\n          response_time_ms: null\n        });\n      }\n    }\n  }\n}\n\n// Get timestamp\nconst tsMatch = output.match(/Timestamp:\\s+(.+)/);\nconst timestamp = tsMatch ? tsMatch[1] : new Date().toISOString();\n\n// Get online/offline counts\nconst onlineMatch = output.match(/✓ Online:\\s+(\\d+)/);\nconst offlineMatch = output.match(/✗ Offline:\\s+(\\d+)/);\n\nreturn [{\n  json: {\n    timestamp: timestamp,\n    plcs: plcStatuses,\n    summary: {\n      total: plcStatuses.length,\n      online: parseInt(onlineMatch ? onlineMatch[1] : 0),\n      offline: parseInt(offlineMatch ? offlineMatch[1] : 0)\n    }\n  }\n}];"
+      },
+      "name": "Parse Health Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300],
+      "id": "parse-health"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Split PLCs into individual items for processing\nconst data = $input.first().json;\nconst items = [];\n\nfor (const plc of data.plcs) {\n  items.push({\n    json: {\n      ...plc,\n      timestamp: data.timestamp,\n      summary: data.summary\n    }\n  });\n}\n\nreturn items;"
+      },
+      "name": "Split PLCs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300],
+      "id": "split-plcs"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Map PLC data to full details\nconst plc = $input.first().json;\n\n// PLC configuration database (from industrial-asset-tracker.py)\nconst plcDatabase = {\n  'PLC-INJ-01': {\n    name: 'Injection Molding Machine 01',\n    type: 'Siemens S7-1500',\n    location: 'Production Line 1',\n    customer: 'ACME Automotive Components',\n    serial_number: 'S7-1500-INJ-001',\n    installed_date: '2023-03-15',\n    model: 'S7-1515-2 PN',\n    manufacturer: 'Siemens',\n    category: 'Injection Molding'\n  },\n  'PLC-INJ-02': {\n    name: 'Injection Molding Machine 02',\n    type: 'Siemens S7-1500',\n    location: 'Production Line 2',\n    customer: 'ACME Automotive Components',\n    serial_number: 'S7-1500-INJ-002',\n    installed_date: '2023-05-20',\n    model: 'S7-1515-2 PN',\n    manufacturer: 'Siemens',\n    category: 'Injection Molding'\n  },\n  'PLC-ROBOT-01': {\n    name: 'KUKA Robot Cell 01',\n    type: 'Allen-Bradley ControlLogix',\n    location: 'Assembly Area',\n    customer: 'ACME Automotive Components',\n    serial_number: 'AB-CLOGIX-001',\n    installed_date: '2024-01-10',\n    model: 'ControlLogix 5580',\n    manufacturer: 'Rockwell Automation',\n    category: 'Robotics'\n  }\n};\n\nconst details = plcDatabase[plc.id] || {};\n\nreturn [{\n  json: {\n    ...plc,\n    ...details,\n    health_check_timestamp: plc.timestamp\n  }\n}];"
+      },
+      "name": "Map PLC Details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "id": "map-plc-details"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://100.100.101.1:9600/api/part/?search={{ $json.name }}&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "name": "Check InvenTree Part Exists",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300],
+      "id": "check-inventree-part",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "inventree-api",
+          "name": "InvenTree API"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Determine if we need to create or update\nconst plcData = $('Map PLC Details').item.json;\nconst searchResult = $input.first().json;\n\nconst exists = searchResult.count > 0 && searchResult.results?.length > 0;\nconst partId = exists ? searchResult.results[0].pk : null;\n\nreturn [{\n  json: {\n    ...plcData,\n    inventree_exists: exists,\n    inventree_part_id: partId,\n    action: exists ? 'update' : 'create'\n  }\n}];"
+      },
+      "name": "Decide Create or Update (InvenTree)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 300],
+      "id": "decide-inventree-action"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action }}",
+              "operation": "equals",
+              "value2": "create"
+            }
+          ]
+        }
+      },
+      "name": "Route: Create or Update (InvenTree)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1650, 300],
+      "id": "route-inventree-action"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.100.101.1:9600/api/part/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.name }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.type }} - {{ $json.location }}"
+            },
+            {
+              "name": "category",
+              "value": "1"
+            },
+            {
+              "name": "active",
+              "value": "={{ $json.status === 'ONLINE' }}"
+            },
+            {
+              "name": "IPN",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "keywords",
+              "value": "=PLC,{{ $json.manufacturer }},Industrial,Automation,{{ $json.category }}"
+            },
+            {
+              "name": "notes",
+              "value": "=Serial: {{ $json.serial_number }}\\nModel: {{ $json.model }}\\nInstalled: {{ $json.installed_date }}\\nCustomer: {{ $json.customer }}\\nLocation: {{ $json.location }}\\nLast Check: {{ $json.status }} ({{ $json.response_time_ms }}ms)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Create InvenTree Part",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 200],
+      "id": "create-inventree-part",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "inventree-api",
+          "name": "InvenTree API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=http://100.100.101.1:9600/api/part/{{ $json.inventree_part_id }}/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "active",
+              "value": "={{ $json.status === 'ONLINE' }}"
+            },
+            {
+              "name": "notes",
+              "value": "=Serial: {{ $json.serial_number }}\\nModel: {{ $json.model }}\\nInstalled: {{ $json.installed_date }}\\nCustomer: {{ $json.customer }}\\nLocation: {{ $json.location }}\\nLast Check: {{ $json.status }} ({{ $json.response_time_ms }}ms)\\nUpdated: {{ $json.health_check_timestamp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update InvenTree Part",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 400],
+      "id": "update-inventree-part",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "inventree-api",
+          "name": "InvenTree API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll"
+      },
+      "name": "Merge InvenTree Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [2050, 300],
+      "id": "merge-inventree-results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare data for ERPNext Serial No creation/update\nconst data = $input.first().json;\n\nreturn [{\n  json: {\n    ...data,\n    erpnext_ready: true\n  }\n}];"
+      },
+      "name": "Prepare ERPNext Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2250, 300],
+      "id": "prepare-erpnext"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create execution summary\nconst allPlcs = $('Split PLCs').all();\nconst successCount = allPlcs.filter(p => p.json.status === 'ONLINE').length;\nconst failCount = allPlcs.filter(p => p.json.status !== 'ONLINE').length;\n\nconst summary = $('Parse Health Data').item.json.summary;\n\nreturn [{\n  json: {\n    workflow: 'Industrial Asset Sync: PLC → InvenTree/ERPNext',\n    execution_time: new Date().toISOString(),\n    plcs_checked: summary.total,\n    plcs_online: summary.online,\n    plcs_offline: summary.offline,\n    inventree_synced: allPlcs.length,\n    erpnext_synced: allPlcs.length,\n    status: failCount === 0 ? 'ALL_ONLINE' : 'DEGRADED',\n    health_percentage: ((summary.online / summary.total) * 100).toFixed(1) + '%'\n  }\n}];"
+      },
+      "name": "Log Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2450, 300],
+      "id": "log-summary"
+    }
+  ],
+  "connections": {
+    "Every 5 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Run PLC Health Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run PLC Health Check": {
+      "main": [
+        [
+          {
+            "node": "Parse Health Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Health Data": {
+      "main": [
+        [
+          {
+            "node": "Split PLCs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split PLCs": {
+      "main": [
+        [
+          {
+            "node": "Map PLC Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map PLC Details": {
+      "main": [
+        [
+          {
+            "node": "Check InvenTree Part Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check InvenTree Part Exists": {
+      "main": [
+        [
+          {
+            "node": "Decide Create or Update (InvenTree)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Create or Update (InvenTree)": {
+      "main": [
+        [
+          {
+            "node": "Route: Create or Update (InvenTree)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route: Create or Update (InvenTree)": {
+      "main": [
+        [
+          {
+            "node": "Create InvenTree Part",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update InvenTree Part",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create InvenTree Part": {
+      "main": [
+        [
+          {
+            "node": "Merge InvenTree Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update InvenTree Part": {
+      "main": [
+        [
+          {
+            "node": "Merge InvenTree Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge InvenTree Results": {
+      "main": [
+        [
+          {
+            "node": "Prepare ERPNext Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare ERPNext Data": {
+      "main": [
+        [
+          {
+            "node": "Log Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "Industrial",
+      "id": "industrial-tag"
+    },
+    {
+      "name": "Asset Tracking",
+      "id": "asset-tag"
+    },
+    {
+      "name": "PLC",
+      "id": "plc-tag"
+    },
+    {
+      "name": "InvenTree",
+      "id": "inventree-tag"
+    },
+    {
+      "name": "ERPNext",
+      "id": "erpnext-tag"
+    }
+  ],
+  "meta": {
+    "instanceId": "n8n_mautic_erpnext"
+  },
+  "pinData": {},
+  "versionId": "1",
+  "triggerCount": 1,
+  "active": false
+}

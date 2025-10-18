@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IEC 62443 Educational Series - Part {email_number}</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5; }
+        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #003366; padding: 30px 20px; text-align: center; }
+        .header .logo { color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 2px; }
+        .series-badge { background-color: #FF6600; color: #ffffff; padding: 5px 15px; border-radius: 20px; display: inline-block; margin-top: 10px; font-size: 14px; }
+        .content { padding: 40px 30px; }
+        .content h1 { color: #003366; font-size: 24px; margin: 0 0 20px 0; }
+        .content h2 { color: #0066CC; font-size: 20px; margin: 30px 0 15px 0; }
+        .content p { margin: 0 0 15px 0; color: #333333; line-height: 1.6; }
+        .button { display: inline-block; padding: 15px 30px; background-color: #FF6600; color: #ffffff !important; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+        .callout { background-color: #FFF4E6; border-left: 4px solid #FF6600; padding: 20px; margin: 20px 0; }
+        .callout h3 { color: #FF6600; margin: 0 0 10px 0; font-size: 18px; }
+        .checklist { background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0; }
+        .checklist ul { margin: 10px 0; padding-left: 20px; }
+        .checklist li { margin: 10px 0; padding-left: 10px; }
+        .footer { background-color: #f5f5f5; padding: 30px 20px; text-align: center; font-size: 14px; color: #666666; }
+        .footer a { color: #0066CC; text-decoration: none; }
+        @media only screen and (max-width: 600px) {
+            .content { padding: 20px 15px !important; }
+            .content h1 { font-size: 20px !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" class="header">
+            <tr>
+                <td align="center">
+                    <div class="logo">INSA AUTOMATION</div>
+                    <div class="series-badge">IEC 62443 Series • Part {email_number} of 5</div>
+                </td>
+            </tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" class="content">
+            <tr>
+                <td>
+                    <!-- EMAIL 1: Introduction to IEC 62443 -->
+                    <!-- Use {email_number}=1 -->
+                    <div class="email-1" style="display: none;">
+                        <h1>Understanding IEC 62443: Your Industrial Cybersecurity Roadmap</h1>
+
+                        <p>Hi {contactfield=firstname},</p>
+
+                        <p>Welcome to our 5-part series on IEC 62443 - the global standard for industrial cybersecurity. Over the next few weeks, we'll guide you through everything you need to know about securing your OT environment.</p>
+
+                        <h2>What is IEC 62443?</h2>
+                        <p>IEC 62443 is a comprehensive set of standards designed to address cybersecurity for industrial automation and control systems (IACS). It provides a flexible framework applicable to all industrial sectors.</p>
+
+                        <div class="callout">
+                            <h3>🎯 Why It Matters</h3>
+                            <p><strong>67% of industrial facilities</strong> experienced at least one cybersecurity incident in the past year. IEC 62443 compliance reduces your risk by up to 85%.</p>
+                        </div>
+
+                        <h2>The Four Pillars of IEC 62443</h2>
+                        <div class="checklist">
+                            <ul>
+                                <li><strong>General:</strong> Concepts, models, and terminology</li>
+                                <li><strong>Policies & Procedures:</strong> Management system requirements</li>
+                                <li><strong>System:</strong> Security requirements for control systems</li>
+                                <li><strong>Component:</strong> Requirements for individual products</li>
+                            </ul>
+                        </div>
+
+                        <p><strong>Next in this series:</strong> In Part 2, we'll dive into risk assessment and how to identify vulnerabilities in your existing infrastructure.</p>
+
+                        <a href="https://insaing.com/iec62443-assessment" class="button">Get a Free Assessment →</a>
+
+                        <p>Questions? Reply to this email or schedule a call with our IEC 62443 experts.</p>
+
+                        <p>Best regards,<br>
+                        <strong>INSA Automation Security Team</strong></p>
+                    </div>
+
+                    <!-- EMAIL 2: Risk Assessment -->
+                    <!-- Use {email_number}=2 -->
+                    <div class="email-2" style="display: none;">
+                        <h1>IEC 62443 Risk Assessment: Finding Your Vulnerabilities</h1>
+
+                        <p>Hi {contactfield=firstname},</p>
+
+                        <p>In Part 1, we introduced IEC 62443. Today, we'll show you how to conduct a proper risk assessment to identify security gaps in your OT environment.</p>
+
+                        <h2>The 5-Step Risk Assessment Process</h2>
+
+                        <div class="checklist">
+                            <ul>
+                                <li><strong>Step 1: Asset Inventory</strong> - Identify all IACS components (PLCs, HMIs, SCADA servers)</li>
+                                <li><strong>Step 2: Threat Modeling</strong> - Understand attack vectors and threat actors</li>
+                                <li><strong>Step 3: Vulnerability Scan</strong> - Use tools like Nessus, OpenVAS, or Trivy</li>
+                                <li><strong>Step 4: Risk Calculation</strong> - Determine likelihood × impact for each threat</li>
+                                <li><strong>Step 5: Prioritization</strong> - Focus on high-risk vulnerabilities first</li>
+                            </ul>
+                        </div>
+
+                        <div class="callout">
+                            <h3>⚠️ Common Vulnerabilities We Find</h3>
+                            <ul>
+                                <li>Default credentials on industrial controllers</li>
+                                <li>Unpatched SCADA software (average 3+ years old)</li>
+                                <li>Direct internet exposure of HMI systems</li>
+                                <li>No network segmentation between IT and OT</li>
+                                <li>Lack of access control and audit logging</li>
+                            </ul>
+                        </div>
+
+                        <p><strong>Free Tool:</strong> Download our IEC 62443 Risk Assessment Template to get started.</p>
+
+                        <a href="https://insaing.com/download/risk-assessment-template" class="button">Download Template →</a>
+
+                        <p><strong>Next in this series:</strong> Part 3 covers network segmentation and the Purdue Model.</p>
+
+                        <p>Stay secure,<br>
+                        <strong>INSA Automation Security Team</strong></p>
+                    </div>
+
+                    <!-- Note: Create separate HTML files for emails 3-5 with similar structure -->
+                    <!-- EMAIL 3: Network Segmentation -->
+                    <!-- EMAIL 4: Access Control & Authentication -->
+                    <!-- EMAIL 5: Continuous Monitoring & Compliance -->
+
+                    <p><em>This is a template. Replace {email_number} with 1-5 to show the corresponding email content.</em></p>
+                </td>
+            </tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" class="footer">
+            <tr>
+                <td align="center">
+                    <p><strong>INSA Automation Corp</strong></p>
+                    <p>Industrial Cybersecurity Specialists</p>
+                    <p>Email: <a href="mailto:security@insaing.com">security@insaing.com</a> | Web: <a href="https://insaing.com">insaing.com</a></p>
+                    <p style="font-size: 12px; color: #999999; margin-top: 20px;">
+                        <a href="{unsubscribe_url}">Unsubscribe</a> | <a href="{webview_url}">View in browser</a>
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,482 @@
+{
+  "name": "4. Event Registration: ERPNext → Mautic",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "name": "Every 30 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "id": "schedule-trigger"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://100.100.101.1:9000/api/resource/Event Participant",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "filters",
+                "value": "[[\"creation\", \">\", \"{{ $now.minus({ minutes: 30 }).toISO() }}\"]]"
+              },
+              {
+                "name": "fields",
+                "value": "[\"name\",\"reference_doctype\",\"reference_docname\",\"email\",\"participant_name\"]"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Get New Event Registrations",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "id": "get-registrations",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "erpnext-api",
+          "name": "ERPNext API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process event registrations and fetch event details\nconst registrations = $input.all();\nconst results = [];\n\nfor (const reg of registrations) {\n  const data = reg.json;\n  \n  // Only process if we have email and event reference\n  if (data.email && data.reference_docname) {\n    results.push({\n      json: {\n        participant_name: data.participant_name || 'Unknown',\n        participant_email: data.email,\n        event_id: data.reference_docname,\n        registration_id: data.name,\n        registration_time: new Date().toISOString()\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "name": "Extract Registration Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300],
+      "id": "extract-registration"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://100.100.101.1:9000/api/resource/Event/{{ $json.event_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "name": "Get Event Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 300],
+      "id": "get-event-details",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "erpnext-api",
+          "name": "ERPNext API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine registration and event data\nconst regData = $('Extract Registration Data').item.json;\nconst eventData = $input.first().json.data || $input.first().json;\n\nconst nameParts = (regData.participant_name || '').split(' ');\nconst firstName = nameParts[0] || '';\nconst lastName = nameParts.slice(1).join(' ') || '';\n\nreturn [{\n  json: {\n    // Participant info\n    email: regData.participant_email,\n    firstname: firstName,\n    lastname: lastName,\n    full_name: regData.participant_name,\n    \n    // Event info\n    event_name: eventData.subject || eventData.event_name || 'Unknown Event',\n    event_type: eventData.event_type || 'Webinar',\n    event_date: eventData.starts_on || eventData.event_date,\n    event_location: eventData.event_location || 'Virtual',\n    event_description: eventData.description || '',\n    \n    // Metadata\n    registration_id: regData.registration_id,\n    event_id: regData.event_id,\n    registration_time: regData.registration_time,\n    \n    // Tags for Mautic\n    tags: ['Event Registered', eventData.event_type || 'Webinar', eventData.subject || 'Event']\n  }\n}];"
+      },
+      "name": "Prepare Contact Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "id": "prepare-contact"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://100.100.101.1:9700/api/contacts?search=email:{{ $json.email }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "name": "Check if Contact Exists",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300],
+      "id": "check-contact",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mautic-api",
+          "name": "Mautic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Determine if contact exists and get ID, or prepare for creation\nconst contactData = $('Prepare Contact Data').item.json;\nconst searchResult = $input.first().json;\nconst contacts = searchResult.contacts || {};\n\nconst existingContactId = Object.keys(contacts)[0];\n\nif (existingContactId) {\n  // Contact exists - update with event registration info\n  return [{\n    json: {\n      ...contactData,\n      mautic_contact_id: existingContactId,\n      action: 'update',\n      existing_points: contacts[existingContactId].points || 0\n    }\n  }];\n} else {\n  // Contact doesn't exist - create new\n  return [{\n    json: {\n      ...contactData,\n      action: 'create',\n      existing_points: 0\n    }\n  }];\n}"
+      },
+      "name": "Decide Create or Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 300],
+      "id": "decide-action"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action }}",
+              "operation": "equals",
+              "value2": "create"
+            }
+          ]
+        }
+      },
+      "name": "Route: Create or Update",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1650, 300],
+      "id": "route-action"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.100.101.1:9700/api/contacts/new",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "firstname",
+              "value": "={{ $json.firstname }}"
+            },
+            {
+              "name": "lastname",
+              "value": "={{ $json.lastname }}"
+            },
+            {
+              "name": "tags",
+              "value": "={{ $json.tags.join(',') }}"
+            },
+            {
+              "name": "points",
+              "value": "10"
+            },
+            {
+              "name": "last_event_registered",
+              "value": "={{ $json.event_name }}"
+            },
+            {
+              "name": "last_event_date",
+              "value": "={{ $json.event_date }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Create New Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 200],
+      "id": "create-contact",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mautic-api",
+          "name": "Mautic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=http://100.100.101.1:9700/api/contacts/{{ $json.mautic_contact_id }}/edit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tags",
+              "value": "={{ $json.tags.join(',') }}"
+            },
+            {
+              "name": "points",
+              "value": "={{ $json.existing_points + 10 }}"
+            },
+            {
+              "name": "last_event_registered",
+              "value": "={{ $json.event_name }}"
+            },
+            {
+              "name": "last_event_date",
+              "value": "={{ $json.event_date }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Existing Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 400],
+      "id": "update-contact",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mautic-api",
+          "name": "Mautic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get contact ID from either create or update response\nconst data = $('Decide Create or Update').item.json;\nconst response = $input.first().json;\n\nlet contactId;\nif (data.action === 'create') {\n  contactId = response.contact?.id || response.id;\n} else {\n  contactId = data.mautic_contact_id;\n}\n\nreturn [{\n  json: {\n    ...data,\n    mautic_contact_id: contactId,\n    ready_for_email: true\n  }\n}];"
+      },
+      "name": "Merge Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2050, 300],
+      "id": "merge-results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// NOTE: Email sending requires email ID from Mautic\n// This is a placeholder - you must create the event confirmation\n// email template in Mautic first and replace email_id below\n\nconst data = $input.first().json;\n\n// Placeholder email ID (must be created in Mautic)\nconst eventConfirmationEmailId = 1; // Replace with actual Mautic email ID\n\nreturn [{\n  json: {\n    ...data,\n    email_id: eventConfirmationEmailId,\n    email_template: 'Event Registration Confirmation',\n    ready_to_send: true\n  }\n}];"
+      },
+      "name": "Prepare Email Send",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2250, 300],
+      "id": "prepare-email"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://100.100.101.1:9700/api/emails/{{ $json.email_id }}/contact/{{ $json.mautic_contact_id }}/send",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "name": "Send Event Confirmation Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2450, 300],
+      "id": "send-email",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mautic-api",
+          "name": "Mautic API"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create execution summary\nconst data = $('Prepare Email Send').item.json;\nconst emailResult = $input.first().json;\n\nreturn [{\n  json: {\n    workflow: 'Event Registration: ERPNext → Mautic',\n    execution_time: new Date().toISOString(),\n    participant_name: data.full_name,\n    participant_email: data.email,\n    event_name: data.event_name,\n    event_date: data.event_date,\n    event_type: data.event_type,\n    mautic_contact_id: data.mautic_contact_id,\n    action_taken: data.action === 'create' ? 'NEW_CONTACT_CREATED' : 'EXISTING_CONTACT_UPDATED',\n    confirmation_email_sent: emailResult.success !== false ? 'YES' : 'FAILED',\n    points_awarded: 10,\n    status: 'COMPLETED'\n  }\n}];"
+      },
+      "name": "Log Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2650, 300],
+      "id": "log-summary"
+    }
+  ],
+  "connections": {
+    "Every 30 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Get New Event Registrations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get New Event Registrations": {
+      "main": [
+        [
+          {
+            "node": "Extract Registration Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Registration Data": {
+      "main": [
+        [
+          {
+            "node": "Get Event Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Event Details": {
+      "main": [
+        [
+          {
+            "node": "Prepare Contact Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Contact Data": {
+      "main": [
+        [
+          {
+            "node": "Check if Contact Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Contact Exists": {
+      "main": [
+        [
+          {
+            "node": "Decide Create or Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Create or Update": {
+      "main": [
+        [
+          {
+            "node": "Route: Create or Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route: Create or Update": {
+      "main": [
+        [
+          {
+            "node": "Create New Contact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Existing Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create New Contact": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Existing Contact": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Results": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email Send": {
+      "main": [
+        [
+          {
+            "node": "Send Event Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Event Confirmation Email": {
+      "main": [
+        [
+          {
+            "node": "Log Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "Events",
+      "id": "events-tag"
+    },
+    {
+      "name": "Registration",
+      "id": "registration-tag"
+    },
+    {
+      "name": "ERPNext",
+      "id": "erpnext-tag"
+    },
+    {
+      "name": "Mautic",
+      "id": "mautic-tag"
+    },
+    {
+      "name": "Email",
+      "id": "email-tag"
+    }
+  ],
+  "meta": {
+    "instanceId": "n8n_mautic_erpnext"
+  },
+  "pinData": {},
+  "versionId": "1",
+  "triggerCount": 1,
+  "active": false
+}

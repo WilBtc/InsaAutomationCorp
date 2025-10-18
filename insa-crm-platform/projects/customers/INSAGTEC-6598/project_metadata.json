@@ -1,0 +1,193 @@
+{
+  "project_info": {
+    "project_code": "INSAGTEC-6598",
+    "project_name": "PAD-2 Test Separator - Instrumentation and Control System",
+    "customer": "Deilim Genesis Fertilizers",
+    "project_type": "Industrial Automation - Oil & Gas Separator",
+    "status": "Completed",
+    "date_imported": "2025-10-18T17:48:00Z",
+    "source": "Google Drive",
+    "source_url": "https://drive.google.com/drive/folders/19jJL8PcCuQFl5gHqMsHr3trfYk-V8u3z",
+    "imported_by": "Claude Code - INSA Automation DevSecOps",
+    "storage_path": "/home/wil/crm-files/INSAGTEC-6598"
+  },
+  "project_statistics": {
+    "total_files": 63,
+    "total_size": "66 MB",
+    "file_categories": {
+      "quality": 2,
+      "instrumentation_control": 37,
+      "electrical": 4,
+      "mechanical": 21
+    }
+  },
+  "project_structure": {
+    "1_QUALITY": {
+      "description": "Quality plans and engineering dossiers",
+      "documents": [
+        "INSAGTEC-6598-INS-DC01_Plan_de_calidad.pdf",
+        "INSAGTEC-6598-GRL-LT01_Dossier_ingeniería.pdf"
+      ]
+    },
+    "2_INSTRUMENTATION_AND_CONTROL": {
+      "description": "Complete instrumentation and control system documentation",
+      "subdirectories": {
+        "2.1_DOCUMENTS": {
+          "count": 15,
+          "includes": [
+            "Control Philosophy",
+            "PLC Specifications (Allen-Bradley)",
+            "Datasheets (Level, Pressure, Temperature sensors)",
+            "Panel specifications"
+          ]
+        },
+        "2.2_LIST_OF_DOCUMENTS": {
+          "count": 7,
+          "includes": [
+            "Material List",
+            "Instrument Index",
+            "Cause-Effect Matrix",
+            "I/O Allocation",
+            "Electrical channels",
+            "Process lines"
+          ]
+        },
+        "2.3_DRAWINGS": {
+          "count": 15,
+          "includes": [
+            "P&ID (Piping and Instrumentation Diagram)",
+            "Control Architecture",
+            "PLC wiring diagrams",
+            "I/O module connections (DI, AI, DO, AO, Modbus)"
+          ]
+        },
+        "2.4_PROGRAM_BACKUP": {
+          "count": 2,
+          "critical_files": [
+            {
+              "file": "PAD2_SEP.ACD",
+              "size": "3.85 MB",
+              "type": "Allen-Bradley PLC program backup",
+              "platform": "RSLogix/Studio 5000"
+            },
+            {
+              "file": "Separator_PAD2_V10.mer",
+              "size": "4.29 MB",
+              "type": "Weintek HMI project backup",
+              "platform": "EasyBuilder Pro"
+            }
+          ]
+        }
+      }
+    },
+    "3_ELECTRICAL": {
+      "description": "Electrical systems and low voltage panel specifications",
+      "documents": [
+        "Low Voltage Panel Specifications",
+        "Single-line diagrams",
+        "Electromechanical drawings (TBT, Junction Box)"
+      ]
+    },
+    "4_MECHANICAL": {
+      "description": "Mechanical drawings and layouts",
+      "drawings": [
+        "Isometric drawings (21 files)",
+        "Shelter layouts (PAD-2)",
+        "Equipment location plans",
+        "Fiber optic routes",
+        "Flow meter installation proposals"
+      ]
+    }
+  },
+  "technical_details": {
+    "control_system": {
+      "plc": "Allen-Bradley (Rockwell Automation)",
+      "hmi": "Weintek (EasyBuilder Pro)",
+      "communication": "Modbus RTU/TCP",
+      "io_modules": [
+        "16 Digital Inputs",
+        "16 Analog Inputs (4-20mA)",
+        "8 Digital Outputs",
+        "4 Analog Outputs"
+      ]
+    },
+    "instrumentation": {
+      "level_sensors": "Radar, Displacer, Level Switches",
+      "pressure_sensors": "Pressure transmitters, Pressure switches, Gauges",
+      "temperature_sensors": "RTDs, Thermocouples, Glass thermometers",
+      "flow_sensors": "Differential pressure, Vortex, Turbine"
+    },
+    "process_equipment": {
+      "separator_type": "Three-phase test separator (Oil, Water, Gas)",
+      "location": "PAD-2",
+      "control_philosophy": "Automated control with PLC/HMI SCADA system"
+    }
+  },
+  "compliance_standards": {
+    "isa": "ISA-5.1-2024 (Instrumentation symbols and identification)",
+    "api": [
+      "API RP 12J (Oil and Gas Separators)",
+      "API RP 14C (Analysis, Design, Installation of Safety Systems)"
+    ],
+    "electrical": "IEC 61131-3 (PLC programming)",
+    "hmi": "ISA-101 (Human Machine Interfaces)"
+  },
+  "project_phases": [
+    {
+      "phase": "1. Quality & Planning",
+      "status": "Complete",
+      "deliverables": ["Quality Plan", "Engineering Dossier"]
+    },
+    {
+      "phase": "2. Instrumentation & Control Design",
+      "status": "Complete",
+      "deliverables": [
+        "Control Philosophy",
+        "P&ID",
+        "Instrument Index",
+        "I/O Allocation",
+        "Cause-Effect Matrix",
+        "PLC/HMI programs"
+      ]
+    },
+    {
+      "phase": "3. Electrical Design",
+      "status": "Complete",
+      "deliverables": ["Panel specifications", "Electrical diagrams"]
+    },
+    {
+      "phase": "4. Mechanical Design",
+      "status": "Complete",
+      "deliverables": ["Isometric drawings", "Layout plans", "Shelter design"]
+    }
+  ],
+  "related_projects": {
+    "separador_trifasico_pid": {
+      "project": "P&ID Separador Trifásico de Petróleo - Control Electrónico",
+      "status": "Completed 2025-10-18",
+      "files": "/home/wil/pid-generator/",
+      "email_sent": "j.casas@insaing.com",
+      "note": "Generic three-phase separator design (28 components, ISA-5.1 compliant)"
+    }
+  },
+  "next_steps": {
+    "crm_integration": [
+      "Create/verify customer in ERPNext CRM",
+      "Create project record for INSAGTEC-6598",
+      "Attach documents to customer/project records",
+      "Link to quotations/opportunities if applicable"
+    ],
+    "documentation": [
+      "Create RAG memory documentation for INSA project workflow",
+      "Document project management methodology",
+      "Share knowledge with AI agents"
+    ]
+  },
+  "notes": [
+    "This project demonstrates INSA Automation Corp's complete project lifecycle",
+    "Structure follows industry best practices: Quality → Engineering → Execution",
+    "All technical documentation is production-ready and traceable",
+    "PLC/HMI backups ensure program recovery capability",
+    "Project serves as template for future separator automation projects"
+  ]
+}

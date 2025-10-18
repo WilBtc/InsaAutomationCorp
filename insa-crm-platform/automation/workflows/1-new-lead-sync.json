@@ -1,0 +1,145 @@
+{
+  "name": "1. New Lead Sync (ERPNext → Mautic)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "node-schedule-1",
+      "name": "Schedule Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://100.100.101.1:9000/api/resource/Lead",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "[\"name\",\"lead_name\",\"email_id\",\"company_name\",\"phone\",\"source\",\"status\"]"
+            },
+            {
+              "name": "filters",
+              "value": "=[[\"modified\",\">\",\"{{ $now.minus({ hours: 1 }).toISO() }}\"]]"
+            }
+          ]
+        }
+      },
+      "id": "node-erpnext-get-1",
+      "name": "Get ERPNext Leads",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "filter-qualified",
+              "leftValue": "={{ $json.data && $json.data[0] ? $json.data[0].status : '' }}",
+              "rightValue": "Qualified",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-filter-1",
+      "name": "Only Qualified Leads",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://100.100.101.1:9700/api/contacts/new",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"email\": $json.data[0].email_id,\n  \"firstname\": $json.data[0].lead_name.split(' ')[0],\n  \"lastname\": $json.data[0].lead_name.split(' ')[1] || '',\n  \"company\": $json.data[0].company_name,\n  \"phone\": $json.data[0].phone,\n  \"tags\": [\"ERPNext\", $json.data[0].source]\n} }}"
+      },
+      "id": "node-mautic-create-1",
+      "name": "Create Mautic Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Get ERPNext Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get ERPNext Leads": {
+      "main": [
+        [
+          {
+            "node": "Only Qualified Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only Qualified Leads": {
+      "main": [
+        [
+          {
+            "node": "Create Mautic Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "ERPNext",
+      "id": "tag-erpnext"
+    },
+    {
+      "name": "Mautic",
+      "id": "tag-mautic"
+    },
+    {
+      "name": "Lead Sync",
+      "id": "tag-lead-sync"
+    }
+  ],
+  "triggerCount": 1,
+  "versionId": "1"
+}
