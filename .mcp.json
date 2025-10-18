@@ -92,6 +92,19 @@
         "PATH": "/home/wil/.local/bin:/usr/local/bin:/usr/bin:/bin"
       },
       "_description": "CadQuery CAD MCP for INSA Automation (bertvanbrakel) - Production-ready headless 3D CAD: execute scripts, STEP/STL/SVG export, part library management, BOM-driven CAD generation for ERPNext/InvenTree integration"
+    },
+    "mautic-admin": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/mautic-admin/venv/bin/python",
+      "args": ["/home/wil/mcp-servers/mautic-admin/server.py"],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1",
+        "MAUTIC_URL": "http://100.100.101.1:9700",
+        "MAUTIC_USERNAME": "admin",
+        "MAUTIC_PASSWORD": "mautic_admin_2025"
+      },
+      "_description": "Mautic Marketing Automation Admin for INSA Automation - 27 COMPLETE ADMINISTRATIVE TOOLS: CLI installation, system config, contacts (CRUD), segments (create/update), campaigns (trigger/rebuild), email queue, broadcasts, maintenance, cleanup, webhooks, imports, stats - Full programmatic control via CLI + REST API"
     }
   }
 }

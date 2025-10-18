@@ -1,6 +1,6 @@
 # iac1 Server - Quick Reference
-# Version: 4.5 | Updated: October 18, 2025 01:30 UTC
-# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + Inventory + Projects + AI Agents
+# Version: 4.6 | Updated: October 18, 2025 02:00 UTC
+# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + Inventory + Projects + Marketing Automation + AI Agents
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -94,6 +94,36 @@ INSA CRM System (DEPLOYED - Oct 17, 2025):
   Docs: ~/insa-crm-system/README.md
   Quick Start: ~/insa-crm-system/QUICKSTART.md
 
+Mautic Marketing Automation (DEPLOYED - Phase 4 Complete - Oct 18, 2025):
+  Complete Guide: ~/MAUTIC_MCP_COMPLETE_GUIDE.md ⭐ PRIMARY DOC (48 KB)
+  Deployment Report: ~/PHASE4_MAUTIC_DEPLOYMENT_COMPLETE.md (Oct 18)
+  Evaluation: ~/PHASE4_MARKETING_AUTOMATION_EVALUATION.md
+  Web UI: http://100.100.101.1:9700 (✅ ACTIVE)
+  Version: 5.2.1 (latest stable)
+  MCP Server: ~/mcp-servers/mautic-admin/server.py (31 KB)
+  Tools: 27 (100% complete - master admin control)
+  Database: MariaDB 11.6 (port 3306)
+  Automation: 13 cron jobs (✅ RESOURCE PROTECTED)
+  Status: ✅ PRODUCTION READY - Full programmatic control
+
+n8n Workflow Automation (DEPLOYED - Phase 5 Complete - Oct 18, 2025):
+  Integration Guide: ~/PHASE5_N8N_ERPNEXT_MAUTIC_INTEGRATION.md (Oct 18)
+  Web UI: http://100.100.101.1:5678 (✅ RUNNING)
+  Version: 1.115.3 (latest)
+  Container: n8n_mautic_erpnext
+  Resource Limits: 1GB RAM, 1 CPU core
+  Purpose: ERPNext ↔ Mautic bidirectional sync
+  Workflows: 5 recommended (lead sync, scoring, conversion, events, unsubscribe)
+  Status: ✅ DEPLOYED - Ready for workflow configuration
+
+Resource Protection (DEPLOYED - Oct 18, 2025):
+  Summary Report: ~/RESOURCE_PROTECTION_COMPLETE.md ⭐ CRITICAL
+  PHP-FPM Limits: 1GB RAM, 1 CPU, 50 tasks max
+  Mautic Cron Limits: 256-512MB per job, 30-50% CPU, timeout protection
+  Process Monitor: ~/mautic_process_monitor.sh (every 5 min)
+  Monitor Log: /var/log/mautic_process_monitor.log
+  Status: ✅ ACTIVE - 100% coverage, multi-layer protection
+
 Infrastructure Docs (on INSA ERP):
   Network: ~/INSA_INFRASTRUCTURE_MAP_2025.md
   Status: ~/INSA_INFRASTRUCTURE_STATUS_2025.md
@@ -110,11 +140,11 @@ Security (iac1):
   Security Logs: /var/log/{suricata,aide_check,rkhunter_scan,lynis_audit}.log
 ```
 
-## 🤖 MCP SERVERS (8 Active)
+## 🤖 MCP SERVERS (10 Active)
 ```yaml
-Config: ~/.mcp.json (commit 4381304)
+Config: ~/.mcp.json
 Backup: ~/.mcp.json.backup-*
-Total: 8 active MCP servers
+Total: 10 active MCP servers
 
 azure-vm-monitor:
   Path: ~/mcp-servers/azure-vm-monitor/
@@ -185,6 +215,26 @@ inventree-crm (Phase 2 Complete - Oct 18, 2025):
   Docs: ~/INVENTREE_DEPLOYMENT_RESOLVED.md
   Commit: 4381304
   Integration: P&ID generator ready, Quote Agent unblocked
+
+cadquery-mcp:
+  Path: ~/mcp-servers/mcp-cadquery/server_stdio.sh
+  Size: ~15MB
+  Purpose: Headless 3D CAD generation (bertvanbrakel/mcp-cadquery)
+  Status: ✅ PRODUCTION READY
+  Docs: ~/mcp-servers/mcp-cadquery/README.md
+  Integration: BOM-driven CAD for ERPNext/InvenTree
+
+mautic-admin (Phase 4 Complete - Oct 18, 2025):
+  Path: ~/mcp-servers/mautic-admin/server.py
+  Size: 31 KB
+  Purpose: Marketing automation master admin - FULL PROGRAMMATIC CONTROL
+  Tools: 27 tools (100% complete)
+  Status: ✅ PRODUCTION READY - CLI + API dual execution
+  Web UI: http://100.100.101.1:9700 ✅ ACTIVE
+  Database: MariaDB 11.6 (port 3306)
+  Automation: 13 cron jobs (segments, campaigns, emails, maintenance)
+  Docs: ~/MAUTIC_MCP_COMPLETE_GUIDE.md ⭐ PRIMARY (48 KB)
+  Deployment: ~/PHASE4_MAUTIC_DEPLOYMENT_COMPLETE.md
 ```
 
 ## ⚡ ACTIVE SYSTEMS
@@ -203,6 +253,7 @@ Automation:
   - DefectDojo IEC 62443: Every 1 hour (Trivy scans + FR/SR tagging)
   - Container Orchestrator: Every 5 min
   - Host Config Agent: Every 5 min (resource inventory)
+  - Mautic Marketing: 13 cron jobs (campaigns, emails, segments, maintenance)
   - Email Alerts: Disk, services, backups
   - Daily Reports: 8 AM comprehensive status
 
@@ -274,7 +325,7 @@ Git:
   Commit: "Commit with message: ..."
 ```
 
-## 🚦 STATUS (Oct 18, 2025 - 00:30 UTC)
+## 🚦 STATUS (Oct 18, 2025 - 02:00 UTC)
 - ✅ Azure Agent: 24/7 monitoring via Tailscale VPN
 - ✅ Azure VM: Integrated into Tailscale (100.107.50.52)
 - ✅ DefectDojo: **SIMPLIFIED** - Celery disabled due to Calico/K8s network conflict
@@ -309,13 +360,23 @@ Git:
   - Lead Scoring: 0-100 (5 criteria, AI-powered)
   - Process: nohup (PID 737557), logs: /tmp/insa-crm.log
   - Git: ~/insa-crm-system/ (committed - 3,870 lines)
+- ✅ Mautic Marketing Automation: Phase 4 Complete (27 tools, 100% complete) ✅ PRODUCTION READY
+  - Web UI: http://100.100.101.1:9700 ✅ ACTIVE
+  - Version: 5.2.1 (latest stable)
+  - Database: MariaDB 11.6 (port 3306, 157 tables)
+  - MCP Tools: 27 (CLI + API dual execution - master admin control)
+  - Automation: 13 cron jobs (campaigns every 5min, emails every 5min, segments every 15min)
+  - Status: Contact creation tested ✅, API authentication working ✅
+  - Docs: ~/MAUTIC_MCP_COMPLETE_GUIDE.md (48 KB complete guide)
+  - Deployment: ~/PHASE4_MAUTIC_DEPLOYMENT_COMPLETE.md
+  - Git: ~/mcp-servers/mautic-admin/ (pending commit)
 - ✅ Container Orchestrator: 24/7 lifecycle management
 - ✅ Host Config Agent: 24/7 resource tracking (ZERO API cost)
   - Database: /var/lib/host-config-agent/host_config.db
   - Claude Code subprocess integration working
 - ✅ Security Hardening: Suricata IDS + Wazuh FIM + SSH restricted
-- ✅ MCP Servers: 8 active servers (InvenTree added)
-- ✅ Documentation: v4.4 - InvenTree Phase 2 Complete (100%)
+- ✅ MCP Servers: 10 active servers (Mautic + CadQuery added)
+- ✅ Documentation: v4.6 - Mautic Phase 4 Complete (100%)
 - ✅ Learning System: Evolutionary AI with SQLite (3 databases)
 - ⚠️ INSA ERP: Offline (Tailscale relay)
 - 🐳 Docker: 28 containers tracked
@@ -346,22 +407,28 @@ Test Results: 4/4 email templates working
 ```
 
 ---
-**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + AI Agents
+**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + Inventory + Marketing Automation + AI Agents
 **Access:** ssh 100.100.101.1
 **Sudo:** [REDACTED]***
-**Version:** 4.4 | Updated: October 18, 2025 00:30 UTC
+**Version:** 4.6 | Updated: October 18, 2025 02:00 UTC
 
 ## 🎯 QUICK LINKS
 - **INSA CRM System:** http://100.100.101.1:8003 (✅ AI Agents)
 - **INSA CRM API Docs:** http://100.100.101.1:8003/api/docs
 - **DefectDojo Web UI:** http://100.100.101.1:8082 (✅ ACTIVE)
 - **ERPNext CRM Web UI:** http://100.100.101.1:9000 (✅ ACTIVE)
-- **InvenTree Inventory:** http://100.100.101.1:9600 (✅ NEW - OPERATIONAL)
+- **InvenTree Inventory:** http://100.100.101.1:9600 (✅ OPERATIONAL)
+- **Mautic Marketing:** http://100.100.101.1:9700 (✅ PHASE 4 COMPLETE)
+- **n8n Workflows:** http://100.100.101.1:5678 (✅ NEW - PHASE 5 COMPLETE)
 - **IEC 62443 Dashboard:** http://100.100.101.1:3004
-- **INSA CRM Guide:** `~/insa-crm-system/README.md` (NEW - Oct 17)
+- **INSA CRM Guide:** `~/insa-crm-system/README.md` (Oct 17)
 - **ERPNext CRM Guide:** `~/PHASE3_ERPNEXT_PROJECTS_COMPLETE.md` (Phase 3b - NEW)
 - **ERPNext Phase 3a Guide:** `~/QUOTATION_TOOLS_ADDED.md`
-- **InvenTree Deployment:** `~/INVENTREE_DEPLOYMENT_RESOLVED.md` (✅ NEW - Blocker resolved)
+- **InvenTree Deployment:** `~/INVENTREE_DEPLOYMENT_RESOLVED.md` (✅ Blocker resolved)
+- **Mautic Complete Guide:** `~/MAUTIC_MCP_COMPLETE_GUIDE.md` (✅ 48 KB, 27 tools)
+- **Mautic Deployment:** `~/PHASE4_MAUTIC_DEPLOYMENT_COMPLETE.md` (✅ Oct 18)
+- **n8n Integration Guide:** `~/PHASE5_N8N_ERPNEXT_MAUTIC_INTEGRATION.md` (✅ NEW - Phase 5)
+- **Resource Protection:** `~/RESOURCE_PROTECTION_COMPLETE.md` (✅ NEW - CRITICAL)
 - **CRM Audit Report:** `~/CRM_AUDIT_REPORT_OCT2025.md`
 - **CRM Gap Analysis:** `~/ERPNEXT_CRM_GAP_ANALYSIS.md`
 - **Celery/Redis Fix:** `~/DEFECTDOJO_CELERY_REDIS_ISSUE_RESOLVED.md`
