@@ -1,6 +1,6 @@
 # iac1 Server - Quick Reference
-# Version: 4.7 | Updated: October 18, 2025 17:30 UTC
-# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + Inventory + Projects + Marketing Automation + Workflow Automation + AI Agents
+# Version: 4.8 | Updated: October 18, 2025 18:15 UTC
+# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + Inventory + Projects + Marketing Automation + Workflow Automation + AI Agents + P&ID Generation
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -123,6 +123,15 @@ Resource Protection (DEPLOYED - Oct 18, 2025):
   Process Monitor: ~/mautic_process_monitor.sh (every 5 min)
   Monitor Log: /var/log/mautic_process_monitor.log
   Status: ✅ ACTIVE - 100% coverage, multi-layer protection
+
+INSA Project Management (NEW - Oct 18, 2025):
+  RAG Memory Workflow: ~/INSA_PROJECT_WORKFLOW_RAG_MEMORY.md ⭐ PRIMARY (35 KB, 900+ lines)
+  Project Completion Report: ~/PROYECTO_PID_CRM_WORKFLOW_COMPLETE.md
+  CRM Storage: ~/crm-files/ (project files organized by customer)
+  P&ID Generator: ~/pid-generator/ (separador_trifasico.py, email automation)
+  Reference Project: ~/crm-files/INSAGTEC-6598/ (63 files, 66 MB)
+  Git Repo: ~/google-drive-temp/ (committed)
+  Status: ✅ COMPLETE - 3 projects delivered (P&ID, INSAGTEC-6598, RAG docs)
 
 Infrastructure Docs (on INSA ERP):
   Network: ~/INSA_INFRASTRUCTURE_MAP_2025.md
@@ -444,38 +453,44 @@ Test Results: 4/4 email templates working
 ```
 
 ---
-**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + Inventory + Marketing Automation + Workflow Automation + AI Agents
+**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + Inventory + Marketing Automation + Workflow Automation + AI Agents + P&ID Generation
 **Access:** ssh 100.100.101.1
 **Sudo:** [REDACTED]***
-**Version:** 4.6 | Updated: October 18, 2025 02:00 UTC
+**Version:** 4.8 | Updated: October 18, 2025 18:15 UTC
 
 ## 🎯 QUICK LINKS
+
+### Web UIs
 - **INSA CRM System:** http://100.100.101.1:8003 (✅ AI Agents)
-- **INSA CRM API Docs:** http://100.100.101.1:8003/api/docs
-- **DefectDojo Web UI:** http://100.100.101.1:8082 (✅ ACTIVE)
-- **ERPNext CRM Web UI:** http://100.100.101.1:9000 (✅ ACTIVE)
-- **InvenTree Inventory:** http://100.100.101.1:9600 (✅ OPERATIONAL)
-- **Mautic Marketing:** http://100.100.101.1:9700 (✅ PHASE 4 COMPLETE)
-- **n8n Workflows:** http://100.100.101.1:5678 (✅ NEW - PHASE 5 COMPLETE)
-- **IEC 62443 Dashboard:** http://100.100.101.1:3004
-- **INSA CRM Guide:** `~/insa-crm-system/README.md` (Oct 17)
-- **ERPNext CRM Guide:** `~/PHASE3_ERPNEXT_PROJECTS_COMPLETE.md` (Phase 3b - NEW)
-- **ERPNext Phase 3a Guide:** `~/QUOTATION_TOOLS_ADDED.md`
-- **InvenTree Deployment:** `~/INVENTREE_DEPLOYMENT_RESOLVED.md` (✅ Blocker resolved)
-- **Mautic Complete Guide:** `~/MAUTIC_MCP_COMPLETE_GUIDE.md` (✅ 48 KB, 27 tools)
-- **Mautic Deployment:** `~/PHASE4_MAUTIC_DEPLOYMENT_COMPLETE.md` (✅ Oct 18)
-- **n8n Integration Guide:** `~/PHASE5_N8N_ERPNEXT_MAUTIC_INTEGRATION.md` (✅ NEW - Phase 5)
-- **Resource Protection:** `~/RESOURCE_PROTECTION_COMPLETE.md` (✅ NEW - CRITICAL)
-- **CRM Audit Report:** `~/CRM_AUDIT_REPORT_OCT2025.md`
-- **CRM Gap Analysis:** `~/ERPNEXT_CRM_GAP_ANALYSIS.md`
-- **Celery/Redis Fix:** `~/DEFECTDOJO_CELERY_REDIS_ISSUE_RESOLVED.md`
-- **Email Reporting:** `~/EMAIL_SELF_HOSTED_SETUP_COMPLETE.md` (✅ CONFIGURED)
-- **Autonomous Remediation:** `~/AUTONOMOUS_REMEDIATION_SYSTEM.md`
-- **IEC 62443 Compliance:** `~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md`
-- **Container Orchestrator:** `~/devops/container-orchestrator/README.md`
+- **DefectDojo:** http://100.100.101.1:8082 (✅ ACTIVE)
+- **ERPNext CRM:** http://100.100.101.1:9000 (✅ ACTIVE)
+- **InvenTree:** http://100.100.101.1:9600 (✅ OPERATIONAL)
+- **Mautic:** http://100.100.101.1:9700 (✅ PHASE 4)
+- **n8n:** http://100.100.101.1:5678 (✅ PHASE 5)
+- **IEC 62443:** http://100.100.101.1:3004
+
+### Key Documentation (See Git)
+- **INSA Project Workflow (RAG):** `~/INSA_PROJECT_WORKFLOW_RAG_MEMORY.md` ⭐ NEW (900+ lines)
+- **Project Completion Report:** `~/PROYECTO_PID_CRM_WORKFLOW_COMPLETE.md` ⭐ NEW
+- **Mautic Guide:** `~/MAUTIC_MCP_COMPLETE_GUIDE.md` (48 KB)
+- **n8n Integration:** `~/PHASE5_N8N_ERPNEXT_MAUTIC_INTEGRATION.md`
+- **Resource Protection:** `~/RESOURCE_PROTECTION_COMPLETE.md` ⭐ CRITICAL
+- **ERPNext Projects:** `~/PHASE3_ERPNEXT_PROJECTS_COMPLETE.md`
+- **IEC 62443:** `~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md`
 - **Host Config Agent:** `~/host-config-agent/README.md`
-- **Learning Databases:** 3 total - DefectDojo, Host Config, INSA CRM
-- **Git Repos:** `~/devops/devsecops-automation/defectdojo/` + `~/mcp-servers/erpnext-crm/` + `~/insa-crm-system/`
+- **INSA CRM:** `~/insa-crm-system/README.md`
+
+### Project Files
+- **CRM Storage:** `~/crm-files/` (organized by customer)
+- **P&ID Generator:** `~/pid-generator/separador_trifasico.py`
+- **Reference Project:** `~/crm-files/INSAGTEC-6598/` (63 files, 66 MB)
+
+### Git Repos
+- **DevSecOps:** `~/devops/devsecops-automation/`
+- **MCP Servers:** `~/mcp-servers/`
+- **INSA CRM:** `~/insa-crm-system/`
+
+### Best Practices
 - **Always:** Update docs in git, keep CLAUDE.md light with links
 - **Credit:** Made by Insa Automation Corp for OpSec
 
