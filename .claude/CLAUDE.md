@@ -1,6 +1,6 @@
 # iac1 Server - Quick Reference
-# Version: 4.3 | Updated: October 17, 2025 21:30 UTC
-# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + AI Agents
+# Version: 4.4 | Updated: October 18, 2025 00:30 UTC
+# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + Inventory + AI Agents
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -108,11 +108,11 @@ Security (iac1):
   Security Logs: /var/log/{suricata,aide_check,rkhunter_scan,lynis_audit}.log
 ```
 
-## 🤖 MCP SERVERS (7 Active)
+## 🤖 MCP SERVERS (8 Active)
 ```yaml
-Config: ~/.mcp.json (commit 4143b93)
+Config: ~/.mcp.json (commit 4381304)
 Backup: ~/.mcp.json.backup-*
-Total: 7 active MCP servers
+Total: 8 active MCP servers
 
 azure-vm-monitor:
   Path: ~/mcp-servers/azure-vm-monitor/
@@ -170,6 +170,18 @@ erpnext-crm (Phase 3 Complete - Oct 17, 2025):
   Web UI: http://100.100.101.1:9000
   Docs: ~/QUOTATION_TOOLS_ADDED.md
   Commit: 606429c
+
+inventree-crm (Phase 2 Complete - Oct 18, 2025):
+  Path: ~/mcp-servers/inventree-crm/server.py
+  Size: ~20MB
+  Purpose: Inventory management and BOM tracking - PRODUCTION READY
+  Tools: 5 tools (100% complete)
+  Status: ✅ OPERATIONAL - Blocker resolved (was thought blocked)
+  Web UI: http://100.100.101.1:9600
+  Containers: inventree_web + postgres + redis (host network mode)
+  Docs: ~/INVENTREE_DEPLOYMENT_RESOLVED.md
+  Commit: 4381304
+  Integration: P&ID generator ready, Quote Agent unblocked
 ```
 
 ## ⚡ ACTIVE SYSTEMS
@@ -259,7 +271,7 @@ Git:
   Commit: "Commit with message: ..."
 ```
 
-## 🚦 STATUS (Oct 17, 2025 - 20:00 UTC)
+## 🚦 STATUS (Oct 18, 2025 - 00:30 UTC)
 - ✅ Azure Agent: 24/7 monitoring via Tailscale VPN
 - ✅ Azure VM: Integrated into Tailscale (100.107.50.52)
 - ✅ DefectDojo: **SIMPLIFIED** - Celery disabled due to Calico/K8s network conflict
@@ -280,6 +292,13 @@ Git:
   - Complete Sales Cycle: Lead → Opportunity → Quotation → SO → DN → Invoice → Payment
   - Docs: ~/QUOTATION_TOOLS_ADDED.md
   - Git: ~/mcp-servers/erpnext-crm/ (commit 606429c)
+- ✅ InvenTree CRM: Phase 2 Complete (5 tools, 100% complete) ✅ PRODUCTION READY
+  - Web UI: http://100.100.101.1:9600 ✅ ACTIVE
+  - Containers: inventree_web + postgres:5434 + redis:6380 (host network mode)
+  - Tools: list_parts, get_part_details, create_bom, get_pricing, track_customer_equipment
+  - Blocker RESOLVED: Was thought blocked, but operational (commit 4381304)
+  - Docs: ~/INVENTREE_DEPLOYMENT_RESOLVED.md
+  - Git: ~/mcp-servers/inventree-crm/
 - ✅ INSA CRM System: AI-powered lead qualification (Phase 0 MVP)
   - FastAPI: http://100.100.101.1:8003 ✅ ACTIVE
   - Database: PostgreSQL (insa_crm) - 2 tables
@@ -291,8 +310,8 @@ Git:
   - Database: /var/lib/host-config-agent/host_config.db
   - Claude Code subprocess integration working
 - ✅ Security Hardening: Suricata IDS + Wazuh FIM + SSH restricted
-- ✅ MCP Servers: 7 active servers
-- ✅ Documentation: v4.3 - ERPNext CRM Phase 3 Complete (100%)
+- ✅ MCP Servers: 8 active servers (InvenTree added)
+- ✅ Documentation: v4.4 - InvenTree Phase 2 Complete (100%)
 - ✅ Learning System: Evolutionary AI with SQLite (3 databases)
 - ⚠️ INSA ERP: Offline (Tailscale relay)
 - 🐳 Docker: 28 containers tracked
@@ -326,16 +345,19 @@ Test Results: 4/4 email templates working
 **Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + AI Agents
 **Access:** ssh 100.100.101.1
 **Sudo:** [REDACTED]***
-**Version:** 4.3 | Updated: October 17, 2025 21:30 UTC
+**Version:** 4.4 | Updated: October 18, 2025 00:30 UTC
 
 ## 🎯 QUICK LINKS
-- **INSA CRM System:** http://100.100.101.1:8003 (✅ NEW - AI Agents)
+- **INSA CRM System:** http://100.100.101.1:8003 (✅ AI Agents)
 - **INSA CRM API Docs:** http://100.100.101.1:8003/api/docs
 - **DefectDojo Web UI:** http://100.100.101.1:8082 (✅ ACTIVE)
 - **ERPNext CRM Web UI:** http://100.100.101.1:9000 (✅ ACTIVE)
+- **InvenTree Inventory:** http://100.100.101.1:9600 (✅ NEW - OPERATIONAL)
 - **IEC 62443 Dashboard:** http://100.100.101.1:3004
 - **INSA CRM Guide:** `~/insa-crm-system/README.md` (NEW - Oct 17)
 - **ERPNext CRM Guide:** `~/QUOTATION_TOOLS_ADDED.md`
+- **InvenTree Deployment:** `~/INVENTREE_DEPLOYMENT_RESOLVED.md` (✅ NEW - Blocker resolved)
+- **CRM Audit Report:** `~/CRM_AUDIT_REPORT_OCT2025.md`
 - **CRM Gap Analysis:** `~/ERPNEXT_CRM_GAP_ANALYSIS.md`
 - **Celery/Redis Fix:** `~/DEFECTDOJO_CELERY_REDIS_ISSUE_RESOLVED.md`
 - **Email Reporting:** `~/EMAIL_SELF_HOSTED_SETUP_COMPLETE.md` (✅ CONFIGURED)
