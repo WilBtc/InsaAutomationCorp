@@ -80,6 +80,18 @@
         "INVENTREE_PASSWORD": "insaadmin2025"
       },
       "_description": "InvenTree inventory management for INSA Automation (LOCAL on iac1) - 5 tools for complete inventory and BOM tracking: list parts, get part details, create BOMs, calculate pricing, track customer equipment"
+    },
+    "cadquery-mcp": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/mcp-cadquery/server_stdio.sh",
+      "args": [
+        "--library-dir",
+        "/home/wil/mcp-servers/mcp-cadquery/part_library"
+      ],
+      "env": {
+        "PATH": "/home/wil/.local/bin:/usr/local/bin:/usr/bin:/bin"
+      },
+      "_description": "CadQuery CAD MCP for INSA Automation (bertvanbrakel) - Production-ready headless 3D CAD: execute scripts, STEP/STL/SVG export, part library management, BOM-driven CAD generation for ERPNext/InvenTree integration"
     }
   }
 }
