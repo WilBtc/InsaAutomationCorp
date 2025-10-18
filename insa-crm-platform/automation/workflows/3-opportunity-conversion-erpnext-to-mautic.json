@@ -1,0 +1,315 @@
+{
+  "name": "3. Opportunity Conversion: ERPNext → Mautic",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "erpnext-opportunity",
+        "options": {
+          "responseMode": "onReceived",
+          "responseData": "allEntries"
+        }
+      },
+      "name": "Webhook: ERPNext Opportunity Won",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "id": "webhook-opportunity",
+      "webhookId": "erpnext-opportunity-webhook"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://100.100.101.1:9000/api/resource/Opportunity/{{ $json.opportunity_id || $json.name }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "name": "Get Opportunity Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "id": "get-opportunity",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "erpnext-api",
+          "name": "ERPNext API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract opportunity data and prepare for Mautic\nconst oppData = $input.first().json.data || $input.first().json;\n\n// Determine campaign and tags based on opportunity amount\nconst amount = parseFloat(oppData.opportunity_amount) || 0;\nlet campaignType = 'customer-onboarding';\nlet valueTier = 'Standard';\nlet tags = ['Customer', 'Onboarding'];\n\nif (amount >= 100000) {\n  valueTier = 'Enterprise';\n  campaignType = 'customer-onboarding-enterprise';\n  tags.push('Enterprise', 'VIP', 'High-Value');\n} else if (amount >= 50000) {\n  valueTier = 'Premium';\n  campaignType = 'customer-onboarding-premium';\n  tags.push('Premium', 'High-Value');\n} else if (amount >= 10000) {\n  valueTier = 'Professional';\n  campaignType = 'customer-onboarding-professional';\n  tags.push('Professional', 'Mid-Market');\n} else {\n  tags.push('SMB', 'Standard');\n}\n\n// Add industry/product tags if available\nif (oppData.custom_industry) {\n  tags.push(oppData.custom_industry);\n}\n\nreturn [{\n  json: {\n    opportunity_id: oppData.name,\n    opportunity_name: oppData.opportunity_name || oppData.title,\n    contact_email: oppData.contact_email || oppData.email_id,\n    contact_name: oppData.contact_display || oppData.party_name,\n    customer_name: oppData.party_name,\n    opportunity_amount: amount,\n    value_tier: valueTier,\n    campaign_type: campaignType,\n    tags: tags,\n    closing_date: oppData.transaction_date || new Date().toISOString().split('T')[0],\n    sales_stage: oppData.sales_stage || 'Closed Won',\n    currency: oppData.currency || 'USD'\n  }\n}];"
+      },
+      "name": "Determine Campaign & Tags",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300],
+      "id": "determine-campaign"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://100.100.101.1:9700/api/contacts?search=email:{{ $json.contact_email }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "name": "Find Mautic Contact by Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 300],
+      "id": "find-mautic-contact",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mautic-api",
+          "name": "Mautic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract contact ID from Mautic API response\nconst response = $input.first().json;\nconst contacts = response.contacts || {};\n\n// Get first contact (should only be one with exact email match)\nconst contactId = Object.keys(contacts)[0];\n\nif (!contactId) {\n  throw new Error(`No Mautic contact found for email: ${$('Determine Campaign & Tags').item.json.contact_email}`);\n}\n\nconst contact = contacts[contactId];\n\nreturn [{\n  json: {\n    ...($('Determine Campaign & Tags').item.json),\n    mautic_contact_id: contactId,\n    mautic_contact_points: contact.points || 0\n  }\n}];"
+      },
+      "name": "Extract Contact ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "id": "extract-contact-id"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=http://100.100.101.1:9700/api/contacts/{{ $json.mautic_contact_id }}/edit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tags",
+              "value": "={{ $json.tags.join(',') }}"
+            },
+            {
+              "name": "opportunity_amount",
+              "value": "={{ $json.opportunity_amount }}"
+            },
+            {
+              "name": "value_tier",
+              "value": "={{ $json.value_tier }}"
+            },
+            {
+              "name": "customer_since",
+              "value": "={{ $json.closing_date }}"
+            },
+            {
+              "name": "lifecycle_stage",
+              "value": "Customer"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Contact Tags & Fields",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300],
+      "id": "update-contact",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mautic-api",
+          "name": "Mautic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// NOTE: This is a placeholder for campaign addition\n// In Mautic, you need to first create campaigns via the UI,\n// then use their IDs here.\n\nconst data = $input.first().json;\n\n// Campaign ID mapping (these must be created in Mautic first)\nconst campaignMapping = {\n  'customer-onboarding': 1,  // Replace with actual Mautic campaign ID\n  'customer-onboarding-enterprise': 2,\n  'customer-onboarding-premium': 3,\n  'customer-onboarding-professional': 4\n};\n\nconst campaignId = campaignMapping[data.campaign_type] || 1;\n\nreturn [{\n  json: {\n    ...data,\n    target_campaign_id: campaignId,\n    campaign_name: data.campaign_type.replace(/-/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase())\n  }\n}];"
+      },
+      "name": "Map to Campaign ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 300],
+      "id": "map-campaign"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://100.100.101.1:9700/api/campaigns/{{ $json.target_campaign_id }}/contact/{{ $json.mautic_contact_id }}/add",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "name": "Add Contact to Onboarding Campaign",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1650, 300],
+      "id": "add-to-campaign",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "mautic-api",
+          "name": "Mautic API"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create execution summary\nconst data = $('Map to Campaign ID').item.json;\nconst campaignResult = $input.first().json;\n\nreturn [{\n  json: {\n    workflow: 'Opportunity Conversion: ERPNext → Mautic',\n    execution_time: new Date().toISOString(),\n    opportunity_id: data.opportunity_id,\n    opportunity_name: data.opportunity_name,\n    customer_name: data.customer_name,\n    contact_email: data.contact_email,\n    opportunity_amount: `${data.currency} ${data.opportunity_amount.toLocaleString()}`,\n    value_tier: data.value_tier,\n    mautic_contact_id: data.mautic_contact_id,\n    campaign_added: data.campaign_name,\n    tags_applied: data.tags.join(', '),\n    campaign_status: campaignResult.success ? 'ADDED' : 'ALREADY_IN_CAMPAIGN',\n    status: 'COMPLETED'\n  }\n}];"
+      },
+      "name": "Log Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1850, 300],
+      "id": "log-summary"
+    }
+  ],
+  "connections": {
+    "Webhook: ERPNext Opportunity Won": {
+      "main": [
+        [
+          {
+            "node": "Get Opportunity Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Opportunity Details": {
+      "main": [
+        [
+          {
+            "node": "Determine Campaign & Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Campaign & Tags": {
+      "main": [
+        [
+          {
+            "node": "Find Mautic Contact by Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Mautic Contact by Email": {
+      "main": [
+        [
+          {
+            "node": "Extract Contact ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Contact ID": {
+      "main": [
+        [
+          {
+            "node": "Update Contact Tags & Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Contact Tags & Fields": {
+      "main": [
+        [
+          {
+            "node": "Map to Campaign ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map to Campaign ID": {
+      "main": [
+        [
+          {
+            "node": "Add Contact to Onboarding Campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Contact to Onboarding Campaign": {
+      "main": [
+        [
+          {
+            "node": "Log Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "any",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "CRM",
+      "id": "crm-tag"
+    },
+    {
+      "name": "Opportunity",
+      "id": "opportunity-tag"
+    },
+    {
+      "name": "ERPNext",
+      "id": "erpnext-tag"
+    },
+    {
+      "name": "Mautic",
+      "id": "mautic-tag"
+    },
+    {
+      "name": "Webhook",
+      "id": "webhook-tag"
+    },
+    {
+      "name": "Onboarding",
+      "id": "onboarding-tag"
+    }
+  ],
+  "meta": {
+    "instanceId": "n8n_mautic_erpnext"
+  },
+  "pinData": {},
+  "versionId": "1",
+  "triggerCount": 1,
+  "active": false
+}
