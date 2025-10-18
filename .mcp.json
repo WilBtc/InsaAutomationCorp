@@ -18,16 +18,6 @@
         "PYTHONUNBUFFERED": "1"
       }
     },
-    "stackstorm-health-monitor": {
-      "transport": "stdio",
-      "command": "/home/wil/mcp-servers/stackstorm-health-monitor/venv/bin/python",
-      "args": ["/home/wil/mcp-servers/stackstorm-health-monitor/server.py"],
-      "env": {
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "_description": "StackStorm Health Monitor - Prevents runaway processes"
-    },
     "chrome-devtools": {
       "transport": "stdio",
       "command": "node",
@@ -105,6 +95,28 @@
         "MAUTIC_PASSWORD": "mautic_admin_2025"
       },
       "_description": "Mautic Marketing Automation Admin for INSA Automation - 27 COMPLETE ADMINISTRATIVE TOOLS: CLI installation, system config, contacts (CRUD), segments (create/update), campaigns (trigger/rebuild), email queue, broadcasts, maintenance, cleanup, webhooks, imports, stats - Full programmatic control via CLI + REST API"
+    },
+    "grafana-admin": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/grafana-admin/venv/bin/python",
+      "args": ["/home/wil/mcp-servers/grafana-admin/server.py"],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1",
+        "GRAFANA_URL": "http://100.100.101.1:3002",
+        "GRAFANA_USER": "admin",
+        "GRAFANA_PASSWORD": "***REMOVED***"
+      },
+      "_description": "Grafana Analytics Admin for INSA Automation - 25+ COMPLETE ADMINISTRATIVE TOOLS: dashboards (list/get/create/update/delete), data sources (list/get/create/update/delete), users, organizations, alerts, notification channels, annotations, health monitoring, stats, backup, CLI operations (reset password, plugins) - Full programmatic control via REST API + Docker CLI"
+    },
+    "mautic-browser-automation": {
+      "transport": "stdio",
+      "command": "node",
+      "args": ["/home/wil/mcp-servers/mautic-browser-automation/server.js"],
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "_description": "Mautic Browser Automation for INSA Automation - HEADLESS BROWSER CONTROL: create landing pages via UI automation, create forms, screenshot debugging, login verification, list pages - Puppeteer-based automation for operations not available via API"
     }
   }
 }
