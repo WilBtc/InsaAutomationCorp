@@ -1,6 +1,6 @@
 # iac1 Server - Quick Reference
-# Version: 4.6 | Updated: October 18, 2025 02:00 UTC
-# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + Inventory + Projects + Marketing Automation + AI Agents
+# Version: 4.7 | Updated: October 18, 2025 17:30 UTC
+# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + Inventory + Projects + Marketing Automation + Workflow Automation + AI Agents
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -140,21 +140,26 @@ Security (iac1):
   Security Logs: /var/log/{suricata,aide_check,rkhunter_scan,lynis_audit}.log
 ```
 
-## 🤖 MCP SERVERS (10 Active)
+## 🤖 MCP SERVERS (11 Active - 7 Working ✅, 2 Pending ⏳, 2 Unknown ❓)
 ```yaml
 Config: ~/.mcp.json
 Backup: ~/.mcp.json.backup-*
-Total: 10 active MCP servers
+Total: 11 active MCP servers (7 working ✅, 2 pending ⏳, 2 unknown ❓)
+New Today: n8n-admin (Oct 18, 2025 17:30 UTC) ⭐ PHASE 6 COMPLETE
+Upgraded Today: defectdojo-iec62443 + grafana-admin (Oct 18, 2025)
+Status Report: ~/N8N_MCP_DEPLOYMENT_COMPLETE.md (Oct 18, 2025 - NEW)
 
 azure-vm-monitor:
   Path: ~/mcp-servers/azure-vm-monitor/
   Size: 26MB
   Purpose: Azure VM health checks (every 5 min)
+  Status: ⚠️ NEEDS PROTOCOL UPGRADE (old JSON protocol)
 
 azure-alert:
   Path: ~/mcp-servers/azure-alert/
   Size: 16MB
   Purpose: Email alerts to w.aroca@insaing.com
+  Status: ⚠️ NEEDS PROTOCOL UPGRADE (old JSON protocol)
 
 host-config-agent:
   Path: ~/host-config-agent/mcp/server.js
@@ -166,18 +171,16 @@ host-config-agent:
 
 defectdojo-iec62443:
   Path: ~/mcp-servers/defectdojo-iec62443/server.py
-  Size: 14KB
+  Size: 14KB → 557 lines (upgraded Oct 18, 2025)
   Purpose: IEC 62443 industrial security compliance automation
   Tools: 8 tools (get_findings, tag_finding, auto_tag_findings, etc)
+  Status: ✅ UPGRADED TO MCP SDK (Oct 18, 2025)
+  Protocol: Official MCP SDK (from old custom JSON)
   Features: Intelligent FR/SR tagging, compliance metrics, scan import
   Agent: defectdojo-compliance-agent.service (scans every hour)
   Dashboard: http://100.100.101.1:3004
   Full Docs: ~/DEFECTDOJO_IEC62443_SETUP_COMPLETE.md
-
-stackstorm-health-monitor:
-  Path: ~/mcp-servers/stackstorm-health-monitor/
-  Size: ~16MB
-  Purpose: Prevent runaway processes
+  Upgrade Docs: ~/MCP_UPGRADE_COMPLETE_DEFECTDOJO.md
 
 chrome-devtools:
   Path: ~/mcp-servers/chrome-devtools/
@@ -235,6 +238,37 @@ mautic-admin (Phase 4 Complete - Oct 18, 2025):
   Automation: 13 cron jobs (segments, campaigns, emails, maintenance)
   Docs: ~/MAUTIC_MCP_COMPLETE_GUIDE.md ⭐ PRIMARY (48 KB)
   Deployment: ~/PHASE4_MAUTIC_DEPLOYMENT_COMPLETE.md
+
+grafana-admin (NEW - Oct 18, 2025):
+  Path: ~/mcp-servers/grafana-admin/server.py
+  Size: ~26 KB → 900 lines (upgraded Oct 18, 2025)
+  Purpose: Grafana analytics dashboard management - FULL ADMIN CONTROL
+  Tools: 23 tools (dashboards, data sources, users, alerts, admin)
+  Status: ✅ UPGRADED TO MCP SDK (Oct 18, 2025)
+  Protocol: Official MCP SDK (from old JSON-RPC)
+  Web UI: http://100.100.101.1:3002
+  Priority: Medium (analytics management)
+  Backup: server.py.backup-old-protocol
+
+n8n-admin (NEW - Oct 18, 2025 17:30 UTC) ⭐ PHASE 6 COMPLETE:
+  Path: ~/mcp-servers/n8n-admin/server.py
+  Size: ~20 MB (1,261 lines, 26 async methods)
+  Purpose: n8n workflow automation - FULL AUTONOMOUS CONTROL
+  Tools: 23 tools (100% complete - PRODUCTION READY)
+  Status: ✅ BUILT FROM SCRATCH (Oct 18, 2025)
+  Protocol: Official MCP SDK (mcp 1.18.0)
+  Web UI: http://100.100.101.1:5678
+  Categories:
+    - Workflow Management: 7 tools (CRUD + activate + duplicate)
+    - Execution Control: 6 tools (trigger/retry/cancel/monitor)
+    - Credential Management: 4 tools (API keys, secure storage)
+    - Monitoring & Analytics: 4 tools (stats, performance, trends)
+    - Administration: 2 tools (settings, backup/export)
+  Integration: ERPNext ↔ Mautic workflow automation
+  Workflows: 5 deployed (lead sync, scoring, conversion, events, unsubscribe)
+  Docs: ~/mcp-servers/n8n-admin/README.md (700+ lines)
+  Deployment: ~/N8N_MCP_DEPLOYMENT_COMPLETE.md (⭐ PRIMARY DOC)
+  Commit: Pending (ready to commit)
 ```
 
 ## ⚡ ACTIVE SYSTEMS
@@ -375,7 +409,10 @@ Git:
   - Database: /var/lib/host-config-agent/host_config.db
   - Claude Code subprocess integration working
 - ✅ Security Hardening: Suricata IDS + Wazuh FIM + SSH restricted
-- ✅ MCP Servers: 10 active servers (Mautic + CadQuery added)
+- ✅ MCP Servers: 10 active (6 working ✅, 2 pending ⏳, 2 unknown ❓)
+  - defectdojo-iec62443 ✅ UPGRADED (critical compliance)
+  - grafana-admin ✅ UPGRADED (analytics management)
+  - See ~/MCP_UPGRADES_COMPLETE_2_SERVERS.md
 - ✅ Documentation: v4.6 - Mautic Phase 4 Complete (100%)
 - ✅ Learning System: Evolutionary AI with SQLite (3 databases)
 - ⚠️ INSA ERP: Offline (Tailscale relay)
@@ -407,7 +444,7 @@ Test Results: 4/4 email templates working
 ```
 
 ---
-**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + Inventory + Marketing Automation + AI Agents
+**Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + Inventory + Marketing Automation + Workflow Automation + AI Agents
 **Access:** ssh 100.100.101.1
 **Sudo:** 110811081108***
 **Version:** 4.6 | Updated: October 18, 2025 02:00 UTC
