@@ -1,6 +1,6 @@
 # iac1 Server - Quick Reference
-# Version: 4.8 | Updated: October 18, 2025 18:15 UTC
-# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM + Inventory + Projects + Marketing Automation + Workflow Automation + AI Agents + P&ID Generation
+# Version: 5.1 | Updated: October 18, 2025 22:30 UTC (PHASE 7 COMPLETE ✅)
+# Server: 100.100.101.1 | Role: Azure VM Monitoring + DevSecOps + IEC 62443 + AI Remediation + CRM Platform (Unified) + Marketing Automation + Workflow Automation + AI Agents + P&ID Generation + AI Quote Generation
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -71,67 +71,66 @@ Host Configuration Agent (DEPLOYED):
   Architecture: ~/host-config-agent/ARCHITECTURE.txt
   Database: /var/lib/host-config-agent/host_config.db
 
-ERPNext CRM (DEPLOYED - Phase 3 Complete - Oct 18, 2025):
-  Implementation Guide: ~/PHASE3_ERPNEXT_PROJECTS_COMPLETE.md (NEW)
-  Phase 3a: Sales orders, delivery notes, invoices, payments (10 tools - Oct 17)
-  Phase 3b: Project Management (4 tools - Oct 18) ⭐ NEW
-  Phase 2: Customer details + product catalog (3 tools)
-  Phase 1: Core CRM (16 tools)
-  Gap Analysis: ~/ERPNEXT_CRM_GAP_ANALYSIS.md
-  Docker Fix: ~/ERPNEXT_CRM_FIXED.md
-  Web UI: http://100.100.101.1:9000
-  Git Repo: ~/mcp-servers/erpnext-crm/
-  MCP Server: ~/mcp-servers/erpnext-crm/server.py
-  Tools: 33 (100% complete - full sales cycle + project management)
+INSA CRM Platform (CONSOLIDATED - Oct 18, 2025): ⭐ NEW UNIFIED LOCATION
+  Platform Root: ~/insa-crm-platform/ (679MB total, 24K+ files)
+  Master Guide: ~/insa-crm-platform/README.md (11 KB)
+  Consolidation Report: ~/INSA_CRM_CONSOLIDATION_COMPLETE.md
+  Status: ✅ PRODUCTION READY - All components organized & tested
 
-INSA CRM System (DEPLOYED - Oct 17, 2025):
-  Project Root: ~/insa-crm-system/
-  FastAPI Server: http://100.100.101.1:8003
-  API Docs: http://100.100.101.1:8003/api/docs
-  Database: PostgreSQL (insa_crm)
-  Lead Qualification: AI-powered (0-100 scoring)
-  Git Repo: ~/insa-crm-system/ (committed)
-  Docs: ~/insa-crm-system/README.md
-  Quick Start: ~/insa-crm-system/QUICKSTART.md
+  Core (AI Lead Qualification + Quote Generation):
+    Path: ~/insa-crm-platform/core/
+    FastAPI Server: http://100.100.101.1:8003
+    API Docs: http://100.100.101.1:8003/api/docs
+    Database: PostgreSQL (insa_crm)
+    Features:
+      - Phase 1: AI-powered 0-100 lead scoring
+      - Phase 7: AI quote generation (<1s, RAG-powered) ⭐ NEW
+    Storage: /var/lib/insa-crm/ (ChromaDB + quotes)
+    Docs: ~/insa-crm-platform/core/README.md
+    Phase 7 Docs: ~/insa-crm-platform/PHASE7_AI_QUOTE_GENERATION_COMPLETE.md
 
-Mautic Marketing Automation (DEPLOYED - Phase 4 Complete - Oct 18, 2025):
-  Complete Guide: ~/MAUTIC_MCP_COMPLETE_GUIDE.md ⭐ PRIMARY DOC (48 KB)
-  Deployment Report: ~/PHASE4_MAUTIC_DEPLOYMENT_COMPLETE.md (Oct 18)
-  Evaluation: ~/PHASE4_MARKETING_AUTOMATION_EVALUATION.md
-  Web UI: http://100.100.101.1:9700 (✅ ACTIVE)
-  Version: 5.2.1 (latest stable)
-  MCP Server: ~/mcp-servers/mautic-admin/server.py (31 KB)
-  Tools: 27 (100% complete - master admin control)
-  Database: MariaDB 11.6 (port 3306)
-  Automation: 13 cron jobs (✅ RESOURCE PROTECTED)
-  Status: ✅ PRODUCTION READY - Full programmatic control
+  MCP Servers (4 integrated platforms):
+    ERPNext CRM:
+      Path: ~/insa-crm-platform/mcp-servers/erpnext-crm/
+      Web UI: http://100.100.101.1:9000
+      Tools: 33 (Phase 3b complete - full sales cycle + projects)
+      Docs: ~/insa-crm-platform/mcp-servers/erpnext-crm/README.md
 
-n8n Workflow Automation (DEPLOYED - Phase 5 Complete - Oct 18, 2025):
-  Integration Guide: ~/PHASE5_N8N_ERPNEXT_MAUTIC_INTEGRATION.md (Oct 18)
-  Web UI: http://100.100.101.1:5678 (✅ RUNNING)
-  Version: 1.115.3 (latest)
-  Container: n8n_mautic_erpnext
-  Resource Limits: 1GB RAM, 1 CPU core
-  Purpose: ERPNext ↔ Mautic bidirectional sync
-  Workflows: 5 recommended (lead sync, scoring, conversion, events, unsubscribe)
-  Status: ✅ DEPLOYED - Ready for workflow configuration
+    InvenTree:
+      Path: ~/insa-crm-platform/mcp-servers/inventree-crm/
+      Web UI: http://100.100.101.1:9600
+      Tools: 5 (inventory + BOM management)
 
-Resource Protection (DEPLOYED - Oct 18, 2025):
-  Summary Report: ~/RESOURCE_PROTECTION_COMPLETE.md ⭐ CRITICAL
-  PHP-FPM Limits: 1GB RAM, 1 CPU, 50 tasks max
-  Mautic Cron Limits: 256-512MB per job, 30-50% CPU, timeout protection
-  Process Monitor: ~/mautic_process_monitor.sh (every 5 min)
-  Monitor Log: /var/log/mautic_process_monitor.log
-  Status: ✅ ACTIVE - 100% coverage, multi-layer protection
+    Mautic:
+      Path: ~/insa-crm-platform/mcp-servers/mautic-admin/
+      Web UI: http://100.100.101.1:9700
+      Tools: 27 (marketing automation)
+      Database: MariaDB 11.6 (157 tables)
+      Automation: 13 cron jobs
 
-INSA Project Management (NEW - Oct 18, 2025):
-  RAG Memory Workflow: ~/INSA_PROJECT_WORKFLOW_RAG_MEMORY.md ⭐ PRIMARY (35 KB, 900+ lines)
-  Project Completion Report: ~/PROYECTO_PID_CRM_WORKFLOW_COMPLETE.md
-  CRM Storage: ~/crm-files/ (project files organized by customer)
-  P&ID Generator: ~/pid-generator/ (separador_trifasico.py, email automation)
-  Reference Project: ~/crm-files/INSAGTEC-6598/ (63 files, 66 MB)
-  Git Repo: ~/google-drive-temp/ (committed)
-  Status: ✅ COMPLETE - 3 projects delivered (P&ID, INSAGTEC-6598, RAG docs)
+    n8n:
+      Path: ~/insa-crm-platform/mcp-servers/n8n-admin/
+      Web UI: http://100.100.101.1:5678
+      Tools: 23 (workflow automation)
+      Resource Limits: 1GB RAM, 1 CPU
+
+  Automation:
+    Workflows: ~/insa-crm-platform/automation/workflows/ (6 n8n JSONs)
+    Templates: ~/insa-crm-platform/automation/templates/ (7 Mautic emails)
+
+  Projects:
+    Customer Files: ~/insa-crm-platform/projects/customers/INSAGTEC-6598/
+    P&ID Generator: ~/insa-crm-platform/projects/templates/pid-generator/
+    Reference Project: INSAGTEC-6598 (63 files, 66 MB)
+
+  Documentation:
+    Architecture: ~/insa-crm-platform/docs/architecture/
+    Deployment: ~/insa-crm-platform/docs/deployment/ (8 PHASE*.md files)
+    Guides: ~/insa-crm-platform/docs/guides/
+      - MAUTIC_MCP_COMPLETE_GUIDE.md (48 KB)
+      - INSA_PROJECT_WORKFLOW_RAG_MEMORY.md (35 KB, 900+ lines)
+      - RESOURCE_PROTECTION_COMPLETE.md
+      - PROYECTO_PID_CRM_WORKFLOW_COMPLETE.md
 
 Infrastructure Docs (on INSA ERP):
   Network: ~/INSA_INFRASTRUCTURE_MAP_2025.md
@@ -202,31 +201,22 @@ tailscale-devops:
   Purpose: Network management for INSA infrastructure
   Tools: 10 tools (network status, SSH, tunnels, routing)
 
-erpnext-crm (Phase 3b Complete - Oct 18, 2025):
-  Path: ~/mcp-servers/erpnext-crm/server.py
-  Size: ~20MB
+erpnext-crm (Phase 3b Complete - CONSOLIDATED Oct 18, 2025):
+  Path: ~/insa-crm-platform/mcp-servers/erpnext-crm/server.py ⭐ NEW LOCATION
+  Size: ~40MB (with venv)
   Purpose: CRM automation for INSA Automation Corp - FULL LIFECYCLE
   Tools: 33 tools (100% complete)
   Status: ✅ PRODUCTION READY - Complete sales cycle + project management
-  Phase 3b: Project Management (4 tools - Oct 18) ⭐ NEW
-  Phase 3a: Sales orders, delivery notes, invoices, payments (10 tools - Oct 17)
-  Phase 2: Customer details + product catalog (3 tools)
-  Phase 1: Core CRM (16 tools)
   Web UI: http://100.100.101.1:9000
-  Docs: ~/PHASE3_ERPNEXT_PROJECTS_COMPLETE.md
-  Commit: Pending (Phase 3b)
+  Docs: ~/insa-crm-platform/docs/deployment/PHASE3_ERPNEXT_PROJECTS_COMPLETE.md
 
-inventree-crm (Phase 2 Complete - Oct 18, 2025):
-  Path: ~/mcp-servers/inventree-crm/server.py
-  Size: ~20MB
+inventree-crm (Phase 2 Complete - CONSOLIDATED Oct 18, 2025):
+  Path: ~/insa-crm-platform/mcp-servers/inventree-crm/server.py ⭐ NEW LOCATION
+  Size: ~40MB (with venv)
   Purpose: Inventory management and BOM tracking - PRODUCTION READY
   Tools: 5 tools (100% complete)
-  Status: ✅ OPERATIONAL - Blocker resolved (was thought blocked)
+  Status: ✅ OPERATIONAL
   Web UI: http://100.100.101.1:9600
-  Containers: inventree_web + postgres + redis (host network mode)
-  Docs: ~/INVENTREE_DEPLOYMENT_RESOLVED.md
-  Commit: 4381304
-  Integration: P&ID generator ready, Quote Agent unblocked
 
 cadquery-mcp:
   Path: ~/mcp-servers/mcp-cadquery/server_stdio.sh
@@ -236,17 +226,16 @@ cadquery-mcp:
   Docs: ~/mcp-servers/mcp-cadquery/README.md
   Integration: BOM-driven CAD for ERPNext/InvenTree
 
-mautic-admin (Phase 4 Complete - Oct 18, 2025):
-  Path: ~/mcp-servers/mautic-admin/server.py
-  Size: 31 KB
+mautic-admin (Phase 4 Complete - CONSOLIDATED Oct 18, 2025):
+  Path: ~/insa-crm-platform/mcp-servers/mautic-admin/server.py ⭐ NEW LOCATION
+  Size: ~38MB (with venv)
   Purpose: Marketing automation master admin - FULL PROGRAMMATIC CONTROL
   Tools: 27 tools (100% complete)
   Status: ✅ PRODUCTION READY - CLI + API dual execution
   Web UI: http://100.100.101.1:9700 ✅ ACTIVE
   Database: MariaDB 11.6 (port 3306)
   Automation: 13 cron jobs (segments, campaigns, emails, maintenance)
-  Docs: ~/MAUTIC_MCP_COMPLETE_GUIDE.md ⭐ PRIMARY (48 KB)
-  Deployment: ~/PHASE4_MAUTIC_DEPLOYMENT_COMPLETE.md
+  Docs: ~/insa-crm-platform/docs/guides/MAUTIC_MCP_COMPLETE_GUIDE.md ⭐ PRIMARY (48 KB)
 
 grafana-admin (NEW - Oct 18, 2025):
   Path: ~/mcp-servers/grafana-admin/server.py
@@ -256,28 +245,17 @@ grafana-admin (NEW - Oct 18, 2025):
   Status: ✅ UPGRADED TO MCP SDK (Oct 18, 2025)
   Protocol: Official MCP SDK (from old JSON-RPC)
   Web UI: http://100.100.101.1:3002
-  Priority: Medium (analytics management)
-  Backup: server.py.backup-old-protocol
 
-n8n-admin (NEW - Oct 18, 2025 17:30 UTC) ⭐ PHASE 6 COMPLETE:
-  Path: ~/mcp-servers/n8n-admin/server.py
-  Size: ~20 MB (1,261 lines, 26 async methods)
+n8n-admin (Phase 6 Complete - CONSOLIDATED Oct 18, 2025):
+  Path: ~/insa-crm-platform/mcp-servers/n8n-admin/server.py ⭐ NEW LOCATION
+  Size: ~41MB (with venv)
   Purpose: n8n workflow automation - FULL AUTONOMOUS CONTROL
   Tools: 23 tools (100% complete - PRODUCTION READY)
   Status: ✅ BUILT FROM SCRATCH (Oct 18, 2025)
-  Protocol: Official MCP SDK (mcp 1.18.0)
   Web UI: http://100.100.101.1:5678
-  Categories:
-    - Workflow Management: 7 tools (CRUD + activate + duplicate)
-    - Execution Control: 6 tools (trigger/retry/cancel/monitor)
-    - Credential Management: 4 tools (API keys, secure storage)
-    - Monitoring & Analytics: 4 tools (stats, performance, trends)
-    - Administration: 2 tools (settings, backup/export)
   Integration: ERPNext ↔ Mautic workflow automation
-  Workflows: 5 deployed (lead sync, scoring, conversion, events, unsubscribe)
-  Docs: ~/mcp-servers/n8n-admin/README.md (700+ lines)
-  Deployment: ~/N8N_MCP_DEPLOYMENT_COMPLETE.md (⭐ PRIMARY DOC)
-  Commit: Pending (ready to commit)
+  Workflows: 6 deployed (in ~/insa-crm-platform/automation/workflows/)
+  Docs: ~/insa-crm-platform/mcp-servers/n8n-admin/README.md
 ```
 
 ## ⚡ ACTIVE SYSTEMS
