@@ -1,0 +1,122 @@
+category,vendor,part_number,description,unit_cost,currency,lead_time_days,preferred,usage_count,notes
+# PLC & Control Systems (Allen-Bradley Preferred)
+PLC,Allen-Bradley,1769-L33ER,CompactLogix 5370 L3 Controller 2MB Ethernet,3200.00,USD,56,true,15,INSA standard for medium projects
+PLC,Allen-Bradley,1769-L36ERM,CompactLogix 5370 L3 Controller 3MB Ethernet 1GB SD,4100.00,USD,56,true,12,Preferred for data logging
+PLC,Allen-Bradley,5069-L320ERM,CompactLogix 5380 Controller 5MB,5800.00,USD,70,true,8,Large projects with complex logic
+PLC,Allen-Bradley,1756-L83E,ControlLogix 5580 Controller 10MB,12500.00,USD,84,true,5,Enterprise-level DCS integration
+PLC_Safety,Allen-Bradley,1756-L72S,GuardLogix 5570 Safety Controller,15200.00,USD,98,true,3,ESD systems SIL 2/3
+
+# I/O Modules - Analog
+IO_Analog,Allen-Bradley,1769-IF8,CompactLogix 8-Ch Analog Input 4-20mA/HART,450.00,USD,42,true,20,Standard AI module
+IO_Analog,Allen-Bradley,1769-OF8C,CompactLogix 8-Ch Analog Output 4-20mA,520.00,USD,42,true,18,Standard AO module
+IO_Analog,Allen-Bradley,1769-IF16C,CompactLogix 16-Ch Analog Input Current/Voltage,680.00,USD,42,true,10,High-density AI
+IO_Analog,Allen-Bradley,1769-IF4XOF2,CompactLogix 4-In/2-Out Analog Combo,580.00,USD,42,true,8,Small panels
+
+# I/O Modules - Digital
+IO_Digital,Allen-Bradley,1769-IQ16,CompactLogix 16-Ch Digital Input 24VDC,280.00,USD,42,true,25,Standard DI module
+IO_Digital,Allen-Bradley,1769-OB16,CompactLogix 16-Ch Digital Output 24VDC,320.00,USD,42,true,22,Standard DO module
+IO_Digital,Allen-Bradley,1769-IQ32,CompactLogix 32-Ch Digital Input 24VDC,420.00,USD,42,true,12,High-density DI
+
+# HMI (Rockwell PanelView)
+HMI,Rockwell,2711P-T10C4D9,PanelView Plus 7 Standard 10-inch Ethernet,1800.00,USD,70,true,8,Field panels
+HMI,Rockwell,2711P-T15C4D9,PanelView Plus 7 Standard 15-inch Ethernet,2500.00,USD,70,true,12,Control room standard
+HMI,Rockwell,2711P-T19C4D9,PanelView Plus 7 Standard 19-inch Ethernet,3200.00,USD,70,true,6,Large control room displays
+
+# SCADA Software
+SCADA,Ignition,IGN-SCADA-UNL,Ignition SCADA Unlimited License,5000.00,USD,7,true,8,Preferred SCADA platform
+SCADA,Ignition,IGN-EDGE-PANEL,Ignition Edge Panel License,500.00,USD,7,true,4,Remote panels
+SCADA,Ignition,IGN-PERSPECTIVE,Ignition Perspective Module Web HMI,2000.00,USD,7,true,5,Mobile access
+
+# Pressure Transmitters
+Transmitter_Pressure,Rosemount,3051CD,Pressure Transmitter 0-100 PSI 4-20mA/HART,850.00,USD,84,true,15,General purpose
+Transmitter_Pressure,Rosemount,3051S,Scalable Pressure Transmitter WirelessHART,1200.00,USD,98,true,8,Remote locations
+Transmitter_Pressure,E+H,Cerabar PMC21,Pressure Transmitter 0-400 bar HART,920.00,USD,70,true,10,High pressure apps
+Transmitter_Pressure,Rosemount,3051T,Multivariable Transmitter DP/Pressure/Temp,1850.00,USD,98,true,5,Flow compensation
+
+# Flow Meters
+Transmitter_Flow,E+H,Promag 53P,Electromagnetic Flow Meter DN50 4-20mA,1200.00,USD,98,true,12,Conductive liquids
+Transmitter_Flow,Rosemount,8800D,Vortex Flow Meter 4-20mA/HART,1450.00,USD,84,true,8,Steam/gas/liquids
+Transmitter_Flow,Micro Motion,F100,Coriolis Mass Flow Meter DN25,3500.00,USD,112,true,5,Custody transfer
+Transmitter_Flow,E+H,Proline Prowirl 200,Vortex Flow Meter DN80,1680.00,USD,84,true,6,Large pipe sizes
+
+# Temperature Transmitters
+Transmitter_Temp,Rosemount,3144P,Temperature Transmitter RTD/TC HART,520.00,USD,70,true,18,Standard temp measurement
+Transmitter_Temp,E+H,iTEMP TMT142,Temperature Transmitter 2-wire HART,480.00,USD,56,true,12,Cost-effective option
+Transmitter_Temp,Rosemount,648,Wireless Temperature Transmitter WirelessHART,980.00,USD,98,true,4,Remote monitoring
+
+# Level Transmitters
+Transmitter_Level,Rosemount,5408,Radar Level Transmitter Non-contact,2100.00,USD,112,true,10,General purpose level
+Transmitter_Level,E+H,Micropilot FMR51,Radar Level Transmitter 80 GHz,2300.00,USD,98,true,8,High accuracy
+Transmitter_Level,Rosemount,3301,Guided Wave Radar Level Transmitter,1850.00,USD,98,true,6,Interface measurement
+Transmitter_Level,E+H,Liquiphant FTL51,Vibrating Fork Level Switch,650.00,USD,70,true,10,High/Low level alarms
+
+# Control Valves
+Valve_Control,Fisher,EZ,Globe Control Valve DN50 Class 300,3200.00,USD,126,true,10,General service
+Valve_Control,Samson,3241,Globe Control Valve DN25 PN40,2800.00,USD,112,true,8,Smaller sizes
+Valve_Control,Fisher,ED,Globe Control Valve DN100 Class 150,4500.00,USD,140,true,5,Large flow capacity
+
+# On-Off Valves
+Valve_OnOff,Emerson,Keystone,Ball Valve DN50 with Pneumatic Actuator,1500.00,USD,84,true,12,Automated isolation
+Valve_OnOff,Worcester,88 Series,Ball Valve DN25 with Electric Actuator,1200.00,USD,70,true,8,Electric actuation preferred
+
+# Safety/Relief Valves
+Valve_Safety,Crosby,JOS,Safety Relief Valve 2x3 ASME VIII,1200.00,USD,98,true,6,Overpressure protection
+Valve_Safety,Anderson Greenwood,4300,Pilot-Operated Relief Valve 3x4,2800.00,USD,112,true,3,Large capacity relief
+
+# Switchgear & MCCs
+Switchgear,Schneider,Prisma Plus P,MV Switchgear 15kV,28000.00,USD,196,true,4,Medium voltage distribution
+MCC,ABB,MNS,Motor Control Center 480VAC,35000.00,USD,168,true,5,Standard MCC
+MCC,Schneider,NF,Motor Control Center 480VAC,32000.00,USD,168,true,3,Alternative to ABB
+
+# Variable Frequency Drives
+VFD,ABB,ACS580,Variable Frequency Drive 30HP 480VAC,2400.00,USD,84,true,15,General purpose
+VFD,Schneider,Altivar 61,VFD 50HP 480VAC,3100.00,USD,84,true,10,High performance
+VFD,ABB,ACS880,Industrial Drive 75HP 480VAC,5200.00,USD,98,true,6,Heavy duty
+
+# Transformers
+Transformer,ABB,ONAN,Oil-Immersed Transformer 1000kVA 13.2kV/480V,45000.00,USD,224,true,3,Power distribution
+Transformer,Schneider,Trihal,Dry-Type Transformer 500kVA 480V/208V,18000.00,USD,168,true,4,Indoor installations
+
+# Cybersecurity - Firewalls
+Firewall_OT,Fortinet,FortiGate 60F,Next-Gen Firewall for OT,1200.00,USD,56,true,8,IEC 62443 compliant
+Firewall_OT,Tofino,Xenon,Industrial Firewall DPI,3500.00,USD,70,true,5,Purpose-built for OT
+Firewall_OT,Cisco,ISA 3000,Industrial Security Appliance,4200.00,USD,84,true,4,Cisco integration
+
+# Network Switches - Industrial
+Switch_Industrial,Allen-Bradley,Stratix 5700,Industrial Ethernet Switch 24-port,3800.00,USD,70,true,12,Rockwell ecosystem
+Switch_Industrial,Cisco,IE-4000,Industrial Ethernet Switch 16-port,2900.00,USD,70,true,10,Managed switch
+Switch_Industrial,Hirschmann,MACH4000,Industrial Switch 24-port Layer 3,4200.00,USD,84,true,5,High-end networking
+
+# Cables - Signal (price per meter)
+Cable_Signal,Belden,9842,Instrumentation Cable 18 AWG 2-pair Shielded,1.20,USD,28,true,0,Standard instrument cable
+Cable_Signal,Alpha Wire,6712,Multi-conductor Cable 20 AWG 4-pair PLTC,1.50,USD,28,true,0,Multi-pair signals
+Cable_Signal,Belden,3105A,RS-485 Cable 24 AWG Twisted Pair,0.95,USD,28,true,0,Serial communications
+
+# Cables - Power (price per meter)
+Cable_Power,General Cable,THHN,Power Cable 12 AWG 600V,0.80,USD,21,true,0,Branch circuits
+Cable_Power,Southwire,XHHW-2,Power Cable 10 AWG 90C,1.20,USD,21,true,0,Feeders
+Cable_Power,General Cable,USE-2,Underground Service Entrance 2 AWG,3.50,USD,28,true,0,Underground runs
+
+# Cables - Fiber Optic (price per meter)
+Cable_Fiber,Corning,Altos,Fiber Optic Cable Single-mode 12-strand,2.50,USD,42,true,0,Long-distance comms
+Cable_Fiber,Belden,FiberExpress,Industrial Fiber Cable Multimode 6-strand,1.80,USD,35,true,0,Short plant distances
+
+# Junction Boxes & Enclosures
+Enclosure_JB,Hoffman,A1210CH,Junction Box 12x10x6 NEMA 4X Stainless,285.00,USD,35,true,15,Hazardous area rated
+Enclosure_JB,Rittal,KL,Junction Box 16x12x8 IP66 Polycarbonate,320.00,USD,42,true,10,Non-metallic
+
+# Terminal Blocks
+Terminal,Phoenix Contact,UK 2.5,DIN Rail Terminal 2.5mm² 24A,0.85,USD,14,true,0,Standard terminals
+Terminal,Weidmuller,WDU 2.5,Feed-Through Terminal 2.5mm²,0.90,USD,14,true,0,Alternative to Phoenix
+
+# Power Supplies
+Power_Supply,Phoenix Contact,QUINT,DIN Rail Power Supply 24VDC 10A,320.00,USD,28,true,12,Redundancy capable
+Power_Supply,ABB,CP-E,Power Supply 24VDC 5A,180.00,USD,21,true,8,Cost-effective
+
+# UPS Systems
+UPS,APC,Smart-UPS,UPS 3000VA 120V Rackmount,1200.00,USD,42,true,8,Control room backup
+UPS,Eaton,9PX,UPS 2200VA 120V Tower,980.00,USD,35,true,6,Small systems
+
+# Grounding & Lightning Protection
+Grounding,Erico,Cadweld,Exothermic Welding System,450.00,USD,21,true,5,Ground grid connections
+Surge_Protection,Phoenix Contact,FLT-CP-PLUS,Surge Protector 24VDC I/O,85.00,USD,14,true,20,Signal protection
