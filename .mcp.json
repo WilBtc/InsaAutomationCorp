@@ -126,10 +126,18 @@
         "PYTHONDONTWRITEBYTECODE": "1",
         "PYTHONUNBUFFERED": "1",
         "N8N_API_URL": "http://100.100.101.1:5678",
-        "N8N_USERNAME": "admin",
-        "N8N_PASSWORD": "n8n_admin_2025"
+        "N8N_API_KEY": "n8n_cLyForOpZVaW2oblcmrEDcYRoLFAZNEHR_eLrsd5YNg"
       },
       "_description": "n8n Workflow Automation Admin for INSA Automation - 23 COMPLETE ADMINISTRATIVE TOOLS: workflow management (list/get/create/update/delete/activate/duplicate), execution control (list/get/trigger/retry/cancel/delete), credential management (list/get/create/delete), monitoring & analytics (stats/workflow_stats/execution_summary/health_check), administration (settings/export_workflows) - Full autonomous control for ERPNext ↔ Mautic integration workflows"
+    },
+    "n8n-mcp": {
+      "command": "npx",
+      "args": ["-y", "n8n-mcp"],
+      "env": {
+        "N8N_HOST": "http://100.100.101.1:5678",
+        "N8N_API_KEY": "n8n_cLyForOpZVaW2oblcmrEDcYRoLFAZNEHR_eLrsd5YNg"
+      },
+      "_description": "n8n MCP Server - Full headless workflow control with 536 nodes, 90% docs coverage. Enables Claude Code to create, manage, and execute n8n workflows programmatically. Production-ready for ERPNext ↔ Mautic integration. CLI-based setup complete!"
     }
   }
 }
