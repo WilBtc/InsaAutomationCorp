@@ -1,6 +1,7 @@
 # iac1 Server - Quick Reference
-# Version: 7.0 | Updated: October 19, 2025 15:45 UTC (🧠 PHASE 4: METACOGNITION COMPLETE!)
+# Version: 7.2 | Updated: October 20, 2025 03:40 UTC (✅ COMMAND CENTER HTTPS + AUTH WORKING!)
 # Server: 100.100.101.1 | Role: INSA-Specific Intelligent Sales Platform (Oil & Gas)
+# Tailscale: iac1.tailc58ea3.ts.net (HTTPS with auto certs)
 
 ## 🚨 CRITICAL RULES
 - **Server Role**: Azure VM monitoring ONLY (READ-ONLY)
@@ -77,6 +78,62 @@ Platform Admin (DEPLOYED - Oct 19, 2025):
   README: ~/mcp-servers/platform-admin/README.md (395 lines)
   Tools: 8 (health check, auto-heal, restart, logs, credentials, etc)
   Services: INSA CRM, DefectDojo, ERPNext, InvenTree, Mautic, n8n, Grafana, IEC 62443
+
+INSA Command Center V3 (HTTPS FIXED - Oct 20, 2025 03:40 UTC): ⭐ 8 AI AGENTS + AUTH
+  Web UI (HTTPS): https://iac1.tailc58ea3.ts.net/command-center/insa-command-center-v3.html ✅ PRODUCTION
+  Login Page: https://iac1.tailc58ea3.ts.net/command-center/login.html ✅ WORKING
+  Backend API (HTTPS): https://iac1.tailc58ea3.ts.net/backend ✅ FIXED (was HTTP mixed content)
+  Auth API (HTTPS): https://iac1.tailc58ea3.ts.net/api ✅ JWT tokens working
+  Status: ✅ PRODUCTION READY - Full HTTPS, authentication, 8 agents, smart routing
+
+  Authentication:
+    Email: w.aroca@insaing.com
+    Password: Insa2025
+    Database: PostgreSQL (insa_crm.users table)
+  Features (V2 Upgrade):
+    - 2-column layout (agent panel + chat)
+    - 8 AI agent cards with real-time metrics
+    - Smart routing by intent detection
+    - Voice + text input with keyboard shortcuts (Ctrl+R)
+    - ChatGPT-style message bubbles with agent tags
+    - Welcome card with quick command examples
+    - Toast notifications, typing indicators, loading states
+    - Professional animations and transitions
+    - Responsive design, dark theme (cyan/purple gradients)
+
+  8 Integrated Agents:
+    1. 📊 Dimensionamiento (90% success, <2s)
+    2. 🎛️ Plataforma Admin (99.8% uptime, 8/8 services)
+    3. 💼 CRM (150+ leads, 33 tools)
+    4. 🔧 Auto-Sanación (98.5% healing, 14 patterns)
+    5. 🛡️ Cumplimiento IEC 62443 (hourly scans)
+    6. 🔬 Investigación RAG (900+ docs)
+    7. 🖥️ Config Host ($0 cost, 24/7)
+    8. 📐 CAD 3D (CadQuery engine)
+
+  Technology Stack:
+    - Frontend: HTML5 + CSS3 + Vanilla JS (42KB single file)
+    - Backend: Flask + faster-whisper + INSA Agents Hub
+    - Agents Hub: ~/insa-crm-platform/crm voice/insa_agents.py (12KB)
+    - Smart Routing: Intent detection → specialized agent
+    - Resource Usage: ~200MB RAM, <10% CPU
+
+  Files & Docs:
+    - UI V3: ~/insa-crm-platform/crm voice/insa-command-center-v3.html ⭐ LATEST (49KB)
+    - Login UI: ~/insa-crm-platform/crm voice/login.html ⭐ NEW (JWT auth)
+    - Archived: ~/insa-crm-platform/crm voice/archive/ (v1, v2 backups)
+    - Hub: ~/insa-crm-platform/crm voice/insa_agents.py (12KB)
+    - Backend: ~/insa-crm-platform/crm voice/crm-backend.py (Flask + faster-whisper)
+    - Auth API: ~/insa-crm-platform/core/api/main.py (FastAPI + JWT)
+    - Complete Guide: ~/INSA_COMMAND_CENTER_V2_COMPLETE.md
+    - HTTPS Fix Report: ~/COMMAND_CENTER_HTTPS_FIXED_OCT20_2025.md ⭐ NEW
+    - Quick Start: ~/insa-crm-platform/crm voice/INSA-CRM-VOICE-QUICK-START.md
+
+  Services:
+    - Web UI: python3 -m http.server 8007 (PID varies)
+    - Backend API: ./venv/bin/python crm-backend.py (port 5000)
+    - Auth API: uvicorn api.main:app --port 8005
+    - Logs: /tmp/crm-backend.log, /tmp/insa-crm-auth-api.log
 
 INSA CRM Platform (CONSOLIDATED - Oct 18, 2025): ⭐ NEW UNIFIED LOCATION
   Platform Root: ~/insa-crm-platform/ (679MB total, 24K+ files)
@@ -534,14 +591,19 @@ Test Results: 4/4 email templates working
 
 ## 🎯 QUICK LINKS
 
-### Web UIs
-- **INSA CRM System:** http://100.100.101.1:8003 (✅ AI Agents)
-- **DefectDojo:** http://100.100.101.1:8082 (✅ ACTIVE)
-- **ERPNext CRM:** http://100.100.101.1:9000 (✅ ACTIVE)
-- **InvenTree:** http://100.100.101.1:9600 (✅ OPERATIONAL)
-- **Mautic:** http://100.100.101.1:9700 (✅ PHASE 4)
-- **n8n:** http://100.100.101.1:5678 (✅ PHASE 5)
-- **IEC 62443:** http://100.100.101.1:3004
+### Web UIs (All Tailscale HTTPS accessible)
+- **INSA Command Center V3:** https://iac1.tailc58ea3.ts.net/command-center/insa-command-center-v3.html ⭐ PRIMARY (HTTPS)
+- **INSA CRM System:** https://iac1.tailc58ea3.ts.net/crm (✅ AI Agents + HTTPS)
+- **DefectDojo:** https://iac1.tailc58ea3.ts.net/defectdojo (✅ SOC Platform)
+- **ERPNext CRM:** https://iac1.tailc58ea3.ts.net/erpnext (✅ Full Sales Cycle)
+- **InvenTree:** https://iac1.tailc58ea3.ts.net/inventree (✅ Inventory + BOM)
+- **Mautic:** https://iac1.tailc58ea3.ts.net/mautic (✅ Marketing Automation)
+- **n8n:** https://iac1.tailc58ea3.ts.net/n8n (✅ Workflow Automation)
+- **IEC 62443:** https://iac1.tailc58ea3.ts.net/iec62443 (Compliance Dashboard)
+- **Grafana:** https://iac1.tailc58ea3.ts.net/grafana (Analytics + Monitoring)
+
+**HTTP Fallback** (local only):
+- All services also available at http://100.100.101.1:[port] for local access
 
 ### Key Documentation (See Git)
 - **INSA Project Workflow (RAG):** `~/INSA_PROJECT_WORKFLOW_RAG_MEMORY.md` ⭐ NEW (900+ lines)
@@ -563,6 +625,34 @@ Test Results: 4/4 email templates working
 - **DevSecOps:** `~/devops/devsecops-automation/`
 - **MCP Servers:** `~/mcp-servers/`
 - **INSA CRM:** `~/insa-crm-system/`
+
+### Tailscale HTTPS Routes (17 endpoints)
+All services accessible via: `https://iac1.tailc58ea3.ts.net/[path]`
+
+| Path | Backend | Purpose |
+|------|---------|---------|
+| `/` | http://127.0.0.1:8007 | Command Center home |
+| `/command-center` | http://127.0.0.1:8007 | Command Center V3 UI |
+| `/api` | http://localhost:8005/api | Auth API (JWT tokens) ⭐ |
+| `/backend` | http://localhost:5000 | CRM Voice Backend ⭐ |
+| `/crm` | http://localhost:8003 | INSA CRM Core |
+| `/erpnext` | http://localhost:9000 | ERPNext CRM |
+| `/inventree` | http://localhost:9600 | InvenTree Inventory |
+| `/mautic` | http://localhost:9700 | Mautic Marketing |
+| `/n8n` | http://localhost:5678 | n8n Workflows |
+| `/defectdojo` | http://localhost:8082 | DefectDojo SOC |
+| `/iec62443` | http://localhost:3004 | IEC 62443 Compliance |
+| `/grafana` | http://localhost:3002 | Grafana Analytics |
+| `/code` | http://127.0.0.1:8080 | Code Server |
+| `/manager` | http://127.0.0.1:8002 | Admin Manager |
+| `/admin-api` | http://127.0.0.1:8001 | Admin API |
+| `/keycloak` | http://127.0.0.1:8090 | Keycloak Auth |
+
+⭐ = Added Oct 20, 2025 (HTTPS mixed content fix)
+
+**Key Docs:**
+- HTTPS Fix: `~/COMMAND_CENTER_HTTPS_FIXED_OCT20_2025.md`
+- Tailscale Setup: `~/TAILSCALE_HTTPS_DEPLOYMENT_OCT20_2025.md`
 
 ### Best Practices
 - **Always:** Update docs in git, keep CLAUDE.md light with links
