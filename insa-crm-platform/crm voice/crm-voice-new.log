@@ -1,0 +1,74 @@
+🚀 Starting CRM Voice Assistant Backend...
+Backend will be available at: http://localhost:5000
+
+2025-10-19 19:44:51,991 - __main__ - INFO - Loading Whisper model: base on cpu
+2025-10-19 19:44:52,952 - __main__ - INFO - Whisper model loaded successfully: base
+2025-10-19 19:44:53,583 - __main__ - INFO - Whisper model loaded successfully: base
+2025-10-19 19:44:53,583 - __main__ - INFO - Starting CRM Voice Assistant Backend
+2025-10-19 19:44:53,583 - __main__ - INFO - Host: 0.0.0.0:5000
+2025-10-19 19:44:53,583 - __main__ - INFO - Whisper Model: base
+2025-10-19 19:44:53,583 - __main__ - INFO - Device: cpu
+2025-10-19 19:44:53,583 - __main__ - INFO - Claude Code Path: claude
+ * Serving Flask app 'crm-backend'
+ * Debug mode: off
+2025-10-19 19:44:53,585 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://100.100.101.1:5000
+2025-10-19 19:44:53,585 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-19 19:46:56,529 - werkzeug - INFO - 100.100.101.1 - - [19/Oct/2025 19:46:56] "GET /health HTTP/1.1" 200 -
+2025-10-19 19:47:00,804 - __main__ - INFO - Direct query: What is INSA CRM platform?...
+2025-10-19 19:47:00,804 - __main__ - INFO - Processing query: What is INSA CRM platform?...
+2025-10-19 19:47:00,805 - werkzeug - INFO - 100.100.101.1 - - [19/Oct/2025 19:47:00] "POST /query HTTP/1.1" 200 -
+2025-10-19 19:47:05,262 - __main__ - INFO - Direct query: What are the features?...
+2025-10-19 19:47:05,262 - __main__ - INFO - Processing query: What are the features?...
+2025-10-19 19:47:05,263 - werkzeug - INFO - 100.100.101.1 - - [19/Oct/2025 19:47:05] "POST /query HTTP/1.1" 200 -
+2025-10-19 19:57:37,290 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 19:57:37] "GET /health HTTP/1.1" 200 -
+2025-10-19 19:58:07,343 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 19:58:07] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:19,662 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:19] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:19,792 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:19] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:19,917 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:19] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:20,058 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:20] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:20,327 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:20] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:20,568 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:20] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:20,787 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:20] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:20,998 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:20] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:21,233 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:21] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:21,455 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:21] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:21,688 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:21] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:21,922 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:21] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:22,162 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:22] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:22,440 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:22] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:22,662 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:22] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:06:38,577 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:06:38] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:07:08,590 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:07:08] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:07:38,623 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:07:38] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:08:08,612 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:08:08] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:08:38,586 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:08:38] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:09:08,688 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:09:08] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:09:38,757 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:09:38] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:10:08,588 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:10:08] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:10:38,577 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:10:38] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:11:08,577 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:11:08] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:11:38,576 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:11:38] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:12:08,718 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:12:08] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:23:27,773 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:23:27] "GET /health HTTP/1.1" 200 -
+2025-10-19 20:25:09,533 - __main__ - INFO - Direct query: si, el asistente CAD...
+2025-10-19 20:25:09,533 - __main__ - INFO - Processing query: si, el asistente CAD...
+2025-10-19 20:25:09,534 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:25:09] "POST /query HTTP/1.1" 200 -
+2025-10-19 20:26:26,652 - __main__ - INFO - Direct query: CAD...
+2025-10-19 20:26:26,652 - __main__ - INFO - Processing query: CAD...
+2025-10-19 20:26:26,652 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:26:26] "POST /query HTTP/1.1" 200 -
+2025-10-19 20:26:47,763 - __main__ - INFO - Direct query: what is INSA CRM?...
+2025-10-19 20:26:47,763 - __main__ - INFO - Processing query: what is INSA CRM?...
+2025-10-19 20:26:47,763 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:26:47] "POST /query HTTP/1.1" 200 -
+2025-10-19 20:28:38,307 - __main__ - INFO - Direct query: que haces con la aplicacion...
+2025-10-19 20:28:38,307 - __main__ - INFO - Processing query: que haces con la aplicacion...
+2025-10-19 20:28:38,307 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:28:38] "POST /query HTTP/1.1" 200 -
+2025-10-19 20:28:56,240 - __main__ - INFO - Direct query: que puedes hacer?...
+2025-10-19 20:28:56,240 - __main__ - INFO - Processing query: que puedes hacer?...
+2025-10-19 20:28:56,240 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:28:56] "POST /query HTTP/1.1" 200 -
+2025-10-19 20:32:38,663 - __main__ - INFO - Direct query: que wervicio poedmos trabajar...
+2025-10-19 20:32:38,663 - __main__ - INFO - Processing query: que wervicio poedmos trabajar...
+2025-10-19 20:32:38,664 - werkzeug - INFO - 100.72.142.62 - - [19/Oct/2025 20:32:38] "POST /query HTTP/1.1" 200 -
+Terminated
