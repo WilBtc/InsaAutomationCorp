@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PBIOS 2025 - Top 50 Prospects for INSA Automation Corp</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        .header p {
+            margin: 5px 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .executive-summary {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-box {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin: 0;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+        .tier-section {
+            margin-bottom: 40px;
+        }
+        .tier-header {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px 6px 0 0;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .tier-header.tier1 {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        }
+        .tier-header.tier2 {
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+        }
+        .tier-header.tier3 {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        }
+        .tier-header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+        .tier-badge {
+            font-size: 24px;
+        }
+        .company-grid {
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+        }
+        .company-card {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background-color 0.2s;
+        }
+        .company-card:last-child {
+            border-bottom: none;
+        }
+        .company-card:hover {
+            background-color: #f9fafb;
+        }
+        .company-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin: 0;
+        }
+        .score-badge {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .score-badge.tier1 {
+            background-color: #dc2626;
+        }
+        .score-badge.tier2 {
+            background-color: #d97706;
+        }
+        .score-badge.tier3 {
+            background-color: #059669;
+        }
+        .company-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .info-item {
+            font-size: 14px;
+            color: #4b5563;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        .action-box {
+            background-color: #fef3c7;
+            border-left: 3px solid #f59e0b;
+            padding: 10px 15px;
+            margin-top: 10px;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        .action-box.critical {
+            background-color: #fee2e2;
+            border-left-color: #dc2626;
+        }
+        .action-box strong {
+            color: #991b1b;
+        }
+        .key-points {
+            background-color: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        .key-points h3 {
+            color: #065f46;
+            margin-top: 0;
+        }
+        .key-points ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .key-points li {
+            margin: 8px 0;
+        }
+        .cta-section {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 6px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .cta-section h3 {
+            margin-top: 0;
+            font-size: 24px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: white;
+            color: #1e3a8a;
+            padding: 12px 30px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+        .timeline {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .timeline-item {
+            padding: 10px 0;
+            border-left: 3px solid #3b82f6;
+            padding-left: 15px;
+            margin-left: 10px;
+        }
+        .timeline-date {
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .company-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎯 PBIOS 2025 - Top 50 Prospects</h1>
+            <p><strong>INSA Automation Corp - Strategic Event Intelligence</strong></p>
+            <p>Permian Basin International Oil Show 2025</p>
+            <p>Date: October 22, 2025 | Prepared by: Wil Aroca</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Executive Summary -->
+            <div class="executive-summary">
+                <h2 style="margin-top: 0; color: #1e3a8a;">📊 Executive Summary</h2>
+                <p><strong>Mission Accomplished:</strong> Analyzed 678 PBIOS exhibitors and identified 258 qualified prospects (38% match rate) using AI-powered keyword analysis aligned with INSA's core competencies.</p>
+                <p><strong>Deliverable:</strong> Top 50 highest-scoring prospects ready for immediate CRM import and strategic engagement.</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number">678</div>
+                    <div class="stat-label">Total Exhibitors</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">258</div>
+                    <div class="stat-label">Qualified Prospects</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">50</div>
+                    <div class="stat-label">Top Prospects</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Must-Visit (Tier 1)</div>
+                </div>
+            </div>
+
+            <!-- Key Differentiators -->
+            <div class="key-points">
+                <h3>🎯 INSA's Unique Selling Points for PBIOS</h3>
+                <ul>
+                    <li><strong>IEC 62443 Compliance Expertise</strong> ⭐ - Few competitors offer industrial cybersecurity for automation systems</li>
+                    <li><strong>Full-Stack Automation</strong> - Panel design → SCADA programming → commissioning</li>
+                    <li><strong>Permian Basin Local</strong> - Texas-based with fast response times</li>
+                    <li><strong>Multi-Platform Expertise</strong> - Allen-Bradley, Siemens, Schneider, Modicon, GE</li>
+                    <li><strong>Proven Oil & Gas Track Record</strong> - Production automation, compressor stations, process control</li>
+                </ul>
+            </div>
+
+            <!-- TIER 1: MUST VISIT -->
+            <div class="tier-section">
+                <div class="tier-header tier1">
+                    <span class="tier-badge">🔥</span>
+                    <h2>TIER 1: MUST-VISIT COMPANIES (5 Companies - Score 18-23)</h2>
+                </div>
+                <div class="company-grid">
+                    <!-- Company 1 -->
+                    <div class="company-card">
+                        <div class="company-header">
+                            <h3 class="company-name">1. Saginaw Control & Engineering ⭐</h3>
+                            <span class="score-badge tier1">23/23</span>
+                        </div>
+                        <div class="company-info">
+                            <div class="info-item">
+                                <span class="info-label">Booth:</span> E-19
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Category:</span> Control Systems & Engineering
+                            </div>
+                        </div>
+                        <p><strong>Why Critical:</strong> PERFECT MATCH - Direct competitor/partner in control systems with engineering services focus. This is the #1 priority company at PBIOS 2025.</p>
+                        <div class="action-box critical">
+                            <strong>ACTION:</strong> Schedule pre-event meeting. Research their recent projects. Prepare custom INSA capabilities presentation. Discuss collaboration on large projects and explore subcontractor opportunities.
+                        </div>
+                        <div class="action-box critical">
+                            <strong>FOLLOW-UP:</strong> IMMEDIATE (within 24 hours post-event)
+                        </div>
+                    </div>
+
+                    <!-- Company 2 -->
+                    <div class="company-card">
+                        <div class="company-header">
+                            <h3 class="company-name">2. VanZandt Controls / Eagle Automation</h3>
+                            <span class="score-badge tier1">20/23</span>
+                        </div>
+                        <div class="company-info">
+                            <div class="info-item">
+                                <span class="info-label">Booths:</span> J-123, J-124, J-125, OS193 (4 booths!)
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Category:</span> Oil & Gas Service Provider
+                            </div>
+                        </div>
+                        <p><strong>Why Critical:</strong> MAJOR PRESENCE - 4 booths indicates substantial industry player. Control systems + automation focus perfectly aligns with INSA.</p>
+                        <div class="action-box critical">
+                            <strong>ACTION:</strong> Identify their automation platform (PLC brands, SCADA systems). Discuss integration capabilities and mutual project opportunities.
+                        </div>
+                        <div class="action-box critical">
+                            <strong>FOLLOW-UP:</strong> HIGH (within 48 hours)
+                        </div>
+                    </div>
+
+                    <!-- Company 3 -->
+                    <div class="company-card">
+                        <div class="company-header">
+                            <h3 class="company-name">3. Vector Controls & Automation</h3>
+                            <span class="score-badge tier1">20/23</span>
+                        </div>
+                        <div class="company-info">
+                            <div class="info-item">
+                                <span class="info-label">Booths:</span> A-3, A-4, A-5 (3 booths)
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Category:</span> Automation Manufacturer
+                            </div>
+                        </div>
+                        <p><strong>Why Critical:</strong> Direct overlap in automation services. Multi-booth presence shows scale and market position.</p>
+                        <div class="action-box critical">
+                            <strong>ACTION:</strong> Understand their product lines. Identify complementary vs. competing offerings. Explore OEM/reseller partnership opportunities.
+                        </div>
+                        <div class="action-box critical">
+                            <strong>FOLLOW-UP:</strong> HIGH (within 48 hours)
+                        </div>
+                    </div>
+
+                    <!-- Company 4 -->
+                    <div class="company-card">
+                        <div class="company-header">
+                            <h3 class="company-name">4. FW Murphy Production Controls</h3>
+                            <span class="score-badge tier1">18/23</span>
+                        </div>
+                        <div class="company-info">
+                            <div class="info-item">
+                                <span class="info-label">Booths:</span> A-1, A-2 (PRIME ENTRANCE)
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Category:</span> Automation Equipment Mfg
+                            </div>
+                        </div>
+                        <p><strong>Why Critical:</strong> PRIME LOCATION (first booths at entrance) indicates industry leader. Production control systems for oil & gas perfectly align with INSA's focus.</p>
+                        <div class="action-box critical">
+                            <strong>ACTION:</strong> Review their control panels and PLCs. Discuss integration with INSA's system integration services. Explore becoming authorized integrator/installer.
+                        </div>
+                        <div class="action-box critical">
+                            <strong>FOLLOW-UP:</strong> HIGH (within 48 hours)
+                        </div>
+                    </div>
+
+                    <!-- Company 5 -->
+                    <div class="company-card">
+                        <div class="company-header">
+                            <h3 class="company-name">5. Vinson Process Controls Company</h3>
+                            <span class="score-badge tier1">18/23</span>
+                        </div>
+                        <div class="company-info">
+                            <div class="info-item">
+                                <span class="info-label">Booths:</span> A-42, A-43, A-44, A-45 (4 booths!)
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Category:</span> Automation Equipment Mfg
+                            </div>
+                        </div>
+                        <p><strong>Why Critical:</strong> Process control = INSA's CORE COMPETENCY. 4-booth presence indicates substantial company with significant market share.</p>
+                        <div class="action-box critical">
+                            <strong>ACTION:</strong> Deep dive into their process control solutions. Identify gaps where INSA can add value (custom engineering). Discuss becoming systems integrator for their equipment.
+                        </div>
+                        <div class="action-box critical">
+                            <strong>FOLLOW-UP:</strong> HIGH (within 48 hours)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIER 2: HIGH VALUE -->
+            <div class="tier-section">
+                <div class="tier-header tier2">
+                    <span class="tier-badge">🌟</span>
+                    <h2>TIER 2: HIGH-VALUE PROSPECTS (12 Companies - Score 13-17)</h2>
+                </div>
+                <div class="company-grid">
+                    <div class="company-card">
+                        <h4 style="color: #d97706; margin-top: 0;">Engineering Firms (EPC Companies)</h4>
+                        <p><strong>Why Important:</strong> These companies design and build facilities - they NEED automation integrators like INSA for their projects.</p>
+                        <ul style="margin: 10px 0;">
+                            <li><strong>3S Engineering & Design</strong> - Booth: J-119 (Score: 13)</li>
+                            <li><strong>COMM Engineering</strong> - Booth: D-32 (Score: 13)</li>
+                            <li><strong>Crimson Engineering</strong> - Booth: A-58, A-59 (Score: 13)</li>
+                            <li><strong>KENCO Engineering</strong> - Booth: B-92, B-93 (Score: 13)</li>
+                            <li><strong>Lanmark Engineering</strong> - Booth: D-104 (Score: 13)</li>
+                            <li><strong>Wanner Engineering</strong> - Booth: J-101 (Score: 13)</li>
+                        </ul>
+                        <div class="action-box">
+                            <strong>Engagement Strategy:</strong> Ask about upcoming projects requiring automation. Share INSA's IEC 62443 expertise. Offer budgetary quotes for proposals. Get on RFQ mailing list.
+                        </div>
+                    </div>
+
+                    <div class="company-card">
+                        <h4 style="color: #d97706; margin-top: 0;">Control & Automation Companies</h4>
+                        <ul style="margin: 10px 0;">
+                            <li><strong>Chicago Valves & Controls</strong> - Booth: B-97 (Score: 13)</li>
+                            <li><strong>Flo-Tite Valves & Controls</strong> - Booth: C-84 (Score: 13)</li>
+                            <li><strong>Legacy Flow Control</strong> - Booth: J-10, J-8, J-9 (Score: 13)</li>
+                            <li><strong>Pumps and Controls</strong> - Booth: A-31 (Score: 13)</li>
+                        </ul>
+                        <div class="action-box">
+                            <strong>Engagement Strategy:</strong> Identify if manufacturers or distributors. Explore integration partnerships. Discuss co-marketing for complete solutions.
+                        </div>
+                    </div>
+
+                    <div class="company-card">
+                        <h4 style="color: #d97706; margin-top: 0;">Service & Equipment</h4>
+                        <ul style="margin: 10px 0;">
+                            <li><strong>Filtration Systems / Fluid Power Energy</strong> - Booth: E-57, E-58 (Score: 14)</li>
+                            <li><strong>Central Power Systems & Services</strong> - Booth: OS111, OS112 (Score: 13)</li>
+                        </ul>
+                        <div class="action-box">
+                            <strong>Time Investment:</strong> 15-20 minutes per booth. Exchange literature, qualify specific needs.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIER 3: QUALIFIED NETWORKING -->
+            <div class="tier-section">
+                <div class="tier-header tier3">
+                    <span class="tier-badge">✅</span>
+                    <h2>TIER 3: QUALIFIED NETWORKING (33 Companies - Score 10-12)</h2>
+                </div>
+                <div class="company-grid">
+                    <div class="company-card">
+                        <p><strong>Strategy:</strong> Quick visits (5-10 min), business card exchange, build industry awareness for future opportunities.</p>
+
+                        <h4 style="color: #059669; margin-top: 15px;">Select TIER 3 Companies:</h4>
+                        <div style="column-count: 2; column-gap: 20px;">
+                            <ul style="margin: 10px 0;">
+                                <li>2A Energy Services (A-37, A-38) - Score: 12</li>
+                                <li>Creedence Energy Services (D-44) - Score: 12</li>
+                                <li>Double T Oilfield Services (E-7) - Score: 12</li>
+                                <li>Automation-X (B-63, B-64) - Score: 11</li>
+                                <li>Beckhoff Automation (B-22, B-23) - Score: 11 ⭐ Major PLC Brand</li>
+                                <li>CONSPEC Controls (C-68, C-69) - Score: 11</li>
+                                <li>Edwards Automation & Design (E-117) - Score: 11</li>
+                                <li>Matherne Instrumentation (B-51, B-52) - Score: 11</li>
+                                <li>SPOC Automation (J-41) - Score: 11</li>
+                                <li>Sable Controls (J-37) - Score: 11</li>
+                                <li><em>...and 23 more qualified companies</em></li>
+                            </ul>
+                        </div>
+                        <div class="action-box">
+                            <strong>Goal:</strong> Network efficiently, collect 50+ business cards, identify unexpected opportunities.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Timeline -->
+            <div class="timeline">
+                <h3 style="color: #1e3a8a; margin-top: 0;">📅 Action Timeline</h3>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">📌 Before Event (This Week)</div>
+                    <ul style="margin: 5px 0;">
+                        <li>Research all 5 TIER 1 companies (websites, LinkedIn, key contacts)</li>
+                        <li>Prepare marketing materials (brochures, business cards 300+, case studies)</li>
+                        <li>Optional: Send pre-event email to TIER 1 requesting booth meetings</li>
+                        <li>Import all 50 prospects into ERPNext CRM</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">🎯 During Event (Day 1)</div>
+                    <ul style="margin: 5px 0;">
+                        <li>Morning: Visit all 5 TIER 1 booths (45 min each = 3.75 hours)</li>
+                        <li>Afternoon: Start TIER 2 visits (aim for 6-8 companies)</li>
+                        <li>Take detailed notes, collect cards, schedule follow-ups</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">📧 Post-Event (Day 1)</div>
+                    <ul style="margin: 5px 0;">
+                        <li>Email all TIER 1 companies same day if possible</li>
+                        <li>Reference specific conversation points</li>
+                        <li>Attach relevant case study</li>
+                        <li>Propose next steps (call, quote, meeting)</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">📞 Week 1 After Event</div>
+                    <ul style="margin: 5px 0;">
+                        <li>Schedule TIER 1 follow-up calls (within 5 business days)</li>
+                        <li>Send personalized emails to TIER 2 prospects</li>
+                        <li>Update all contacts in ERPNext CRM with notes</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">🎯 Week 2-4 (30 Days)</div>
+                    <ul style="margin: 5px 0;">
+                        <li>Submit proposals/quotes to TIER 1 (target: 2+ quotes)</li>
+                        <li>Follow-up calls with interested TIER 2 prospects</li>
+                        <li>General nurture email campaign for TIER 3</li>
+                        <li><strong>GOAL: Close 1 project within 90 days</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Success Metrics -->
+            <div class="key-points" style="background-color: #fef3c7; border-color: #fcd34d;">
+                <h3 style="color: #92400e;">🎯 Success Metrics</h3>
+
+                <p><strong>Event Goals:</strong></p>
+                <ul>
+                    <li>☐ Visit all 5 TIER 1 companies (100%)</li>
+                    <li>☐ Visit at least 10 TIER 2 companies (83%)</li>
+                    <li>☐ Collect 50+ qualified business cards</li>
+                    <li>☐ Schedule 3+ post-event follow-up calls</li>
+                    <li>☐ Identify 1-2 immediate project opportunities</li>
+                </ul>
+
+                <p><strong>30-Day Goals:</strong></p>
+                <ul>
+                    <li>☐ Convert 2+ TIER 1 prospects to active discussions</li>
+                    <li>☐ Submit 2+ quotes/proposals</li>
+                    <li>☐ Add all 50 prospects to ERPNext CRM</li>
+                </ul>
+
+                <p><strong>90-Day Goals:</strong></p>
+                <ul>
+                    <li>☐ Win 1+ project from PBIOS leads</li>
+                    <li>☐ Establish 2+ ongoing relationships</li>
+                    <li>☐ Generate $50K+ in pipeline value</li>
+                </ul>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="cta-section">
+                <h3>🚀 Ready to Execute?</h3>
+                <p>All 50 prospects are analyzed, scored, and ready for CRM import.</p>
+                <p>Complete analysis available at: <code>~/PBIOS_2025_CRM_IMPORT_READY.md</code></p>
+                <p style="margin-top: 20px;">
+                    <a href="#" class="cta-button">✅ Approve Import to CRM</a>
+                    <a href="#" class="cta-button">📧 Send Pre-Event Emails</a>
+                </p>
+            </div>
+
+            <!-- Data Files -->
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 6px; margin-top: 30px;">
+                <h3 style="color: #1e3a8a; margin-top: 0;">📁 Supporting Files</h3>
+                <p><strong>Location:</strong> <code>/home/wil/J.casas/</code></p>
+                <ul>
+                    <li><strong>insa_prospect_analysis.json</strong> - Complete database (258 qualified prospects)</li>
+                    <li><strong>pbios_2025_exhibitors_FINAL.xlsx</strong> - All 678 companies with contact data</li>
+                    <li><strong>INSA_TOP_PROSPECTS_PBIOS_2025.md</strong> - Detailed engagement strategies</li>
+                    <li><strong>PBIOS_2025_CRM_IMPORT_READY.md</strong> - Complete 500+ line implementation guide</li>
+                </ul>
+            </div>
+
+            <!-- Why This Matters -->
+            <div style="background-color: #eff6ff; padding: 20px; border-radius: 6px; margin-top: 30px; border-left: 4px solid #3b82f6;">
+                <h3 style="color: #1e40af; margin-top: 0;">💡 Why This Analysis Matters</h3>
+
+                <p><strong>Strategic Value:</strong></p>
+                <ul>
+                    <li>✅ <strong>Saves Time:</strong> Focus on 50 qualified prospects instead of 678 random booths</li>
+                    <li>✅ <strong>Increases ROI:</strong> 5 TIER 1 companies = highest conversion probability</li>
+                    <li>✅ <strong>Competitive Edge:</strong> Pre-event research gives INSA advantage over walk-ins</li>
+                    <li>✅ <strong>Measurable:</strong> Clear scoring system allows post-event analysis</li>
+                </ul>
+
+                <p><strong>Expected Outcomes:</strong></p>
+                <ul>
+                    <li>🎯 2-3 immediate project opportunities from TIER 1</li>
+                    <li>📧 5-10 qualified proposals submitted within 30 days</li>
+                    <li>💰 1-2 projects won within 90 days</li>
+                    <li>🤝 Long-term relationships with 5+ new partners/clients</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Prepared By:</strong> Wil Aroca (w.aroca@insaing.com) | <strong>For:</strong> Juan Casas & INSA Automation Corp Team</p>
+            <p><strong>Server:</strong> iac1 (100.100.101.1) | <strong>Date:</strong> October 22, 2025</p>
+            <p><strong>Analysis Method:</strong> AI-powered keyword matching aligned with INSA's core competencies</p>
+            <p style="margin-top: 15px; font-style: italic;">This analysis identified 258 qualified prospects from 678 PBIOS exhibitors (38% match rate) using industrial automation, process control, and oil & gas expertise alignment.</p>
+            <p style="margin-top: 10px;"><strong>Made by Insa Automation Corp for OpSec</strong></p>
+        </div>
+    </div>
+</body>
+</html>
