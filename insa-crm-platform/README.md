@@ -1,8 +1,8 @@
 # INSA CRM Platform
 **AI-Powered Industrial Automation CRM Ecosystem**
 
-**Version:** 2.0.0 (Consolidated)
-**Date:** October 18, 2025
+**Version:** 2.1.0 (Multi-Regional Operations)
+**Date:** October 23, 2025
 **Status:** ✅ PRODUCTION READY
 **Server:** iac1 (100.100.101.1)
 
@@ -19,6 +19,18 @@ Project Execution → Invoice Generation → Customer Success → Repeat Sales
 ```
 
 **All automated. All integrated. All AI-powered.**
+
+### 🌎 Geographic Coverage
+
+**Multi-Regional Operations:** Colombia 🇨🇴 + United States 🇺🇸
+
+- **Colombia:** RETIE/NTC compliance, 220V/440V systems, Spanish operations
+- **United States:** NEC/NFPA compliance, 480V systems, English operations
+- **Bilingual Support:** All technical documentation in Spanish & English
+- **Multi-Currency:** COP (Colombian Peso) + USD (US Dollar)
+- **Regional Expertise:** Local vendors, regulations, business practices
+
+See: **`docs/COLOMBIA_OPERATIONS_REFERENCE.md`** for comprehensive Colombia operations guide.
 
 ---
 
@@ -97,7 +109,7 @@ Ask Claude Code:
 ## 🛠️ Components
 
 ### 1. INSA CRM Core (`core/`)
-- **Purpose:** AI-powered lead qualification
+- **Purpose:** AI-powered lead qualification & industrial automation expertise
 - **Technology:** FastAPI + PostgreSQL + Claude AI
 - **API:** http://100.100.101.1:8003
 - **Features:**
@@ -105,6 +117,12 @@ Ask Claude Code:
   - Priority classification (IMMEDIATE/HIGH/MEDIUM/LOW)
   - Automatic action recommendations
   - Multi-agent architecture ready
+- **Skill Package:** Complete CRM capabilities (see `INSA_CRM_SKILL.md`)
+  - Customer/Account Management (multi-currency, bilingual)
+  - Project Management (P&ID, electrical design, energy optimization)
+  - Technical Documentation (compliance: IEC 62443, RETIE, NERC CIP)
+  - Equipment Library (PLCs, SCADA, VFDs, Industrial Networking)
+  - Geographic Coverage: Colombia 🇨🇴 + United States 🇺🇸
 
 ### 2. ERPNext CRM MCP (`mcp-servers/erpnext-crm/`)
 - **Purpose:** Complete sales cycle automation
@@ -176,6 +194,7 @@ Ask Claude Code:
 
 ### Getting Started
 - **QUICKSTART.md** - Get started in 5 minutes
+- **INSA_CRM_SKILL.md** - Complete CRM skill package for Claude Code agents ⭐ NEW
 - **core/README.md** - INSA CRM Core documentation
 - **mcp-servers/*/README.md** - Individual MCP server guides
 
@@ -187,6 +206,14 @@ Ask Claude Code:
 - **docs/guides/MAUTIC_MCP_COMPLETE_GUIDE.md** - Mautic admin guide (48KB)
 - **docs/guides/INSA_PROJECT_WORKFLOW_RAG_MEMORY.md** - Project workflow guide (900+ lines)
 - **docs/guides/RESOURCE_PROTECTION_COMPLETE.md** - Resource protection strategies
+
+### Regional Operations
+- **docs/COLOMBIA_OPERATIONS_REFERENCE.md** - Complete Colombia operations guide ⭐ NEW
+  - RETIE/NTC regulations and compliance
+  - Voltage systems (220V/440V vs US 480V)
+  - Equipment derating for altitude (Bogotá: 2,640m)
+  - Local vendors, business practices, project checklists
+  - Bilingual technical terminology (1,000+ lines)
 
 ---
 
@@ -311,6 +338,16 @@ Proprietary - INSA Automation Corp © 2025
 ---
 
 ## 🎉 Changelog
+
+### Version 2.1.0 (October 23, 2025) - Multi-Regional Operations
+- ✅ Added comprehensive Colombia Operations Reference Guide
+- ✅ Created INSA CRM Skill package for Claude Code agents
+- ✅ Multi-regional support: Colombia 🇨🇴 + United States 🇺🇸
+- ✅ RETIE/NTC compliance documentation
+- ✅ Bilingual operations (Spanish/English)
+- ✅ Multi-currency support (COP/USD)
+- ✅ Equipment library with IEC/NEMA standards
+- ✅ Regional vendor networks and business practices
 
 ### Version 2.0.0 (October 18, 2025) - Consolidated Platform
 - ✅ Unified all CRM components into single directory
