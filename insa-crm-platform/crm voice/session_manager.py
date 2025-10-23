@@ -45,7 +45,7 @@ class SessionManager:
             table_exists = cursor.fetchone() is not None
 
             if table_exists:
-                # Check if user_id column exists
+                # Check if user_id and conversation_history columns exist
                 cursor = conn.execute("PRAGMA table_info(sessions)")
                 columns = [row[1] for row in cursor.fetchall()]
 
@@ -54,8 +54,14 @@ class SessionManager:
                     logger.info("Migrating sessions table: Adding user_id column")
                     conn.execute("ALTER TABLE sessions ADD COLUMN user_id INTEGER")
                     logger.info("Migration complete: user_id column added")
+
+                if 'conversation_history' not in columns:
+                    # Add conversation_history column to existing table
+                    logger.info("Migrating sessions table: Adding conversation_history column")
+                    conn.execute("ALTER TABLE sessions ADD COLUMN conversation_history TEXT DEFAULT '[]'")
+                    logger.info("Migration complete: conversation_history column added")
             else:
-                # Create new table with user_id column
+                # Create new table with all columns
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS sessions (
                         session_id TEXT PRIMARY KEY,
@@ -64,6 +70,7 @@ class SessionManager:
                         last_query TEXT,
                         context TEXT,
                         sizing_session TEXT,
+                        conversation_history TEXT DEFAULT '[]',
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
@@ -107,9 +114,10 @@ class SessionManager:
                     'last_agent': row['last_agent'],
                     'last_query': row['last_query'],
                     'context': json.loads(row['context'] or '{}'),
-                    'sizing_session': json.loads(row['sizing_session'] or '{}')
+                    'sizing_session': json.loads(row['sizing_session'] or '{}'),
+                    'conversation_history': json.loads(row['conversation_history'] or '[]')
                 }
-                logger.debug(f"Retrieved session {session_id}")
+                logger.debug(f"Retrieved session {session_id} with {len(session['conversation_history'])} messages")
                 return session
             else:
                 # Return empty session
@@ -129,19 +137,21 @@ class SessionManager:
             # Serialize JSON fields
             context_json = json.dumps(session_data.get('context', {}))
             sizing_json = json.dumps(session_data.get('sizing_session', {}))
+            history_json = json.dumps(session_data.get('conversation_history', []))
 
             conn.execute("""
                 INSERT INTO sessions (
                     session_id, user_id, last_agent, last_query, context,
-                    sizing_session, updated_at
+                    sizing_session, conversation_history, updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                 ON CONFLICT(session_id) DO UPDATE SET
                     user_id = excluded.user_id,
                     last_agent = excluded.last_agent,
                     last_query = excluded.last_query,
                     context = excluded.context,
                     sizing_session = excluded.sizing_session,
+                    conversation_history = excluded.conversation_history,
                     updated_at = CURRENT_TIMESTAMP
             """, (
                 session_id,
@@ -149,11 +159,13 @@ class SessionManager:
                 session_data.get('last_agent'),
                 session_data.get('last_query'),
                 context_json,
-                sizing_json
+                sizing_json,
+                history_json
             ))
 
             conn.commit()
-            logger.debug(f"Saved session {session_id} for user {user_id}")
+            history_len = len(session_data.get('conversation_history', []))
+            logger.debug(f"Saved session {session_id} for user {user_id} with {history_len} messages")
 
     def delete_session(self, session_id: str):
         """
@@ -249,6 +261,7 @@ class SessionManager:
             'last_agent': None,
             'last_query': None,
             'context': {},
+            'conversation_history': [],
             'sizing_session': {
                 'active': False,
                 'project_type': None,
@@ -260,6 +273,55 @@ class SessionManager:
                 'full_description': []
             }
         }
+
+    def add_message(self, session_id: str, role: str, content: str, agent: str = None):
+        """
+        Add a message to conversation history
+
+        Args:
+            session_id: Session identifier
+            role: Message role ('user' or 'assistant')
+            content: Message content
+            agent: Agent that handled the message (optional)
+        """
+        session_data = self.get_session(session_id)
+
+        # Get or initialize conversation history
+        history = session_data.get('conversation_history', [])
+
+        # Add new message with timestamp
+        message = {
+            'role': role,
+            'content': content,
+            'timestamp': datetime.now().isoformat(),
+            'agent': agent
+        }
+        history.append(message)
+
+        # Keep only last 50 messages (25 turns) to prevent database bloat
+        if len(history) > 50:
+            history = history[-50:]
+
+        session_data['conversation_history'] = history
+        self.save_session(session_id, session_data)
+        logger.debug(f"Added {role} message to session {session_id} (total: {len(history)})")
+
+    def get_recent_messages(self, session_id: str, limit: int = 10) -> list:
+        """
+        Get recent messages from conversation history
+
+        Args:
+            session_id: Session identifier
+            limit: Number of recent messages to return (default: 10)
+
+        Returns:
+            List of recent messages (most recent last)
+        """
+        session_data = self.get_session(session_id)
+        history = session_data.get('conversation_history', [])
+
+        # Return last N messages
+        return history[-limit:] if len(history) > limit else history
 
 
 # Global session manager instance
