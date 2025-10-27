@@ -78,6 +78,23 @@ WEBHOOK_CONFIG = {
     'rate_limit_seconds': 1  # Minimum seconds between requests to same URL
 }
 
+# Redis configuration for performance caching
+REDIS_CONFIG = {
+    'host': 'localhost',  # Redis server host
+    'port': 6379,  # Redis server port
+    'db': 0,  # Redis database number
+    'password': None,  # Redis password (None for no authentication)
+    'decode_responses': True,  # Automatically decode responses to strings
+    'socket_timeout': 5,  # Socket timeout in seconds
+    'max_connections': 50  # Maximum connections in pool
+}
+
+# Grafana integration configuration
+GRAFANA_CONFIG = {
+    'url': 'http://100.100.101.1:3002',  # Grafana server on iac1
+    'api_key': None  # Optional: API key for authentication
+}
+
 # ============================================================================
 # DATABASE UTILITIES
 # ============================================================================
@@ -1832,6 +1849,28 @@ if __name__ == '__main__':
         logger.info("✅ Webhook notifier initialized")
         logger.info(f"🔒 Security: SSRF protection enabled, private IPs blocked")
         logger.info(f"⚡ Retry policy: {WEBHOOK_CONFIG['max_retries']} attempts with exponential backoff")
+
+        # Initialize Redis cache
+        logger.info("Initializing Redis cache...")
+        from redis_cache import init_redis_cache
+        redis_cache = init_redis_cache(REDIS_CONFIG)
+        if redis_cache.test_connection():
+            logger.info("✅ Redis cache initialized and connection verified")
+            logger.info(f"📊 Cache Endpoint: {REDIS_CONFIG['host']}:{REDIS_CONFIG['port']}/{REDIS_CONFIG['db']}")
+            cache_info = redis_cache.get_cache_info()
+            logger.info(f"💾 Memory Usage: {cache_info.get('used_memory', 'N/A')}")
+        else:
+            logger.warning("⚠️  Redis connection failed - continuing without caching")
+            logger.warning("Performance may be impacted without Redis cache")
+
+        # Initialize Grafana integration
+        logger.info("Initializing Grafana integration...")
+        from grafana_integration import init_grafana_integration
+        grafana_integration = init_grafana_integration(GRAFANA_CONFIG['url'], GRAFANA_CONFIG.get('api_key'))
+        logger.info("✅ Grafana integration initialized")
+        logger.info(f"📊 Grafana Endpoint: {GRAFANA_CONFIG['url']}")
+        logger.info(f"📈 Dashboards: Device Overview, Telemetry, Alerts & Rules")
+        logger.info(f"💡 Run provision_grafana_dashboards.py to create dashboards")
 
         logger.info("🚀 Starting server on http://0.0.0.0:5002")
         logger.info("📚 API Documentation: http://localhost:5002/api/v1/docs")
