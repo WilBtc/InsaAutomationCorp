@@ -24,6 +24,7 @@ import hashlib
 import secrets
 from functools import wraps
 import logging
+from mqtt_broker import init_broker, get_broker
 
 # Configure logging
 logging.basicConfig(
@@ -1124,6 +1125,154 @@ def api_status():
         conn.close()
 
 # ============================================================================
+# MQTT ENDPOINTS
+# ============================================================================
+
+@app.route('/api/v1/mqtt/info', methods=['GET'])
+@jwt_required()
+def get_mqtt_info():
+    """Get MQTT broker connection information"""
+    try:
+        broker = get_broker()
+        if not broker:
+            return jsonify({'error': 'MQTT broker not initialized'}), 503
+
+        info = broker.get_connection_info()
+        return jsonify({
+            'broker': info,
+            'message': 'MQTT broker information retrieved successfully'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"MQTT info error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/mqtt/publish', methods=['POST'])
+@jwt_required()
+def mqtt_publish():
+    """Publish message to MQTT topic
+
+    Body:
+    {
+        "topic": "insa/devices/abc-123/telemetry",
+        "payload": {...},
+        "qos": 1,
+        "retain": false
+    }
+    """
+    try:
+        data = request.get_json()
+
+        if not data or 'topic' not in data or 'payload' not in data:
+            return jsonify({'error': 'Missing required fields: topic, payload'}), 400
+
+        broker = get_broker()
+        if not broker or not broker.connected:
+            return jsonify({'error': 'MQTT broker not connected'}), 503
+
+        topic = data['topic']
+        payload = data['payload']
+        qos = data.get('qos', 1)
+        retain = data.get('retain', False)
+
+        success = broker.publish(topic, payload, qos=qos, retain=retain)
+
+        if success:
+            return jsonify({
+                'message': 'Message published successfully',
+                'topic': topic
+            }), 200
+        else:
+            return jsonify({'error': 'Failed to publish message'}), 500
+
+    except Exception as e:
+        logger.error(f"MQTT publish error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/mqtt/command', methods=['POST'])
+@jwt_required()
+def send_device_command():
+    """Send command to device via MQTT
+
+    Body:
+    {
+        "device_id": "uuid",
+        "command": "reboot",
+        "parameters": {...}
+    }
+    """
+    try:
+        data = request.get_json()
+
+        if not data or 'device_id' not in data or 'command' not in data:
+            return jsonify({'error': 'Missing required fields: device_id, command'}), 400
+
+        broker = get_broker()
+        if not broker or not broker.connected:
+            return jsonify({'error': 'MQTT broker not connected'}), 503
+
+        device_id = data['device_id']
+        command = data['command']
+        parameters = data.get('parameters', {})
+
+        success = broker.send_command_to_device(device_id, command, parameters)
+
+        if success:
+            return jsonify({
+                'message': 'Command sent successfully',
+                'device_id': device_id,
+                'command': command
+            }), 200
+        else:
+            return jsonify({'error': 'Failed to send command'}), 500
+
+    except Exception as e:
+        logger.error(f"MQTT command error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/mqtt/test/publish', methods=['POST'])
+@jwt_required()
+def test_mqtt_publish():
+    """Test MQTT by publishing telemetry for a device
+
+    Body:
+    {
+        "device_id": "uuid",
+        "telemetry": {
+            "temperature": {"value": 25.5, "unit": "C"},
+            "humidity": {"value": 65, "unit": "%"}
+        }
+    }
+    """
+    try:
+        data = request.get_json()
+
+        if not data or 'device_id' not in data or 'telemetry' not in data:
+            return jsonify({'error': 'Missing required fields: device_id, telemetry'}), 400
+
+        broker = get_broker()
+        if not broker or not broker.connected:
+            return jsonify({'error': 'MQTT broker not connected'}), 503
+
+        device_id = data['device_id']
+        telemetry = data['telemetry']
+
+        success = broker.publish_telemetry(device_id, telemetry)
+
+        if success:
+            return jsonify({
+                'message': 'Test telemetry published successfully',
+                'device_id': device_id,
+                'note': 'MQTT broker will receive and store this data automatically'
+            }), 200
+        else:
+            return jsonify({'error': 'Failed to publish test telemetry'}), 500
+
+    except Exception as e:
+        logger.error(f"MQTT test publish error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# ============================================================================
 # INITIALIZATION & MAIN
 # ============================================================================
 
@@ -1170,6 +1319,15 @@ if __name__ == '__main__':
 
         # Create default user
         create_default_user()
+
+        # Initialize MQTT broker
+        logger.info("Initializing MQTT broker...")
+        mqtt_broker = init_broker(DB_CONFIG, host='localhost', port=1883)
+        if mqtt_broker and mqtt_broker.connected:
+            logger.info("✅ MQTT broker connected successfully")
+            logger.info(f"📡 MQTT Endpoint: mqtt://localhost:1883")
+        else:
+            logger.warning("⚠️  MQTT broker connection failed - continuing without MQTT")
 
         logger.info("🚀 Starting server on http://0.0.0.0:5002")
         logger.info("📚 API Documentation: http://localhost:5002/api/v1/docs")
