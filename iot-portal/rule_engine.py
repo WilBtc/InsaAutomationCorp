@@ -69,28 +69,45 @@ class RuleEngine:
         logger.info("Rule engine stopped")
 
     def evaluate_all_rules(self):
-        """Evaluate all active rules"""
+        """Evaluate all active rules with Redis caching"""
         try:
-            conn = psycopg2.connect(**self.db_config, cursor_factory=RealDictCursor)
-            cur = conn.cursor()
+            # Try to get rules from cache first
+            from redis_cache import get_redis_cache
+            cache = get_redis_cache()
+            rules = None
 
-            # Get all active rules
-            cur.execute("""
-                SELECT * FROM rules
-                WHERE enabled = true
-                ORDER BY priority DESC
-            """)
+            if cache:
+                rules = cache.get_rules()
+                if rules:
+                    logger.debug(f"Using cached rules: {len(rules)} rules")
 
-            rules = cur.fetchall()
+            # If not cached, fetch from database
+            if rules is None:
+                conn = psycopg2.connect(**self.db_config, cursor_factory=RealDictCursor)
+                cur = conn.cursor()
 
+                # Get all active rules
+                cur.execute("""
+                    SELECT * FROM rules
+                    WHERE enabled = true
+                    ORDER BY priority DESC
+                """)
+
+                rules = cur.fetchall()
+                cur.close()
+                conn.close()
+
+                # Cache rules for next evaluation
+                if cache and rules:
+                    cache.cache_rules(rules)
+                    logger.debug(f"Cached {len(rules)} rules from database")
+
+            # Evaluate each rule
             for rule in rules:
                 try:
                     self._evaluate_rule(rule)
                 except Exception as e:
                     logger.error(f"Error evaluating rule {rule['id']}: {e}")
-
-            cur.close()
-            conn.close()
 
         except Exception as e:
             logger.error(f"Error in evaluate_all_rules: {e}")
