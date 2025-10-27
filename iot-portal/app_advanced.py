@@ -25,6 +25,7 @@ import secrets
 from functools import wraps
 import logging
 from mqtt_broker import init_broker, get_broker
+from socketio_server import init_websocket_server, get_websocket_server
 
 # Configure logging
 logging.basicConfig(
@@ -1273,6 +1274,149 @@ def test_mqtt_publish():
         return jsonify({'error': str(e)}), 500
 
 # ============================================================================
+# WEBSOCKET API ENDPOINTS
+# ============================================================================
+
+@app.route('/api/v1/websocket/info', methods=['GET'])
+@jwt_required()
+def get_websocket_info():
+    """
+    Get WebSocket server information and connection statistics
+
+    Returns connection counts, authenticated clients, subscriptions
+    """
+    try:
+        ws_server = get_websocket_server()
+        if not ws_server:
+            return jsonify({'error': 'WebSocket server not initialized'}), 503
+
+        stats = ws_server.get_connection_stats()
+
+        return jsonify({
+            'websocket': {
+                'endpoint': 'ws://localhost:5002/socket.io/',
+                'protocol': 'Socket.IO',
+                'status': 'active'
+            },
+            'connections': stats,
+            'features': [
+                'Real-time telemetry updates',
+                'Device status notifications',
+                'Alert broadcasts',
+                'JWT authentication'
+            ],
+            'events': {
+                'client_to_server': [
+                    'connect',
+                    'authenticate',
+                    'subscribe_device',
+                    'unsubscribe_device',
+                    'subscribe_all_devices',
+                    'get_status'
+                ],
+                'server_to_client': [
+                    'telemetry_update',
+                    'device_status',
+                    'alert',
+                    'alert_update'
+                ]
+            }
+        }), 200
+
+    except Exception as e:
+        logger.error(f"WebSocket info error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/websocket/test/telemetry', methods=['POST'])
+@jwt_required()
+def test_websocket_telemetry():
+    """
+    Test WebSocket by emitting a telemetry update
+
+    Request body:
+    {
+        "device_id": "uuid",
+        "telemetry": {"temperature": 25.5, "humidity": 60}
+    }
+    """
+    try:
+        data = request.get_json()
+
+        if not data or 'device_id' not in data or 'telemetry' not in data:
+            return jsonify({'error': 'Missing required fields: device_id, telemetry'}), 400
+
+        ws_server = get_websocket_server()
+        if not ws_server:
+            return jsonify({'error': 'WebSocket server not initialized'}), 503
+
+        device_id = data['device_id']
+        telemetry = data['telemetry']
+
+        # Emit test telemetry update via WebSocket
+        ws_server.emit_telemetry_update(device_id, telemetry)
+
+        return jsonify({
+            'message': 'Test telemetry emitted successfully via WebSocket',
+            'device_id': device_id,
+            'telemetry': telemetry,
+            'note': 'Connected WebSocket clients subscribed to this device will receive the update'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"WebSocket test telemetry error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/websocket/test/alert', methods=['POST'])
+@jwt_required()
+def test_websocket_alert():
+    """
+    Test WebSocket by emitting an alert
+
+    Request body:
+    {
+        "device_id": "uuid",
+        "severity": "warning",
+        "message": "Test alert"
+    }
+    """
+    try:
+        data = request.get_json()
+
+        if not data or 'device_id' not in data:
+            return jsonify({'error': 'Missing required field: device_id'}), 400
+
+        ws_server = get_websocket_server()
+        if not ws_server:
+            return jsonify({'error': 'WebSocket server not initialized'}), 503
+
+        device_id = data['device_id']
+        severity = data.get('severity', 'info')
+        message = data.get('message', 'Test alert')
+
+        # Emit test alert via WebSocket
+        alert_id = str(uuid.uuid4())
+        ws_server.emit_alert(
+            alert_id=alert_id,
+            device_id=device_id,
+            severity=severity,
+            message=message,
+            alert_data={'test': True}
+        )
+
+        return jsonify({
+            'message': 'Test alert emitted successfully via WebSocket',
+            'alert_id': alert_id,
+            'device_id': device_id,
+            'severity': severity,
+            'alert_message': message,
+            'note': 'Connected WebSocket clients subscribed to this device will receive the alert'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"WebSocket test alert error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# ============================================================================
 # INITIALIZATION & MAIN
 # ============================================================================
 
@@ -1320,22 +1464,36 @@ if __name__ == '__main__':
         # Create default user
         create_default_user()
 
+        # Initialize WebSocket server
+        logger.info("Initializing WebSocket server...")
+        ws_server = init_websocket_server(app)
+        socketio = ws_server.get_socketio()
+        logger.info("✅ WebSocket server initialized")
+
         # Initialize MQTT broker
         logger.info("Initializing MQTT broker...")
         mqtt_broker = init_broker(DB_CONFIG, host='localhost', port=1883)
         if mqtt_broker and mqtt_broker.connected:
+            # Register callback to emit real-time telemetry updates
+            def on_telemetry_update(device_id, telemetry):
+                ws_server.emit_telemetry_update(device_id, telemetry)
+
+            mqtt_broker.register_telemetry_callback(on_telemetry_update)
+
             logger.info("✅ MQTT broker connected successfully")
             logger.info(f"📡 MQTT Endpoint: mqtt://localhost:1883")
+            logger.info("✅ Real-time updates enabled (MQTT → WebSocket)")
         else:
             logger.warning("⚠️  MQTT broker connection failed - continuing without MQTT")
 
         logger.info("🚀 Starting server on http://0.0.0.0:5002")
         logger.info("📚 API Documentation: http://localhost:5002/api/v1/docs")
         logger.info("💚 Health Check: http://localhost:5002/health")
+        logger.info("🔌 WebSocket Endpoint: ws://localhost:5002/socket.io/")
         logger.info("=" * 60)
 
-        # Run server
-        app.run(host='0.0.0.0', port=5002, debug=False)
+        # Run server with Socket.IO (uses eventlet)
+        socketio.run(app, host='0.0.0.0', port=5002, debug=False, allow_unsafe_werkzeug=True)
     else:
         logger.error("❌ Failed to initialize database")
         logger.error("Please check database connection and permissions")
