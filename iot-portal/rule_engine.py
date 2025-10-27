@@ -510,9 +510,43 @@ class RuleEngine:
             logger.error(f"Error creating alert: {e}")
 
     def _execute_email_action(self, device_id: str, rule_name: str, action: Dict, context: Dict):
-        """Send email notification (placeholder for Feature 4)"""
-        logger.info(f"Email action triggered for rule '{rule_name}' (Feature 4 - not yet implemented)")
-        # Will be implemented in Feature 4: Email Notification System
+        """Send email notification"""
+        try:
+            from email_notifier import get_email_notifier
+
+            email_notifier = get_email_notifier()
+            if not email_notifier:
+                logger.warning("Email notifier not initialized - skipping email action")
+                return
+
+            to_emails = action.get('to_emails', [])
+            severity = action.get('severity', 'info')
+            message = action.get('message', f'Rule triggered: {rule_name}')
+
+            # Format message with context
+            for key, value in context.items():
+                message = message.replace(f'{{{key}}}', str(value))
+
+            if not to_emails:
+                logger.warning(f"No recipient emails specified for email action")
+                return
+
+            success = email_notifier.send_alert_email(
+                to_emails=to_emails,
+                device_id=device_id,
+                rule_name=rule_name,
+                severity=severity,
+                message=message,
+                context=context
+            )
+
+            if success:
+                logger.info(f"Email sent successfully to {', '.join(to_emails)}")
+            else:
+                logger.error(f"Failed to send email to {', '.join(to_emails)}")
+
+        except Exception as e:
+            logger.error(f"Error executing email action: {e}")
 
     def _execute_webhook_action(self, device_id: str, rule_name: str, action: Dict, context: Dict):
         """Call webhook (placeholder for Feature 5)"""
