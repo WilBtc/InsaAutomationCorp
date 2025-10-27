@@ -57,6 +57,16 @@ DB_CONFIG = {
     'port': 5432
 }
 
+# SMTP configuration for email notifications
+SMTP_CONFIG = {
+    'host': 'localhost',  # Use local SMTP server (change for production)
+    'port': 25,
+    'username': None,  # Optional: SMTP username
+    'password': None,  # Optional: SMTP password
+    'from_email': 'INSA IIoT Platform <noreply@insa.com>',
+    'use_tls': False  # Set to True for production SMTP servers
+}
+
 # ============================================================================
 # DATABASE UTILITIES
 # ============================================================================
@@ -1793,6 +1803,16 @@ if __name__ == '__main__':
         rule_engine.start()
         logger.info("✅ Rule engine started - evaluating every 30 seconds")
         logger.info("📋 Supported rule types: threshold, comparison, time_based, statistical")
+
+        # Initialize email notifier
+        logger.info("Initializing email notifier...")
+        from email_notifier import init_email_notifier
+        email_notifier = init_email_notifier(SMTP_CONFIG)
+        if email_notifier.test_email_connection():
+            logger.info("✅ Email notifier initialized and SMTP connection verified")
+            logger.info(f"📧 Email Endpoint: {SMTP_CONFIG['host']}:{SMTP_CONFIG['port']}")
+        else:
+            logger.warning("⚠️  SMTP connection test failed - email notifications may not work")
 
         logger.info("🚀 Starting server on http://0.0.0.0:5002")
         logger.info("📚 API Documentation: http://localhost:5002/api/v1/docs")
