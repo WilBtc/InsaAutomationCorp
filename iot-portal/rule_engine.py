@@ -549,9 +549,46 @@ class RuleEngine:
             logger.error(f"Error executing email action: {e}")
 
     def _execute_webhook_action(self, device_id: str, rule_name: str, action: Dict, context: Dict):
-        """Call webhook (placeholder for Feature 5)"""
-        logger.info(f"Webhook action triggered for rule '{rule_name}' (Feature 5 - not yet implemented)")
-        # Will be implemented in Feature 5: Webhook Action System
+        """Send webhook notification with secure request handling"""
+        try:
+            from webhook_notifier import get_webhook_notifier
+
+            webhook_notifier = get_webhook_notifier()
+            if not webhook_notifier:
+                logger.warning("Webhook notifier not initialized - skipping webhook action")
+                return
+
+            url = action.get('url')
+            if not url:
+                logger.warning("No webhook URL specified in action")
+                return
+
+            # Optional: HMAC signing secret for webhook authentication
+            secret = action.get('secret')
+            severity = action.get('severity', 'info')
+            message = action.get('message', f'Rule triggered: {rule_name}')
+
+            # Format message with context
+            for key, value in context.items():
+                message = message.replace(f'{{{key}}}', str(value))
+
+            success = webhook_notifier.send_alert_webhook(
+                url=url,
+                device_id=device_id,
+                rule_name=rule_name,
+                severity=severity,
+                message=message,
+                context=context,
+                secret=secret
+            )
+
+            if success:
+                logger.info(f"Webhook sent successfully to {url}")
+            else:
+                logger.error(f"Failed to send webhook to {url}")
+
+        except Exception as e:
+            logger.error(f"Error executing webhook action: {e}")
 
 # Global instance
 _rule_engine = None

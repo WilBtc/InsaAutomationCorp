@@ -67,6 +67,17 @@ SMTP_CONFIG = {
     'use_tls': False  # Set to True for production SMTP servers
 }
 
+# Webhook configuration for secure webhook notifications
+WEBHOOK_CONFIG = {
+    'timeout': 10,  # Request timeout in seconds
+    'max_retries': 3,  # Maximum retry attempts
+    'verify_ssl': True,  # Verify SSL certificates (production recommended)
+    'allow_private_ips': False,  # Security: block webhooks to private IPs
+    'user_agent': 'INSA-IIoT-Platform/2.0',
+    'max_payload_size': 1048576,  # 1MB max payload
+    'rate_limit_seconds': 1  # Minimum seconds between requests to same URL
+}
+
 # ============================================================================
 # DATABASE UTILITIES
 # ============================================================================
@@ -1813,6 +1824,14 @@ if __name__ == '__main__':
             logger.info(f"📧 Email Endpoint: {SMTP_CONFIG['host']}:{SMTP_CONFIG['port']}")
         else:
             logger.warning("⚠️  SMTP connection test failed - email notifications may not work")
+
+        # Initialize webhook notifier
+        logger.info("Initializing webhook notifier...")
+        from webhook_notifier import init_webhook_notifier
+        webhook_notifier = init_webhook_notifier(WEBHOOK_CONFIG)
+        logger.info("✅ Webhook notifier initialized")
+        logger.info(f"🔒 Security: SSRF protection enabled, private IPs blocked")
+        logger.info(f"⚡ Retry policy: {WEBHOOK_CONFIG['max_retries']} attempts with exponential backoff")
 
         logger.info("🚀 Starting server on http://0.0.0.0:5002")
         logger.info("📚 API Documentation: http://localhost:5002/api/v1/docs")
