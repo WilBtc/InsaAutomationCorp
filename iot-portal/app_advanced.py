@@ -26,6 +26,7 @@ from functools import wraps
 import logging
 from mqtt_broker import init_broker, get_broker
 from socketio_server import init_websocket_server, get_websocket_server
+from rule_engine import init_rule_engine, get_rule_engine
 
 # Configure logging
 logging.basicConfig(
@@ -141,10 +142,11 @@ def init_database():
                 name VARCHAR(255) NOT NULL,
                 description TEXT,
                 device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
-                condition JSONB NOT NULL,
-                action JSONB NOT NULL,
+                rule_type VARCHAR(50) NOT NULL,  -- threshold, comparison, time_based, statistical
+                conditions JSONB NOT NULL,       -- Renamed from condition (Phase 2)
+                actions JSONB NOT NULL,          -- Renamed from action (Phase 2)
                 enabled BOOLEAN DEFAULT true,
-                priority INTEGER DEFAULT 50,
+                priority INTEGER DEFAULT 5,      -- Changed default from 50 to 5
                 cooldown_seconds INTEGER DEFAULT 300,
                 last_triggered TIMESTAMP,
                 trigger_count INTEGER DEFAULT 0,
@@ -1417,6 +1419,305 @@ def test_websocket_alert():
         return jsonify({'error': str(e)}), 500
 
 # ============================================================================
+# RULE ENGINE API ENDPOINTS
+# ============================================================================
+
+@app.route('/api/v1/rules', methods=['POST'])
+@jwt_required()
+def create_rule():
+    """
+    Create a new rule
+
+    Request body:
+    {
+        "name": "High Temperature Alert",
+        "device_id": "uuid",
+        "rule_type": "threshold",  # threshold, comparison, time_based, statistical
+        "conditions": {...},
+        "actions": [{...}],
+        "priority": 5,
+        "enabled": true
+    }
+    """
+    try:
+        data = request.get_json()
+
+        required_fields = ['name', 'device_id', 'rule_type', 'conditions', 'actions']
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        cur = conn.cursor()
+
+        rule_id = str(uuid.uuid4())
+
+        cur.execute("""
+            INSERT INTO rules (id, name, device_id, rule_type, conditions, actions, priority, enabled, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+            RETURNING *
+        """, (
+            rule_id,
+            data['name'],
+            data['device_id'],
+            data['rule_type'],
+            json.dumps(data['conditions']),
+            json.dumps(data['actions']),
+            data.get('priority', 5),
+            data.get('enabled', True)
+        ))
+
+        rule = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        logger.info(f"Rule created: {data['name']} ({rule_id})")
+
+        return jsonify({
+            'message': 'Rule created successfully',
+            'rule': dict(rule)
+        }), 201
+
+    except Exception as e:
+        logger.error(f"Create rule error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/rules', methods=['GET'])
+@jwt_required()
+def list_rules():
+    """
+    List all rules with optional filtering
+
+    Query parameters:
+    - device_id: Filter by device
+    - rule_type: Filter by type
+    - enabled: Filter by enabled status
+    """
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        cur = conn.cursor()
+
+        # Build query with filters
+        query = "SELECT * FROM rules WHERE 1=1"
+        params = []
+
+        if request.args.get('device_id'):
+            query += " AND device_id = %s"
+            params.append(request.args.get('device_id'))
+
+        if request.args.get('rule_type'):
+            query += " AND rule_type = %s"
+            params.append(request.args.get('rule_type'))
+
+        if request.args.get('enabled') is not None:
+            enabled = request.args.get('enabled').lower() == 'true'
+            query += " AND enabled = %s"
+            params.append(enabled)
+
+        query += " ORDER BY priority DESC, created_at DESC"
+
+        cur.execute(query, params)
+        rules = cur.fetchall()
+
+        cur.close()
+        conn.close()
+
+        return jsonify({
+            'rules': [dict(r) for r in rules],
+            'count': len(rules)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"List rules error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/rules/<rule_id>', methods=['GET'])
+@jwt_required()
+def get_rule(rule_id):
+    """Get rule details by ID"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        cur = conn.cursor()
+
+        cur.execute("SELECT * FROM rules WHERE id = %s", (rule_id,))
+        rule = cur.fetchone()
+
+        cur.close()
+        conn.close()
+
+        if not rule:
+            return jsonify({'error': 'Rule not found'}), 404
+
+        return jsonify({'rule': dict(rule)}), 200
+
+    except Exception as e:
+        logger.error(f"Get rule error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/rules/<rule_id>', methods=['PUT'])
+@jwt_required()
+def update_rule(rule_id):
+    """Update rule by ID"""
+    try:
+        data = request.get_json()
+
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        cur = conn.cursor()
+
+        # Build update query dynamically
+        update_fields = []
+        params = []
+
+        if 'name' in data:
+            update_fields.append("name = %s")
+            params.append(data['name'])
+
+        if 'conditions' in data:
+            update_fields.append("conditions = %s")
+            params.append(json.dumps(data['conditions']))
+
+        if 'actions' in data:
+            update_fields.append("actions = %s")
+            params.append(json.dumps(data['actions']))
+
+        if 'priority' in data:
+            update_fields.append("priority = %s")
+            params.append(data['priority'])
+
+        if 'enabled' in data:
+            update_fields.append("enabled = %s")
+            params.append(data['enabled'])
+
+        if not update_fields:
+            return jsonify({'error': 'No fields to update'}), 400
+
+        params.append(rule_id)
+
+        query = f"UPDATE rules SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
+
+        cur.execute(query, params)
+        rule = cur.fetchone()
+
+        if not rule:
+            conn.close()
+            return jsonify({'error': 'Rule not found'}), 404
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        logger.info(f"Rule updated: {rule_id}")
+
+        return jsonify({
+            'message': 'Rule updated successfully',
+            'rule': dict(rule)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Update rule error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/rules/<rule_id>', methods=['DELETE'])
+@jwt_required()
+def delete_rule(rule_id):
+    """Delete rule by ID"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        cur = conn.cursor()
+
+        cur.execute("DELETE FROM rules WHERE id = %s RETURNING id", (rule_id,))
+        deleted = cur.fetchone()
+
+        if not deleted:
+            conn.close()
+            return jsonify({'error': 'Rule not found'}), 404
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        logger.info(f"Rule deleted: {rule_id}")
+
+        return jsonify({'message': 'Rule deleted successfully'}), 200
+
+    except Exception as e:
+        logger.error(f"Delete rule error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/rules/<rule_id>/test', methods=['POST'])
+@jwt_required()
+def test_rule(rule_id):
+    """
+    Test rule evaluation without triggering actions
+
+    Returns whether rule would be triggered with current telemetry
+    """
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({'error': 'Database connection failed'}), 500
+
+        cur = conn.cursor()
+
+        cur.execute("SELECT * FROM rules WHERE id = %s", (rule_id,))
+        rule = cur.fetchone()
+
+        cur.close()
+        conn.close()
+
+        if not rule:
+            return jsonify({'error': 'Rule not found'}), 404
+
+        # Evaluate rule manually
+        engine = get_rule_engine()
+        if not engine:
+            return jsonify({'error': 'Rule engine not initialized'}), 503
+
+        rule_dict = dict(rule)
+        device_id = rule_dict['device_id']
+        rule_type = rule_dict['rule_type']
+        conditions = rule_dict['conditions']
+
+        # Evaluate based on type
+        triggered = False
+        context = {}
+
+        if rule_type == 'threshold':
+            triggered, context = engine._evaluate_threshold_rule(device_id, conditions)
+        elif rule_type == 'comparison':
+            triggered, context = engine._evaluate_comparison_rule(device_id, conditions)
+        elif rule_type == 'time_based':
+            triggered, context = engine._evaluate_time_based_rule(device_id, conditions)
+        elif rule_type == 'statistical':
+            triggered, context = engine._evaluate_statistical_rule(device_id, conditions)
+
+        return jsonify({
+            'rule_id': rule_id,
+            'triggered': triggered,
+            'context': context,
+            'message': 'Rule triggered' if triggered else 'Rule not triggered'
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Test rule error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# ============================================================================
 # INITIALIZATION & MAIN
 # ============================================================================
 
@@ -1485,6 +1786,13 @@ if __name__ == '__main__':
             logger.info("✅ Real-time updates enabled (MQTT → WebSocket)")
         else:
             logger.warning("⚠️  MQTT broker connection failed - continuing without MQTT")
+
+        # Initialize and start rule engine
+        logger.info("Initializing rule engine...")
+        rule_engine = init_rule_engine(DB_CONFIG)
+        rule_engine.start()
+        logger.info("✅ Rule engine started - evaluating every 30 seconds")
+        logger.info("📋 Supported rule types: threshold, comparison, time_based, statistical")
 
         logger.info("🚀 Starting server on http://0.0.0.0:5002")
         logger.info("📚 API Documentation: http://localhost:5002/api/v1/docs")
