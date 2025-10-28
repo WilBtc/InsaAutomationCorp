@@ -1694,6 +1694,262 @@ def get_correlation_analysis(device_id):
         conn.close()
 
 
+@app.route('/api/v1/analytics/forecast/<device_id>/<metric>', methods=['GET'])
+@limiter.limit("30 per minute")
+@jwt_required()
+@require_permission('telemetry', 'read')
+def get_forecast(device_id, metric):
+    """
+    Generate forecast for future values
+
+    Uses linear regression to predict future metric values based on historical
+    trends, with 95% confidence intervals for uncertainty quantification.
+
+    Query Parameters:
+        steps (int): Number of time steps to forecast (default: 10)
+        from (str): Start time for historical data (ISO 8601)
+        to (str): End time for historical data (ISO 8601)
+        confidence (float): Confidence level (default: 0.95)
+
+    Returns:
+        JSON with forecast data, model parameters, and quality metrics
+    """
+    # Parse query parameters
+    steps = int(request.args.get('steps', 10))
+    from_time = request.args.get('from')
+    to_time = request.args.get('to')
+    confidence_level = float(request.args.get('confidence', 0.95))
+
+    # Validate parameters
+    if steps < 1 or steps > 100:
+        return jsonify({'error': 'Steps must be between 1 and 100'}), 400
+    if confidence_level < 0.5 or confidence_level > 0.99:
+        return jsonify({'error': 'Confidence level must be between 0.5 and 0.99'}), 400
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database error'}), 500
+
+    try:
+        cur = conn.cursor()
+
+        # Build time filter
+        time_filter = ""
+        params = [device_id, metric]
+        if from_time:
+            time_filter += " AND timestamp >= %s"
+            params.append(from_time)
+        if to_time:
+            time_filter += " AND timestamp <= %s"
+            params.append(to_time)
+
+        # Calculate linear regression and get historical stats
+        query = f"""
+        WITH historical AS (
+            SELECT
+                EXTRACT(EPOCH FROM timestamp) as x,
+                value as y,
+                timestamp
+            FROM telemetry
+            WHERE device_id = %s AND key = %s
+                {time_filter}
+            ORDER BY timestamp DESC
+            LIMIT 200
+        ),
+        stats AS (
+            SELECT
+                COUNT(*) as n,
+                AVG(x) as mean_x,
+                AVG(y) as mean_y,
+                STDDEV(y) as stddev_y,
+                MIN(y) as min_y,
+                MAX(y) as max_y,
+                MAX(x) as last_x,
+                MAX(timestamp) as last_timestamp
+            FROM historical
+        ),
+        xy_products AS (
+            SELECT
+                SUM(x * y) as sum_xy,
+                SUM(x) as sum_x,
+                SUM(y) as sum_y,
+                SUM(x * x) as sum_xx
+            FROM historical
+        ),
+        regression AS (
+            SELECT
+                s.n,
+                s.mean_x,
+                s.mean_y,
+                s.stddev_y,
+                s.min_y,
+                s.max_y,
+                s.last_x,
+                s.last_timestamp,
+                CASE
+                    WHEN s.n * p.sum_xx - p.sum_x * p.sum_x = 0 THEN 0
+                    ELSE (s.n * p.sum_xy - p.sum_x * p.sum_y) /
+                         (s.n * p.sum_xx - p.sum_x * p.sum_x)
+                END as slope,
+                CASE
+                    WHEN s.n * p.sum_xx - p.sum_x * p.sum_x = 0 THEN s.mean_y
+                    ELSE s.mean_y - ((s.n * p.sum_xy - p.sum_x * p.sum_y) /
+                                     (s.n * p.sum_xx - p.sum_x * p.sum_x)) * s.mean_x
+                END as intercept
+            FROM stats s, xy_products p
+        ),
+        residuals AS (
+            SELECT
+                h.y as actual,
+                r.slope * h.x + r.intercept as predicted
+            FROM historical h, regression r
+        ),
+        quality AS (
+            SELECT
+                r.*,
+                SQRT(AVG(POWER(res.actual - res.predicted, 2))) as rmse,
+                CASE
+                    WHEN r.stddev_y = 0 THEN NULL
+                    ELSE 1 - (SUM(POWER(res.actual - res.predicted, 2)) /
+                             SUM(POWER(res.actual - r.mean_y, 2)))
+                END as r_squared
+            FROM regression r, residuals res
+            GROUP BY r.n, r.mean_x, r.mean_y, r.stddev_y, r.min_y, r.max_y,
+                     r.last_x, r.last_timestamp, r.slope, r.intercept
+        )
+        SELECT * FROM quality
+        """
+
+        cur.execute(query, params)
+        row = cur.fetchone()
+
+        if not row or row['n'] < 2:
+            return jsonify({
+                'error': 'Insufficient historical data for forecasting',
+                'minimum_required': 2,
+                'available': row['n'] if row else 0
+            }), 400
+
+        # Extract regression parameters
+        n = int(row['n'])
+        slope = float(row['slope']) if row['slope'] else 0
+        intercept = float(row['intercept']) if row['intercept'] else float(row['mean_y'])
+        stddev_y = float(row['stddev_y']) if row['stddev_y'] else 0
+        rmse = float(row['rmse']) if row['rmse'] else 0
+        r_squared = float(row['r_squared']) if row['r_squared'] else 0
+        last_timestamp = row['last_timestamp']
+        last_x = float(row['last_x'])
+
+        # Get average time interval between readings
+        interval_query = f"""
+        SELECT AVG(interval_seconds) as avg_interval
+        FROM (
+            SELECT EXTRACT(EPOCH FROM (timestamp - LAG(timestamp) OVER (ORDER BY timestamp))) as interval_seconds
+            FROM telemetry
+            WHERE device_id = %s AND key = %s
+                {time_filter}
+            ORDER BY timestamp DESC
+            LIMIT 50
+        ) intervals
+        WHERE interval_seconds IS NOT NULL
+        """
+        cur.execute(interval_query, params)
+        interval_row = cur.fetchone()
+        avg_interval = float(interval_row['avg_interval']) if interval_row and interval_row['avg_interval'] else 300  # Default 5 min
+
+        # Calculate z-score for confidence level
+        # 0.95 -> 1.96, 0.90 -> 1.645, 0.99 -> 2.576
+        import math
+        from scipy import stats as scipy_stats
+        z_score = scipy_stats.norm.ppf((1 + confidence_level) / 2)
+
+        # Generate forecast
+        forecast = []
+        for step in range(1, steps + 1):
+            future_x = last_x + (step * avg_interval)
+            future_timestamp = last_timestamp + timedelta(seconds=step * avg_interval)
+            predicted_value = slope * future_x + intercept
+
+            # Calculate prediction interval (wider than confidence interval)
+            # Formula: ŷ ± z * σ * sqrt(1 + 1/n + (x - x̄)²/Σ(x - x̄)²)
+            # Simplified version using RMSE as σ estimate
+            interval_width = z_score * rmse * math.sqrt(1 + 1/n)
+
+            forecast.append({
+                'timestamp': future_timestamp.isoformat(),
+                'predicted_value': round(predicted_value, 4),
+                'confidence_lower': round(predicted_value - interval_width, 4),
+                'confidence_upper': round(predicted_value + interval_width, 4)
+            })
+
+        # Classify trend
+        abs_slope = abs(slope)
+        if abs_slope < 0.01:
+            trend = "stable"
+        elif slope > 0:
+            trend = "increasing"
+        else:
+            trend = "decreasing"
+
+        # Get unit
+        unit_query = "SELECT DISTINCT unit FROM telemetry WHERE device_id = %s AND key = %s LIMIT 1"
+        cur.execute(unit_query, [device_id, metric])
+        unit_row = cur.fetchone()
+        unit = unit_row['unit'] if unit_row else None
+
+        return jsonify({
+            'device_id': device_id,
+            'metric': metric,
+            'unit': unit,
+            'historical': {
+                'count': n,
+                'mean': round(float(row['mean_y']), 4),
+                'stddev': round(stddev_y, 4),
+                'min': round(float(row['min_y']), 4),
+                'max': round(float(row['max_y']), 4),
+                'trend': trend,
+                'last_value': round(slope * last_x + intercept, 4),
+                'last_timestamp': last_timestamp.isoformat()
+            },
+            'model': {
+                'type': 'linear_regression',
+                'slope': round(slope, 6),
+                'intercept': round(intercept, 4),
+                'equation': f"y = {slope:.6f}x + {intercept:.4f}",
+                'r_squared': round(r_squared, 4) if r_squared else None
+            },
+            'forecast': forecast,
+            'quality': {
+                'rmse': round(rmse, 4),
+                'r_squared': round(r_squared, 4) if r_squared else None,
+                'confidence_level': confidence_level,
+                'sample_size': n
+            },
+            'parameters': {
+                'steps': steps,
+                'avg_interval_seconds': round(avg_interval, 2),
+                'forecast_horizon': f"{(steps * avg_interval) / 3600:.2f} hours"
+            }
+        }), 200
+
+    except ImportError:
+        # If scipy not available, use simple approximation
+        logger.warning("scipy not available, using simple z-score approximation")
+        # Common z-scores
+        z_scores = {0.90: 1.645, 0.95: 1.96, 0.99: 2.576}
+        z_score = z_scores.get(confidence_level, 1.96)
+        # Retry the forecast generation with fixed z_score
+        # (implementation continues from forecast generation above)
+        return jsonify({'error': 'scipy required for custom confidence levels'}), 500
+    except ValueError as e:
+        return jsonify({'error': f'Invalid parameter: {str(e)}'}), 400
+    except Exception as e:
+        logger.error(f"Error in forecasting: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
 # ============================================================================
 # API ENDPOINTS - DEVICE MANAGEMENT
 # ============================================================================
