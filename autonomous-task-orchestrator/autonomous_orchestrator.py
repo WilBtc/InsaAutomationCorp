@@ -312,6 +312,188 @@ class BugScanner:
 
         return failures
 
+    def check_container_memory(self) -> List[Dict]:
+        """Monitor container memory usage and detect potential OOM risks"""
+        issues = []
+
+        # Memory thresholds
+        WARNING_THRESHOLD = 70  # Alert at 70% memory usage
+        CRITICAL_THRESHOLD = 85  # Critical at 85% memory usage
+        LEAK_DETECTION_FILE = "/var/lib/autonomous-orchestrator/memory_history.json"
+
+        try:
+            # Get container stats
+            result = subprocess.run(
+                ['docker', 'stats', '--no-stream', '--format',
+                 '{{.Name}}|{{.MemUsage}}|{{.MemPerc}}|{{.Container}}'],
+                capture_output=True, text=True, timeout=15
+            )
+
+            current_readings = {}
+
+            for line in result.stdout.strip().split('\n'):
+                if not line or '|' not in line:
+                    continue
+
+                parts = line.split('|')
+                if len(parts) < 4:
+                    continue
+
+                name = parts[0]
+                mem_usage = parts[1]  # e.g., "649MiB / 4GiB"
+                mem_perc = parts[2]   # e.g., "15.84%"
+                container_id = parts[3]
+
+                # Parse memory percentage
+                try:
+                    mem_percent = float(mem_perc.strip().replace('%', ''))
+                except (ValueError, AttributeError):
+                    continue
+
+                # Parse memory usage (current / limit)
+                try:
+                    if '/' in mem_usage:
+                        current, limit = mem_usage.split('/')
+                        current_mb = self._parse_memory_mb(current.strip())
+                        limit_mb = self._parse_memory_mb(limit.strip())
+                    else:
+                        continue
+                except Exception:
+                    continue
+
+                # Store current reading for leak detection
+                current_readings[name] = {
+                    'timestamp': datetime.now().isoformat(),
+                    'mem_percent': mem_percent,
+                    'mem_current_mb': current_mb,
+                    'mem_limit_mb': limit_mb
+                }
+
+                # Check thresholds
+                severity = None
+                if mem_percent >= CRITICAL_THRESHOLD:
+                    severity = 'critical'
+                elif mem_percent >= WARNING_THRESHOLD:
+                    severity = 'warning'
+
+                if severity:
+                    issues.append({
+                        'source': 'container_memory',
+                        'message': f'Container {name} using {mem_percent:.1f}% memory ({mem_usage}) - {severity.upper()} threshold exceeded',
+                        'timestamp': datetime.now().isoformat(),
+                        'type': 'container_memory_pressure',
+                        'container': name,
+                        'container_id': container_id,
+                        'mem_percent': mem_percent,
+                        'mem_usage': mem_usage,
+                        'severity': severity
+                    })
+
+            # Memory leak detection (compare with historical data)
+            leak_issues = self._detect_memory_leaks(current_readings, LEAK_DETECTION_FILE)
+            issues.extend(leak_issues)
+
+            # Save current readings for next cycle
+            self._save_memory_history(current_readings, LEAK_DETECTION_FILE)
+
+        except Exception as e:
+            print(f"⚠️  Could not check container memory: {e}")
+
+        return issues
+
+    def _parse_memory_mb(self, mem_str: str) -> float:
+        """Parse memory string to MB (e.g., '649MiB', '4GiB', '2.5GB')"""
+        mem_str = mem_str.strip().upper()
+
+        if 'GIB' in mem_str or 'GB' in mem_str:
+            value = float(mem_str.replace('GIB', '').replace('GB', '').strip())
+            return value * 1024
+        elif 'MIB' in mem_str or 'MB' in mem_str:
+            return float(mem_str.replace('MIB', '').replace('MB', '').strip())
+        elif 'KIB' in mem_str or 'KB' in mem_str:
+            value = float(mem_str.replace('KIB', '').replace('KB', '').strip())
+            return value / 1024
+        else:
+            return 0.0
+
+    def _detect_memory_leaks(self, current: Dict, history_file: str) -> List[Dict]:
+        """Detect memory leaks by comparing current vs historical readings"""
+        leaks = []
+
+        # Load historical data (last 6 readings = 30 minutes of data at 5-min intervals)
+        try:
+            if os.path.exists(history_file):
+                with open(history_file, 'r') as f:
+                    history = json.load(f)
+            else:
+                history = {}
+        except Exception:
+            return leaks
+
+        # Check each container for increasing memory trend
+        for container, current_data in current.items():
+            if container not in history or len(history[container]) < 3:
+                # Need at least 3 data points (15 minutes) to detect leak
+                continue
+
+            recent_readings = history[container][-5:]  # Last 5 readings (25 minutes)
+
+            # Calculate memory growth rate
+            memory_values = [r['mem_current_mb'] for r in recent_readings]
+            memory_values.append(current_data['mem_current_mb'])
+
+            # Check if memory is consistently increasing
+            increasing_count = 0
+            for i in range(1, len(memory_values)):
+                if memory_values[i] > memory_values[i-1]:
+                    increasing_count += 1
+
+            # Memory leak if 80%+ readings show increase and total growth > 20%
+            leak_threshold = 0.8 * (len(memory_values) - 1)
+            growth_rate = (memory_values[-1] - memory_values[0]) / memory_values[0] * 100
+
+            if increasing_count >= leak_threshold and growth_rate > 20:
+                leaks.append({
+                    'source': 'memory_leak_detector',
+                    'message': f'Potential memory leak in container {container}: {growth_rate:.1f}% growth over {len(memory_values)*5} minutes ({"→".join([f"{v:.0f}MB" for v in memory_values])})',
+                    'timestamp': datetime.now().isoformat(),
+                    'type': 'container_memory_leak',
+                    'container': container,
+                    'growth_rate': growth_rate,
+                    'duration_minutes': len(memory_values) * 5,
+                    'severity': 'critical' if growth_rate > 50 else 'warning'
+                })
+
+        return leaks
+
+    def _save_memory_history(self, current: Dict, history_file: str):
+        """Save current memory readings to history file"""
+        try:
+            # Load existing history
+            if os.path.exists(history_file):
+                with open(history_file, 'r') as f:
+                    history = json.load(f)
+            else:
+                history = {}
+
+            # Append current readings
+            for container, data in current.items():
+                if container not in history:
+                    history[container] = []
+
+                history[container].append(data)
+
+                # Keep only last 12 readings (1 hour at 5-min intervals)
+                if len(history[container]) > 12:
+                    history[container] = history[container][-12:]
+
+            # Save updated history
+            os.makedirs(os.path.dirname(history_file), exist_ok=True)
+            with open(history_file, 'w') as f:
+                json.dump(history, f, indent=2)
+        except Exception as e:
+            print(f"⚠️  Could not save memory history: {e}")
+
     def scan_all(self) -> List[Dict]:
         """Comprehensive scan of all sources"""
         all_issues = []
@@ -327,6 +509,9 @@ class BugScanner:
 
         print("🔍 Checking HTTP services...")
         all_issues.extend(self.check_http_services())
+
+        print("🔍 Monitoring container memory...")
+        all_issues.extend(self.check_container_memory())
 
         return all_issues
 
@@ -730,9 +915,20 @@ Co-Authored-By: Claude <noreply@anthropic.com>
             labels.append('docker')
         elif issue['type'] == 'log_error':
             labels.append('error')
+        elif issue['type'] == 'container_memory_pressure':
+            labels.append('docker')
+            labels.append('memory')
+            labels.append('oom-risk')
+        elif issue['type'] == 'container_memory_leak':
+            labels.append('docker')
+            labels.append('memory')
+            labels.append('memory-leak')
 
-        # Add priority based on source
-        if 'critical' in issue['message'].lower():
+        # Add priority based on severity or message
+        severity = issue.get('severity', '').lower()
+        if severity == 'critical' or 'critical' in issue['message'].lower():
+            labels.append('priority:critical')
+        elif severity == 'warning' or 'high' in issue['message'].lower():
             labels.append('priority:high')
         else:
             labels.append('priority:medium')
