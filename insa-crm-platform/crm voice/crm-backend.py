@@ -18,6 +18,7 @@ from typing import Optional, Dict, Any
 # Import session and auth managers
 from session_manager import get_session_manager
 from auth_manager import get_auth_manager
+from session_claude_manager import get_session_claude_manager, build_context_prompt
 
 # Configure logging
 logging.basicConfig(
@@ -44,6 +45,7 @@ JWT_ALGORITHM = os.getenv('JWT_ALGORITHM', 'HS256')
 # Initialize session and auth managers (persistent SQLite storage)
 session_mgr = get_session_manager()
 auth_mgr = get_auth_manager()
+claude_mgr = get_session_claude_manager()
 
 # Initialize Whisper model
 logger.info(f"Loading Whisper model: {WHISPER_MODEL_SIZE} on {WHISPER_DEVICE}")
@@ -327,27 +329,40 @@ def query_claude_code(text, session_id='default', user_id=None):
         # Get recent conversation history for context (last 10 messages = 5 turns)
         recent_messages = session_mgr.get_recent_messages(session_id, limit=10)
 
-        # Convert to simple format for subprocess
+        # Convert to simple format with FULL CONTEXT (2000 char limit)
         session_history = []
         for msg in recent_messages:
             session_history.append({
                 'role': msg['role'],
-                'content': msg['content'][:200],  # Truncate to 200 chars for context
+                'content': msg['content'][:2000],  # ✅ INCREASED to 2000 chars (10x more context)
                 'agent': msg.get('agent')
             })
 
         # Add current user query to conversation history
         session_mgr.add_message(session_id, 'user', text, agent=agent_type)
 
-        # Call actual Claude Code subprocess with agent context
-        response = call_claude_code_subprocess(
-            text,
+        # Build comprehensive context prompt with full history
+        full_prompt = build_context_prompt(
+            text=text,
             agent_context=agent_type,
-            session_history=session_history
+            session_history=session_history,
+            session_id=session_id
+        )
+
+        # Use session-persistent Claude Code instance (lower latency + better context)
+        # ✅ TIMEOUT INCREASED: 60s (was 30s in test script)
+        response = claude_mgr.query(
+            session_id=session_id,
+            prompt=full_prompt,
+            timeout=60  # ✅ INCREASED from 30s to 60s
         )
 
         # Add AI response to conversation history
         session_mgr.add_message(session_id, 'assistant', response, agent=agent_type)
+
+        # ✅ FIX: Reload session_data to get updated conversation_history
+        # Without this, we overwrite the messages we just added!
+        session_data = session_mgr.get_session(session_id)
 
         # Update session data
         session_data['last_agent'] = agent_type
