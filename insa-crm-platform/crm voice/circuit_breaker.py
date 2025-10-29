@@ -21,6 +21,14 @@ from dataclasses import dataclass
 from collections import deque
 from datetime import datetime, timedelta
 
+# Import Prometheus metrics
+try:
+    from prometheus_metrics import metrics
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
+    logging.warning("prometheus_metrics not available, circuit breaker metrics disabled")
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,6 +85,10 @@ class CircuitBreaker:
         self.failure_times = deque()  # Track timestamps of failures
         self.total_calls = 0  # Track total calls for failure rate
 
+        # Initialize metrics with CLOSED state
+        if METRICS_ENABLED:
+            metrics.update_circuit_breaker_state(self.name, "closed")
+
         logger.info(f"Circuit breaker '{self.name}' initialized (state: CLOSED)")
 
     def call(self, func: Callable, *args, **kwargs) -> Any:
@@ -98,9 +110,15 @@ class CircuitBreaker:
         if self.state == CircuitState.OPEN:
             if self._should_attempt_reset():
                 logger.info(f"🔄 Circuit breaker '{self.name}': OPEN → HALF_OPEN (testing recovery)")
+                old_state = self.state.value
                 self.state = CircuitState.HALF_OPEN
                 self.success_count = 0
                 self.half_open_calls = 0
+
+                # Record state transition in metrics
+                if METRICS_ENABLED:
+                    metrics.update_circuit_breaker_state(self.name, "half_open")
+                    metrics.record_circuit_breaker_transition(self.name, old_state, "half_open")
             else:
                 time_since_open = time.time() - self.opened_at if self.opened_at else 0
                 raise CircuitBreakerOpenError(
@@ -148,6 +166,7 @@ class CircuitBreaker:
 
             if self.success_count >= self.config.success_threshold:
                 logger.info(f"✅ Circuit breaker '{self.name}': HALF_OPEN → CLOSED (recovered)")
+                old_state = self.state.value
                 self.state = CircuitState.CLOSED
                 self.failure_count = 0
                 self.success_count = 0
@@ -155,6 +174,11 @@ class CircuitBreaker:
                 self.opened_at = None
                 self.failure_times.clear()
                 self.total_calls = 0
+
+                # Record state transition in metrics
+                if METRICS_ENABLED:
+                    metrics.update_circuit_breaker_state(self.name, "closed")
+                    metrics.record_circuit_breaker_transition(self.name, old_state, "closed")
 
         elif self.state == CircuitState.CLOSED:
             # Reset failure count on success
@@ -181,10 +205,16 @@ class CircuitBreaker:
                 f"⚠️ Circuit breaker '{self.name}': HALF_OPEN → OPEN "
                 f"(recovery test failed: {type(exception).__name__})"
             )
+            old_state = self.state.value
             self.state = CircuitState.OPEN
             self.opened_at = time.time()
             self.success_count = 0
             self.half_open_calls = 0
+
+            # Record state transition in metrics
+            if METRICS_ENABLED:
+                metrics.update_circuit_breaker_state(self.name, "open")
+                metrics.record_circuit_breaker_transition(self.name, old_state, "open")
 
         elif self.state == CircuitState.CLOSED:
             # Check if should open (consecutive failures OR failure rate)
@@ -209,8 +239,14 @@ class CircuitBreaker:
                     should_open = True
 
             if should_open:
+                old_state = self.state.value
                 self.state = CircuitState.OPEN
                 self.opened_at = time.time()
+
+                # Record state transition in metrics
+                if METRICS_ENABLED:
+                    metrics.update_circuit_breaker_state(self.name, "open")
+                    metrics.record_circuit_breaker_transition(self.name, old_state, "open")
 
     def _cleanup_old_failures(self):
         """Remove failures older than failure_window"""
@@ -254,6 +290,7 @@ class CircuitBreaker:
     def reset(self):
         """Manually reset circuit breaker to CLOSED state"""
         logger.info(f"🔄 Circuit breaker '{self.name}': Manual reset to CLOSED")
+        old_state = self.state.value
         self.state = CircuitState.CLOSED
         self.failure_count = 0
         self.success_count = 0
@@ -262,6 +299,11 @@ class CircuitBreaker:
         self.last_failure_time = None
         self.failure_times.clear()
         self.total_calls = 0
+
+        # Record state transition in metrics
+        if METRICS_ENABLED:
+            metrics.update_circuit_breaker_state(self.name, "closed")
+            metrics.record_circuit_breaker_transition(self.name, old_state, "closed")
 
 
 class CircuitBreakerOpenError(Exception):

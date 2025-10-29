@@ -20,6 +20,14 @@ from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from pathlib import Path
 
+# Import Prometheus metrics
+try:
+    from prometheus_metrics import metrics
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
+    logging.warning("prometheus_metrics not available, DLQ metrics disabled")
+
 logger = logging.getLogger(__name__)
 
 
@@ -69,6 +77,11 @@ class DeadLetterQueue:
         self.db_path = db_path
         self._ensure_db_directory()
         self._init_database()
+
+        # Initialize DLQ size metrics
+        if METRICS_ENABLED:
+            self._update_dlq_size_metrics()
+
         logger.info(f"Dead Letter Queue initialized (database: {db_path})")
 
     def _ensure_db_directory(self):
@@ -158,6 +171,10 @@ class DeadLetterQueue:
             f"Message added to DLQ (id: {dlq_id}, topic: {topic}, error: {error_type}, "
             f"retries: {retry_count})"
         )
+
+        # Update DLQ size metrics
+        if METRICS_ENABLED:
+            self._update_dlq_size_metrics()
 
         return dlq_id
 
@@ -258,10 +275,21 @@ class DeadLetterQueue:
             self._mark_replayed(dlq_id)
 
             logger.info(f"✅ Dead letter {dlq_id} replayed successfully")
+
+            # Record successful replay in metrics
+            if METRICS_ENABLED:
+                metrics.record_dead_letter_replay(dead_letter.topic, success=True)
+                self._update_dlq_size_metrics()
+
             return True
 
         except Exception as e:
             logger.error(f"❌ Failed to replay dead letter {dlq_id}: {e}")
+
+            # Record failed replay in metrics
+            if METRICS_ENABLED:
+                metrics.record_dead_letter_replay(dead_letter.topic, success=False)
+
             return False
 
     def _mark_replayed(self, dlq_id: int):
@@ -356,6 +384,11 @@ class DeadLetterQueue:
             deleted_count = cursor.rowcount
 
         logger.info(f"Deleted {deleted_count} old messages (status: {status}, older than {days} days)")
+
+        # Update DLQ size metrics after deletion
+        if METRICS_ENABLED and deleted_count > 0:
+            self._update_dlq_size_metrics()
+
         return deleted_count
 
     def _row_to_dead_letter(self, row: sqlite3.Row) -> DeadLetter:
@@ -373,6 +406,23 @@ class DeadLetterQueue:
             replayed_at=row['replayed_at'],
             notes=row['notes']
         )
+
+    def _update_dlq_size_metrics(self):
+        """Update DLQ size metrics for all topics"""
+        if not METRICS_ENABLED:
+            return
+
+        with sqlite3.connect(self.db_path) as conn:
+            # Get current DLQ size per topic (only failed status)
+            cursor = conn.execute("""
+                SELECT topic, COUNT(*) as count
+                FROM dead_letters
+                WHERE status = 'failed'
+                GROUP BY topic
+            """)
+
+            for topic, count in cursor.fetchall():
+                metrics.update_dead_letter_queue_size(topic, count)
 
 
 # Global DLQ instance

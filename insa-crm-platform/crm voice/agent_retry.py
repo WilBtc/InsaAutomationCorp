@@ -10,6 +10,14 @@ from functools import wraps
 from typing import Callable, Any, Optional, Type, Tuple
 from dataclasses import dataclass
 
+# Import Prometheus metrics
+try:
+    from prometheus_metrics import metrics
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
+    logging.warning("prometheus_metrics not available, retry metrics disabled")
+
 logger = logging.getLogger(__name__)
 
 
@@ -53,6 +61,7 @@ def with_retry(config: Optional[RetryConfig] = None):
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
             last_exception = None
+            agent_type = func.__name__  # Use function name as agent type
 
             for attempt in range(1, config.max_attempts + 1):
                 try:
@@ -64,10 +73,18 @@ def with_retry(config: Optional[RetryConfig] = None):
                             f"✅ {func.__name__} succeeded on attempt {attempt}/{config.max_attempts}"
                         )
 
+                        # Record successful retry in metrics
+                        if METRICS_ENABLED:
+                            metrics.record_retry_success(agent_type, attempt)
+
                     return result
 
                 except config.retriable_exceptions as e:
                     last_exception = e
+
+                    # Record retry attempt in metrics
+                    if METRICS_ENABLED:
+                        metrics.record_retry_attempt(agent_type, attempt)
 
                     # Last attempt failed - give up
                     if attempt == config.max_attempts:
@@ -245,6 +262,7 @@ def with_retry_stats(config: Optional[RetryConfig] = None):
         def wrapper(*args, **kwargs) -> Any:
             last_exception = None
             success = False
+            agent_type = func.__name__
 
             for attempt in range(1, config.max_attempts + 1):
                 try:
@@ -256,12 +274,20 @@ def with_retry_stats(config: Optional[RetryConfig] = None):
                             f"✅ {func.__name__} succeeded on attempt {attempt}/{config.max_attempts}"
                         )
 
+                        # Record successful retry in metrics
+                        if METRICS_ENABLED:
+                            metrics.record_retry_success(agent_type, attempt)
+
                     # Record success
                     retry_stats.record_attempt(func.__name__, attempt, success=True)
                     return result
 
                 except config.retriable_exceptions as e:
                     last_exception = e
+
+                    # Record retry attempt in metrics
+                    if METRICS_ENABLED:
+                        metrics.record_retry_attempt(agent_type, attempt)
 
                     if attempt == config.max_attempts:
                         logger.error(
