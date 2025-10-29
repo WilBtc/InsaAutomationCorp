@@ -1,0 +1,567 @@
+{
+  "dashboard": {
+    "title": "INSA CRM - SLA Monitoring & Compliance",
+    "tags": ["insa-crm", "sla", "compliance", "monitoring"],
+    "timezone": "browser",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+    },
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "version": 1,
+    "panels": [
+      {
+        "id": 1,
+        "title": "Overall SLA Compliance Score",
+        "type": "gauge",
+        "gridPos": {"x": 0, "y": 0, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "(\n  (avg_over_time(up[5m]) * 40) +\n  ((1 - (sum(rate(insa_agent_requests_total{status=\"error\"}[5m])) / sum(rate(insa_agent_requests_total[5m])))) * 30) +\n  ((histogram_quantile(0.95, sum(rate(insa_agent_request_duration_seconds_bucket[5m])) by (le)) < 5) * 20) +\n  ((sum(rate(insa_cache_hits_total[10m])) / (sum(rate(insa_cache_hits_total[10m])) + sum(rate(insa_cache_misses_total[10m])))) * 10)\n)",
+            "refId": "A",
+            "legendFormat": "Compliance Score"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "orange"},
+                {"value": 99, "color": "yellow"},
+                {"value": 99.9, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 2,
+        "title": "Active SLA Breaches",
+        "type": "stat",
+        "gridPos": {"x": 8, "y": 0, "w": 4, "h": 3},
+        "targets": [
+          {
+            "expr": "count(ALERTS{alertstate=\"firing\"}) or vector(0)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "orange"},
+                {"value": 5, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 3,
+        "title": "SLAs Meeting Target",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 0, "w": 4, "h": 3},
+        "targets": [
+          {
+            "expr": "count((avg_over_time(up[5m]) >= 0.999) or (histogram_quantile(0.95, sum(rate(insa_agent_request_duration_seconds_bucket[5m])) by (le)) <= 5))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 5, "color": "yellow"},
+                {"value": 10, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "SLA Breach Trend (24h)",
+        "type": "graph",
+        "gridPos": {"x": 16, "y": 0, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "count(ALERTS{alertstate=\"firing\"}) by (alertname)",
+            "refId": "A",
+            "legendFormat": "{{alertname}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Active Breaches", "min": 0},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "tooltip": {"shared": true, "sort": 2},
+        "legend": {"show": true, "alignAsTable": true, "rightSide": false}
+      },
+      {
+        "id": 5,
+        "title": "Availability SLAs",
+        "type": "row",
+        "gridPos": {"x": 0, "y": 6, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 6,
+        "title": "Platform Uptime (Target: 99.9%)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 7, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "avg_over_time(up[5m]) * 100",
+            "refId": "A",
+            "legendFormat": "Platform Uptime"
+          },
+          {
+            "expr": "vector(99.9)",
+            "refId": "B",
+            "legendFormat": "SLA Target (99.9%)"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Uptime %", "min": 95, "max": 100},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2,
+        "thresholds": [
+          {"value": 99.9, "colorMode": "critical", "op": "lt", "fill": true, "line": false, "fillColor": "rgba(255, 0, 0, 0.2)"}
+        ],
+        "alert": {
+          "name": "Platform Uptime SLA Breach",
+          "conditions": [
+            {
+              "evaluator": {"params": [99.9], "type": "lt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "avg"},
+              "type": "query"
+            }
+          ],
+          "frequency": "60s",
+          "handler": 1,
+          "noDataState": "no_data",
+          "executionErrorState": "alerting",
+          "for": "5m",
+          "annotations": {
+            "description": "Platform uptime has fallen below 99.9% SLA target",
+            "summary": "Platform Uptime SLA Breach"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Worker Health Status (Target: 99.9%)",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 7, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "insa_worker_health_status * 100",
+            "refId": "A",
+            "legendFormat": "{{worker_name}}"
+          },
+          {
+            "expr": "vector(99.9)",
+            "refId": "B",
+            "legendFormat": "SLA Target"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Health %", "min": 0, "max": 100},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2
+      },
+      {
+        "id": 8,
+        "title": "Performance SLAs",
+        "type": "row",
+        "gridPos": {"x": 0, "y": 13, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 9,
+        "title": "API Response Time P95 (Target: 5s)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 14, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(insa_agent_request_duration_seconds_bucket[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P95 Latency"
+          },
+          {
+            "expr": "vector(5)",
+            "refId": "B",
+            "legendFormat": "SLA Target (5s)"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Response Time", "min": 0},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2,
+        "thresholds": [
+          {"value": 5, "colorMode": "critical", "op": "gt", "fill": true, "line": false, "fillColor": "rgba(255, 0, 0, 0.2)"}
+        ]
+      },
+      {
+        "id": 10,
+        "title": "API Response Time P99 (Target: 15s)",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 14, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(insa_agent_request_duration_seconds_bucket[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P99 Latency"
+          },
+          {
+            "expr": "vector(15)",
+            "refId": "B",
+            "legendFormat": "SLA Target (15s)"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Response Time", "min": 0},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2,
+        "thresholds": [
+          {"value": 15, "colorMode": "critical", "op": "gt", "fill": true, "line": false, "fillColor": "rgba(255, 0, 0, 0.2)"}
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Database Query Time P95 (Target: 1s)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 20, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(insa_database_operation_duration_seconds_bucket[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P95 Query Time"
+          },
+          {
+            "expr": "vector(1)",
+            "refId": "B",
+            "legendFormat": "SLA Target (1s)"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Query Time", "min": 0},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2
+      },
+      {
+        "id": 12,
+        "title": "Reliability SLAs",
+        "type": "row",
+        "gridPos": {"x": 0, "y": 26, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 13,
+        "title": "API Error Rate (Target: <0.1%)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 27, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "(sum(rate(insa_agent_requests_total{status=\"error\"}[5m])) / sum(rate(insa_agent_requests_total[5m]))) * 100",
+            "refId": "A",
+            "legendFormat": "Error Rate"
+          },
+          {
+            "expr": "vector(0.1)",
+            "refId": "B",
+            "legendFormat": "SLA Target (0.1%)"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Error Rate", "min": 0},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2,
+        "thresholds": [
+          {"value": 0.1, "colorMode": "critical", "op": "gt", "fill": true, "line": false, "fillColor": "rgba(255, 0, 0, 0.2)"}
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Retry Success Rate (Target: >70%)",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 27, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "(sum(rate(insa_retry_attempts_total{success=\"true\"}[5m])) / sum(rate(insa_retry_attempts_total[5m]))) * 100",
+            "refId": "A",
+            "legendFormat": "Retry Success Rate"
+          },
+          {
+            "expr": "vector(70)",
+            "refId": "B",
+            "legendFormat": "SLA Target (70%)"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Success Rate", "min": 0, "max": 100},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2
+      },
+      {
+        "id": 15,
+        "title": "Circuit Breaker Stability (Target: >99%)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 33, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "(sum(insa_circuit_breaker_state{state=\"closed\"}) / count(insa_circuit_breaker_state)) * 100",
+            "refId": "A",
+            "legendFormat": "Closed State %"
+          },
+          {
+            "expr": "vector(99)",
+            "refId": "B",
+            "legendFormat": "SLA Target (99%)"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Stability %", "min": 0, "max": 100},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2
+      },
+      {
+        "id": 16,
+        "title": "Efficiency SLAs",
+        "type": "row",
+        "gridPos": {"x": 0, "y": 39, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 17,
+        "title": "Cache Hit Rate (Target: >80%)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 40, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "(sum(rate(insa_cache_hits_total[10m])) by (cache_type) / (sum(rate(insa_cache_hits_total[10m])) by (cache_type) + sum(rate(insa_cache_misses_total[10m])) by (cache_type))) * 100",
+            "refId": "A",
+            "legendFormat": "{{cache_type}} Hit Rate"
+          },
+          {
+            "expr": "vector(80)",
+            "refId": "B",
+            "legendFormat": "SLA Target (80%)"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Hit Rate", "min": 0, "max": 100},
+          {"format": "short"}
+        ],
+        "lines": true,
+        "fill": 0,
+        "linewidth": 2,
+        "thresholds": [
+          {"value": 80, "colorMode": "critical", "op": "lt", "fill": true, "line": false, "fillColor": "rgba(255, 0, 0, 0.2)"}
+        ]
+      },
+      {
+        "id": 18,
+        "title": "SLA Compliance Heatmap (Last 7 Days)",
+        "type": "heatmap",
+        "gridPos": {"x": 12, "y": 40, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "avg_over_time(up[1h]) * 100",
+            "refId": "A",
+            "format": "time_series"
+          }
+        ],
+        "dataFormat": "timeseries",
+        "heatmap": {},
+        "hideZeroBuckets": false,
+        "highlightCards": true,
+        "cardColor": "#b4ff00",
+        "color": {
+          "mode": "spectrum",
+          "cardColor": "#b4ff00",
+          "colorScheme": "RdYlGn",
+          "exponent": 0.5,
+          "min": 95,
+          "max": 100
+        },
+        "legend": {"show": true}
+      },
+      {
+        "id": 19,
+        "title": "Monthly SLA Summary",
+        "type": "row",
+        "gridPos": {"x": 0, "y": 46, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 20,
+        "title": "SLA Compliance by Category (Last 30 Days)",
+        "type": "bargauge",
+        "gridPos": {"x": 0, "y": 47, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "avg_over_time(up[30d]) * 100",
+            "refId": "A",
+            "legendFormat": "Availability"
+          },
+          {
+            "expr": "(1 - (avg_over_time(rate(insa_agent_requests_total{status=\"error\"}[30d])) / avg_over_time(rate(insa_agent_requests_total[30d])))) * 100",
+            "refId": "B",
+            "legendFormat": "Reliability"
+          },
+          {
+            "expr": "(avg_over_time(rate(insa_cache_hits_total[30d])) / (avg_over_time(rate(insa_cache_hits_total[30d])) + avg_over_time(rate(insa_cache_misses_total[30d])))) * 100",
+            "refId": "C",
+            "legendFormat": "Efficiency"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "orange"},
+                {"value": 99, "color": "yellow"},
+                {"value": 99.9, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        }
+      },
+      {
+        "id": 21,
+        "title": "Top 5 SLA Breaches (Last 30 Days)",
+        "type": "table",
+        "gridPos": {"x": 12, "y": 47, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "topk(5, count_over_time(ALERTS{alertstate=\"firing\"}[30d]))",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "indexByName": {},
+              "renameByName": {
+                "alertname": "SLA Name",
+                "Value": "Breach Count"
+              }
+            }
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "sortBy": [{"displayName": "Breach Count", "desc": true}]
+        }
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "name": "SLA Breaches",
+          "iconColor": "red",
+          "expr": "ALERTS{alertstate=\"firing\"}",
+          "tagKeys": "alertname,severity",
+          "titleFormat": "SLA Breach: {{alertname}}",
+          "textFormat": "{{annotations.summary}}"
+        },
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "name": "SLA Resolutions",
+          "iconColor": "green",
+          "expr": "ALERTS{alertstate=\"resolved\"}",
+          "tagKeys": "alertname",
+          "titleFormat": "SLA Restored: {{alertname}}",
+          "textFormat": "SLA breach resolved"
+        }
+      ]
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "time_range",
+          "type": "interval",
+          "query": "5m,15m,30m,1h,6h,12h,1d,7d,30d",
+          "current": {"text": "5m", "value": "5m"}
+        }
+      ]
+    }
+  },
+  "overwrite": true,
+  "folderUid": "insa-crm",
+  "message": "Phase 12 Week 3 - SLA Monitoring Dashboard"
+}
