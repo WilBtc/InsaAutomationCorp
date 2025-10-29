@@ -20,6 +20,14 @@ from session_manager import get_session_manager
 from auth_manager import get_auth_manager
 from session_claude_manager import get_session_claude_manager, build_context_prompt
 
+# Import Prometheus metrics (optional)
+try:
+    from prometheus_metrics import initialize_metrics, start_metrics_server
+    PROMETHEUS_ENABLED = True
+except ImportError:
+    PROMETHEUS_ENABLED = False
+    logging.warning("prometheus_metrics not available, metrics disabled")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -1388,7 +1396,20 @@ if __name__ == '__main__':
     logger.info(f"Whisper Model: {WHISPER_MODEL_SIZE}")
     logger.info(f"Device: {WHISPER_DEVICE}")
     logger.info(f"Claude Code Path: {CLAUDE_CODE_PATH}")
-    
+
+    # Initialize and start Prometheus metrics server (if available)
+    if PROMETHEUS_ENABLED:
+        try:
+            metrics_port = int(os.getenv('PROMETHEUS_PORT', '9091'))
+            initialize_metrics(version='1.0.0', environment='production')
+            start_metrics_server(port=metrics_port)
+            logger.info(f"✅ Prometheus metrics server started on port {metrics_port}")
+            logger.info(f"   Access metrics at: http://localhost:{metrics_port}/metrics")
+        except Exception as e:
+            logger.error(f"Failed to start Prometheus metrics server: {e}")
+    else:
+        logger.info("⚠️ Prometheus metrics disabled (prometheus_metrics module not found)")
+
     app.run(
         host=args.host,
         port=args.port,
