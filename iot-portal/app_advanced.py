@@ -36,6 +36,8 @@ from alerting_api import alerting_api, init_alerting_api
 from retention_api import retention_bp
 from retention_scheduler import init_retention_scheduler, get_retention_scheduler
 from reporting_api import reporting_bp, init_reporting_api
+from nl_query_api import nl_query_bp, init_nl_query_api
+from lstm_api import lstm_bp, init_lstm_api
 from tenant_middleware import (
     TenantContextMiddleware,
     require_tenant,
@@ -196,6 +198,14 @@ logger.info("✅ Retention API Blueprint registered at /api/v1/retention")
 # Register Reporting API Blueprint (AI Narrative Reports)
 app.register_blueprint(reporting_bp)
 logger.info("✅ Reporting API Blueprint registered at /api/v1/reports")
+
+# Register NL Query API Blueprint (Natural Language Queries)
+app.register_blueprint(nl_query_bp)
+logger.info("✅ NL Query API Blueprint registered at /api/v1/query")
+
+# Register LSTM API Blueprint (Predictive Forecasting)
+app.register_blueprint(lstm_bp)
+logger.info("✅ LSTM API Blueprint registered at /api/v1/lstm")
 
 # SMTP configuration for email notifications
 SMTP_CONFIG = {
@@ -2886,6 +2896,11 @@ def mobile_dashboard():
     mobile_path = os.path.join(os.path.dirname(__file__), 'static', 'mobile_dashboard.html')
     return send_file(mobile_path)
 
+@app.route('/query')
+def nl_query_chat():
+    """Natural Language Query Chat Interface (Phase C)"""
+    return send_from_directory('static', 'nl_query_chat.html')
+
 @app.route('/api/v1/status')
 @limiter.limit("100 per minute")  # Moderate limit for status checks
 def api_status():
@@ -4350,6 +4365,18 @@ if __name__ == '__main__':
         init_reporting_api(DB_CONFIG)
         logger.info("✅ AI Reporting API initialized")
         logger.info("📊 Report endpoints: /api/v1/reports/generate, /api/v1/reports/test")
+
+        # Initialize NL Query API (Phase C - Natural Language Query Interface)
+        logger.info("Initializing NL Query API...")
+        init_nl_query_api(DB_CONFIG)
+        logger.info("✅ NL Query API initialized")
+        logger.info("💬 Query endpoints: /api/v1/query/ask, /api/v1/query/test")
+
+        # Initialize LSTM API (Phase A - Predictive LSTM Forecasting)
+        logger.info("Initializing LSTM API...")
+        init_lstm_api(DB_CONFIG)
+        logger.info("✅ LSTM API initialized")
+        logger.info("🔮 Forecast endpoints: /api/v1/lstm/train, /api/v1/lstm/predict, /api/v1/lstm/maintenance-schedule")
 
         # Initialize email notifier
         logger.info("Initializing email notifier...")
