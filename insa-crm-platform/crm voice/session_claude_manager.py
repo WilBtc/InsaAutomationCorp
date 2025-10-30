@@ -43,12 +43,13 @@ class ClaudeSession:
 
             try:
                 # Call Claude Code with full prompt (use --print for non-interactive mode)
+                # Working directory: Project root so Claude Code has access to all files
                 result = subprocess.run(
                     ["claude", "--print", prompt],
                     capture_output=True,
                     text=True,
                     timeout=timeout,
-                    cwd=Path.home() / "insa-crm-platform" / "crm voice"
+                    cwd=Path.home() / "insa-crm-platform"  # ← FIXED: Use project root, not subdirectory
                 )
 
                 if result.returncode == 0:
