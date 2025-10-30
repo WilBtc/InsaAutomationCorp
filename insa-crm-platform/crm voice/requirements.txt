@@ -3,3 +3,5 @@ flask-cors==4.0.0
 faster-whisper==1.0.3
 torch>=2.0.0
 torchaudio>=2.0.0
+prometheus_client==0.23.1
+minio==7.2.18
