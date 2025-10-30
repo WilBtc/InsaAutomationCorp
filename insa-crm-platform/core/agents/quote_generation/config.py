@@ -18,17 +18,17 @@ class QuoteGenerationConfig(BaseSettings):
     chromadb_collection: str = "insa_projects"
 
     # ERPNext Integration
-    erpnext_api_url: str = "http://100.100.101.1:9000/api"
+    erpnext_api_url: str = os.getenv("ERPNEXT_API_URL", "http://localhost:9000/api")
     erpnext_username: str = "Administrator"
     erpnext_password: str = "admin"
     erpnext_docker_container: str = "frappe_docker_backend_1"
 
     # InvenTree Integration
-    inventree_api_url: str = "http://100.100.101.1:9600/api"
+    inventree_api_url: str = os.getenv("INVENTREE_URL", "http://localhost:9600/api")
     inventree_token: str = os.getenv("INVENTREE_API_TOKEN", "")
 
     # Mautic Integration
-    mautic_api_url: str = "http://100.100.101.1:9700/api"
+    mautic_api_url: str = os.getenv("MAUTIC_URL", "http://localhost:9700/api")
     mautic_username: str = "admin"
     mautic_password: str = "mautic_admin_2025"
 

@@ -279,7 +279,8 @@ class OCRProcessor:
             result = subprocess.run(['tesseract', '--version'],
                                    capture_output=True, timeout=5)
             return result.returncode == 0
-        except:
+        except Exception as e:
+            logger.debug(f"Tesseract check failed: {e}")
             return False
 
     def _check_easyocr(self) -> bool:
@@ -458,8 +459,8 @@ class ERPNextLeadCreator:
                 with open(mcp_config) as f:
                     config = json.load(f)
                     return 'erpnext-crm' in config.get('mcpServers', {})
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to read MCP config: {e}")
         return False
 
     def create_lead(self, card: BusinessCard, source: str = "Event - PBIOS 2025") -> Optional[str]:

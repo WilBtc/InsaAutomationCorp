@@ -85,6 +85,25 @@ except ImportError as e:
     EmailReporter = None
     TieredNotificationManager = None
 
+# Import cron monitor (Week 1 enhancement)
+try:
+    from modules.cron_monitor import CronJobMonitor
+    CRON_MONITOR_AVAILABLE = True
+except ImportError as e:
+    CRON_MONITOR_AVAILABLE = False
+    CRON_MONITOR_ERROR = str(e)
+    CronJobMonitor = None
+
+# Import resource limiter (Week 2 enhancement)
+try:
+    from modules.resource_limiter import ResourceLimitEnforcer, ApprovalWorkflow
+    RESOURCE_LIMITER_AVAILABLE = True
+except ImportError as e:
+    RESOURCE_LIMITER_AVAILABLE = False
+    RESOURCE_LIMITER_ERROR = str(e)
+    ResourceLimitEnforcer = None
+    ApprovalWorkflow = None
+
 # Setup logging
 os.makedirs('/var/lib/insa-crm/logs', exist_ok=True)
 logging.basicConfig(
@@ -96,6 +115,18 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger('IntegratedHealing')
+
+# Log cron monitor status (after logger is defined)
+if CRON_MONITOR_AVAILABLE:
+    logger.info("✅ CronJobMonitor module loaded (Week 1 enhancement)")
+else:
+    logger.warning(f"📋 CronJobMonitor not available: {CRON_MONITOR_ERROR}")
+
+# Log resource limiter status
+if RESOURCE_LIMITER_AVAILABLE:
+    logger.info("✅ ResourceLimitEnforcer module loaded (Week 2 enhancement)")
+else:
+    logger.warning(f"⚠️  ResourceLimitEnforcer not available: {RESOURCE_LIMITER_ERROR}")
 
 
 # Timeout decorator to prevent hanging operations
@@ -246,14 +277,53 @@ class ServiceClassifier:
             'strategy': 'logs_then_search',
             'reason': 'Standard apps - good documentation exists',
             'notification_tier': 'daily'
+        },
+
+        # System services - Standard systemd restart usually fixes
+        'systemd_services': {
+            'services': ['nginx', 'redis', 'postfix', 'suricata', 'wazuh',
+                        'fail2ban', 'auditd', 'clamav'],
+            'strategy': 'restart_first',
+            'reason': 'System services - restart usually resolves issues',
+            'notification_tier': 'daily'
+        },
+
+        # Autonomous agents - Self-healing capable, rare failures
+        'autonomous_agents': {
+            'services': ['integrated_healing_agent', 'host_config_agent',
+                        'defectdojo_compliance_agent', 'security_integration_agent',
+                        'task_orchestration_agent', 'azure_monitor_agent', 'soc_agent'],
+            'strategy': 'restart_first',
+            'reason': 'Autonomous agents - restart resolves most issues',
+            'notification_tier': 'hourly'
+        },
+
+        # MCP servers - Configuration-only monitoring (auto-restart by Claude Code)
+        'mcp_servers': {
+            'services': ['mcp_platform_admin', 'mcp_defectdojo', 'mcp_erpnext'],
+            'strategy': 'config_only',
+            'reason': 'MCP servers - Claude Code auto-restarts, just verify config',
+            'notification_tier': 'daily'
+        },
+
+        # Storage backends - Critical but rarely fail
+        'storage_backends': {
+            'services': ['minio', 'qdrant', 'postgresql', 'mariadb'],
+            'strategy': 'logs_then_search',
+            'reason': 'Storage backends - critical, need careful diagnosis',
+            'notification_tier': 'realtime'
         }
     }
 
     def __init__(self):
-        logger.info("ServiceClassifier initialized")
+        logger.info("ServiceClassifier initialized with 7 service categories:")
         logger.info(f"  Custom internal: {self.SERVICE_TYPES['custom_internal']['services']}")
         logger.info(f"  Custom Docker: {self.SERVICE_TYPES['custom_docker']['services']}")
         logger.info(f"  Public Docker: {self.SERVICE_TYPES['public_docker']['services']}")
+        logger.info(f"  Systemd services: {len(self.SERVICE_TYPES['systemd_services']['services'])} services")
+        logger.info(f"  Autonomous agents: {len(self.SERVICE_TYPES['autonomous_agents']['services'])} agents")
+        logger.info(f"  MCP servers: {len(self.SERVICE_TYPES['mcp_servers']['services'])} servers")
+        logger.info(f"  Storage backends: {len(self.SERVICE_TYPES['storage_backends']['services'])} backends")
 
     def classify_service(self, service_id: str) -> Dict[str, str]:
         """Returns service type and diagnosis strategy"""
@@ -1252,6 +1322,29 @@ class IntegratedHealingSystem:
         )
         logger.info("🧠 Phase 4 Metacognition: Self-awareness + stuck detection enabled")
 
+        # WEEK 1 ENHANCEMENT: Initialize cron job monitor
+        self.cron_monitor = CronJobMonitor() if CronJobMonitor else None
+        if self.cron_monitor:
+            logger.info("📋 Week 1 Enhancement: Cron job chaos detection enabled (READ-ONLY)")
+        else:
+            logger.warning("📋 Cron job monitor not available (module not loaded)")
+
+        # WEEK 2 ENHANCEMENT: Initialize resource limiter (AUTONOMOUS MODE)
+        self.resource_limiter = None
+        self.approval_workflow = None
+        if ResourceLimitEnforcer and ApprovalWorkflow:
+            self.approval_workflow = ApprovalWorkflow()
+            self.resource_limiter = ResourceLimitEnforcer(self.approval_workflow)
+            logger.info("🤖 Week 2 Enhancement: AUTONOMOUS resource limiting enabled")
+            logger.info("   - LOW risk: Auto-apply (80% confidence threshold)")
+            logger.info("   - MEDIUM risk: Auto-apply (90% confidence threshold)")
+            logger.info("   - HIGH risk: Auto-apply (95% confidence threshold)")
+            logger.info("   - CRITICAL risk: Email approval required (24h timeout)")
+            logger.info("   - Full rollback support + audit trail")
+            logger.info("   - No process killing (constraints only)")
+        else:
+            logger.warning("🔒 Resource limiter not available (module not loaded)")
+
         # Healing history
         self.healing_history_path = Path("/var/lib/insa-crm/healing_history.jsonl")
         self.healing_history_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1362,11 +1455,33 @@ class IntegratedHealingSystem:
                 logger.info(f"Step 1: Checking health of {service_id}")
 
                 with timeout(self.TIMEOUT_HEALTH_CHECK):
-                    health_result = self.health_monitor.check_http_health(service_id)
+                    service_config = self.health_monitor.SERVICES[service_id]
+                    service_type = service_config.get('type', 'web')
 
-            service_config = self.health_monitor.SERVICES[service_id]
+                    # Route to appropriate health check based on service type
+                    if service_type == 'web':
+                        health_result = self.health_monitor.check_http_health(service_id)
+                    elif service_type == 'systemd':
+                        health_result = self.health_monitor.check_systemd_service(service_id)
+                    elif service_type == 'systemd+db':
+                        health_result = self.health_monitor.check_database_connection(service_id)
+                    elif service_type == 'container+http':
+                        health_result = self.health_monitor.check_http_health(service_id)
+                    elif service_type == 'container':
+                        container_status = self.health_monitor.check_container_status(service_config['container'])
+                        health_result = {
+                            'healthy': container_status['running'],
+                            'container_running': container_status['running'],
+                            'container_status': container_status['status'],
+                            'error': None if container_status['running'] else f"Container not running: {container_status['status']}"
+                        }
+                    elif service_type == 'mcp':
+                        health_result = self.health_monitor.check_mcp_server(service_id)
+                    else:
+                        health_result = {'healthy': False, 'error': f'Unknown service type: {service_type}'}
+
             container = service_config.get('container')
-            if container:
+            if container and service_type not in ['container', 'container+http']:
                 container_status = self.health_monitor.check_container_status(container)
                 health_result['container_running'] = container_status['running']
 
@@ -1526,7 +1641,26 @@ class IntegratedHealingSystem:
             logger.info("Step 5: Verifying fix...")
             time.sleep(10)  # Wait for service to stabilize
 
-            final_health = self.health_monitor.check_http_health(service_id)
+            # Use same routing as initial health check
+            if service_type == 'web':
+                final_health = self.health_monitor.check_http_health(service_id)
+            elif service_type == 'systemd':
+                final_health = self.health_monitor.check_systemd_service(service_id)
+            elif service_type == 'systemd+db':
+                final_health = self.health_monitor.check_database_connection(service_id)
+            elif service_type == 'container+http':
+                final_health = self.health_monitor.check_http_health(service_id)
+            elif service_type == 'container':
+                container_status = self.health_monitor.check_container_status(service_config['container'])
+                final_health = {
+                    'healthy': container_status['running'],
+                    'error': None if container_status['running'] else f"Container not running: {container_status['status']}"
+                }
+            elif service_type == 'mcp':
+                final_health = self.health_monitor.check_mcp_server(service_id)
+            else:
+                final_health = {'healthy': False, 'error': f'Unknown service type: {service_type}'}
+
             result['final_status'] = 'healthy' if final_health['healthy'] else 'still_unhealthy'
 
             if final_health['healthy']:
@@ -1555,8 +1689,8 @@ class IntegratedHealingSystem:
             final_resource_stats = self.resource_monitor.check_resources()
             result['resource_usage'] = final_resource_stats
             logger.info(f"Final resource usage: {final_resource_stats['memory_mb']:.1f}MB, {final_resource_stats['cpu_percent']:.1f}% CPU")
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Failed to collect final resource stats: {e}")
 
         # Save to history
         self._save_healing_event(result)
@@ -1867,6 +2001,7 @@ class IntegratedHealingSystem:
             'services_checked': int,
             'issues_detected': int,
             'issues_fixed': int,
+            'cron_chaos': dict,  # NEW: Week 1 enhancement
             'services': {service_id: result}
         }
         """
@@ -1878,8 +2013,119 @@ class IntegratedHealingSystem:
             'services_checked': 0,
             'issues_detected': 0,
             'issues_fixed': 0,
+            'cron_chaos': None,  # NEW: Week 1
             'services': {}
         }
+
+        # WEEK 1 ENHANCEMENT: Check for cron job chaos
+        if self.cron_monitor:
+            try:
+                logger.info("\n📋 Week 1: Checking cron job chaos...")
+                cron_report = self.cron_monitor.detect_cron_chaos()
+                report['cron_chaos'] = cron_report
+
+                # Alert on HIGH or CRITICAL risk
+                if cron_report['risk_level'] in ['HIGH', 'CRITICAL']:
+                    logger.warning(f"⚠️  Cron Job Chaos: {cron_report['risk_level']}")
+                    logger.warning(f"   {cron_report['recommendation']}")
+                    logger.warning(f"   Total jobs: {cron_report['total_jobs']}")
+                    logger.warning(f"   Duplicates: {cron_report['duplicates']}")
+                    logger.warning(f"   Time overlaps: {len(cron_report['time_overlaps'])}")
+                    logger.warning(f"   Runaway processes: {len(cron_report['runaway_processes'])}")
+
+                    # Send notification
+                    if self.notification_manager and cron_report['risk_level'] == 'CRITICAL':
+                        self.notification_manager.add_notification(
+                            'CRITICAL',
+                            'Cron Job Chaos',
+                            f"Detected {cron_report['duplicates']} duplicate cron jobs and "
+                            f"{len(cron_report['runaway_processes'])} runaway processes. "
+                            f"{cron_report['recommendation']}"
+                        )
+                else:
+                    logger.info(f"✅ Cron jobs: {cron_report['risk_level']} risk ({cron_report['total_jobs']} jobs)")
+
+            except Exception as e:
+                logger.error(f"Failed to check cron chaos: {e}")
+                report['cron_chaos'] = {'error': str(e)}
+
+        # WEEK 2 ENHANCEMENT: Process runaway processes (AUTONOMOUS)
+        if self.resource_limiter and self.cron_monitor and report.get('cron_chaos'):
+            try:
+                runaway_processes = report['cron_chaos'].get('runaway_processes', [])
+                cron_risk_level = report['cron_chaos'].get('risk_level', 'MEDIUM')
+
+                if runaway_processes:
+                    logger.info(f"\n🤖 Week 2: Processing {len(runaway_processes)} runaway processes (AUTONOMOUS)...")
+
+                    autonomous_applied = 0
+                    email_approval_required = []
+                    already_constrained = 0
+                    failed = []
+
+                    for proc in runaway_processes:
+                        # Calculate confidence for this specific process
+                        confidence = self.resource_limiter.calculate_confidence(proc)
+
+                        # Add cron risk level to process info
+                        proc['risk_level'] = cron_risk_level
+
+                        # AUTONOMOUS constraint (auto-applies for LOW/MEDIUM/HIGH with sufficient confidence)
+                        result = self.resource_limiter.constrain_autonomous(
+                            target_info=proc,
+                            risk_level=cron_risk_level,
+                            limits={'cpu_percent': 30, 'memory_mb': 256},
+                            confidence=confidence
+                        )
+
+                        if result['status'] == 'autonomous_applied':
+                            autonomous_applied += 1
+                            logger.info(f"   ✅ PID {proc['pid']}: AUTONOMOUS constraint applied (confidence={confidence:.0%})")
+
+                        elif result['status'] == 'email_approval_required':
+                            email_approval_required.append(result)
+                            logger.warning(f"   📧 PID {proc['pid']}: EMAIL approval required (risk={cron_risk_level}, confidence={confidence:.0%})")
+
+                        elif result['status'] == 'already_constrained':
+                            already_constrained += 1
+                            logger.info(f"   ✅ PID {proc['pid']}: Already constrained")
+
+                        elif result['status'] == 'autonomous_failed':
+                            failed.append(result)
+                            logger.error(f"   ❌ PID {proc['pid']}: Failed to constrain - {result['message']}")
+
+                    report['resource_constraints'] = {
+                        'runaway_processes': len(runaway_processes),
+                        'autonomous_applied': autonomous_applied,
+                        'email_approval_required': len(email_approval_required),
+                        'already_constrained': already_constrained,
+                        'failed': len(failed),
+                        'email_requests': email_approval_required,
+                        'cron_risk_level': cron_risk_level
+                    }
+
+                    # Summary
+                    logger.info(f"\n📊 Resource Constraint Summary:")
+                    logger.info(f"   🤖 Autonomous: {autonomous_applied}/{len(runaway_processes)} processes")
+                    if email_approval_required:
+                        logger.warning(f"   📧 Email approval needed: {len(email_approval_required)} CRITICAL cases")
+
+                    # Send email ONLY for CRITICAL cases
+                    if email_approval_required and self.notification_manager:
+                        self.notification_manager.add_notification(
+                            'CRITICAL',
+                            'CRITICAL: Resource Constraint Approval Required',
+                            f"{len(email_approval_required)} CRITICAL runaway processes detected. "
+                            f"Email approval required within 24 hours. "
+                            f"Risk: {cron_risk_level}. "
+                            f"Review approval requests in database."
+                        )
+                else:
+                    logger.info(f"✅ Week 2: No runaway processes detected")
+
+            except Exception as e:
+                logger.error(f"Failed to process runaway processes: {e}")
+                report['resource_constraints'] = {'error': str(e)}
 
         for service_id in self.health_monitor.SERVICES.keys():
             logger.info(f"\n--- Checking {service_id} ---")
