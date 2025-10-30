@@ -304,7 +304,7 @@ def call_claude_code_subprocess(text, agent_context=None, session_history=None):
         return f"Error llamando a Claude Code: {str(e)}"
 
 
-def query_claude_code(text, session_id='default', user_id=None):
+def query_claude_code(text, session_id='default', user_id=None, file_paths=None):
     """
     Process CRM query using Claude Code LLM via subprocess
 
@@ -314,6 +314,7 @@ def query_claude_code(text, session_id='default', user_id=None):
         text: Input text/query
         session_id: Session identifier for persistent storage
         user_id: User ID (optional, for authenticated sessions)
+        file_paths: Optional list of uploaded file paths
 
     Returns:
         Claude Code LLM response
@@ -359,10 +360,12 @@ def query_claude_code(text, session_id='default', user_id=None):
 
         # Use session-persistent Claude Code instance (lower latency + better context)
         # ✅ TIMEOUT INCREASED: 60s (was 30s in test script)
+        # ✅ FILE UPLOAD FIX: Pass file_paths to session manager
         response = claude_mgr.query(
             session_id=session_id,
             prompt=full_prompt,
-            timeout=60  # ✅ INCREASED from 30s to 60s
+            timeout=60,  # ✅ INCREASED from 30s to 60s
+            file_paths=file_paths  # ✅ Pass uploaded files
         )
 
         # Add AI response to conversation history
@@ -879,8 +882,8 @@ def query():
         logger.info(f"Query with {len(uploaded_files)} files (session {session_id}): {text[:100]}...")
 
         try:
-            # Query Claude Code with session
-            response = query_claude_code(query_text, session_id=session_id, user_id=user_id)
+            # Query Claude Code with session (pass uploaded file paths)
+            response = query_claude_code(query_text, session_id=session_id, user_id=user_id, file_paths=temp_files)
 
             return jsonify({
                 'query': text,
@@ -1409,6 +1412,22 @@ if __name__ == '__main__':
             logger.error(f"Failed to start Prometheus metrics server: {e}")
     else:
         logger.info("⚠️ Prometheus metrics disabled (prometheus_metrics module not found)")
+
+    # Register Command Center V4 API extensions
+    try:
+        from v4_api_extensions import register_v4_endpoints
+        register_v4_endpoints(app, session_mgr)
+        logger.info("✅ Command Center V4 API extensions registered")
+    except Exception as e:
+        logger.error(f"Failed to register V4 API extensions: {e}")
+
+    # Register Command Center V4 Navigation API extensions
+    try:
+        from v4_api_extensions_navigation import register_navigation_endpoints
+        register_navigation_endpoints(app)
+        logger.info("✅ Command Center V4 Navigation API extensions registered")
+    except Exception as e:
+        logger.error(f"Failed to register V4 Navigation API extensions: {e}")
 
     app.run(
         host=args.host,
