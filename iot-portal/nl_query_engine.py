@@ -32,15 +32,17 @@ class NLQueryEngine:
     - Query history and learning
     """
 
-    def __init__(self, db_config: Dict[str, str]):
+    def __init__(self, db_config: Dict[str, str], lstm_forecaster=None):
         """
         Initialize query engine
 
         Args:
             db_config: Database connection configuration
+            lstm_forecaster: Optional LSTMForecaster instance for predictions
         """
         self.db_config = db_config
         self.logger = logging.getLogger(__name__)
+        self.lstm_forecaster = lstm_forecaster
 
         # Query templates for common patterns
         self.query_templates = {
@@ -205,6 +207,16 @@ class NLQueryEngine:
             elif 'sensor' in question_lower:
                 intent['type'] = 'list_sensors'
                 intent['confidence'] = 0.8
+        # LSTM prediction queries
+        elif any(word in question_lower for word in ['predict', 'forecast', 'future', 'will fail', 'failure']):
+            intent['type'] = 'lstm_prediction'
+            intent['confidence'] = 0.9
+        elif any(word in question_lower for word in ['maintenance', 'schedule', 'maintain']):
+            intent['type'] = 'maintenance_schedule'
+            intent['confidence'] = 0.9
+        elif any(word in question_lower for word in ['risk', 'failure risk', 'health']):
+            intent['type'] = 'failure_risk'
+            intent['confidence'] = 0.85
 
         return intent
 
@@ -474,6 +486,254 @@ Answer:"""
         else:
             return f"I found {len(results)} results for your question: '{question}'"
 
+    def _handle_lstm_query(self, intent: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Handle LSTM prediction queries
+
+        Args:
+            intent: Extracted intent dictionary
+
+        Returns:
+            Dictionary with prediction results or error
+        """
+        if not self.lstm_forecaster:
+            return {
+                'error': 'LSTM forecasting not available. TensorFlow not installed.',
+                'suggestion': 'Install TensorFlow with: pip install tensorflow'
+            }
+
+        query_type = intent['type']
+        entities = intent['entities']
+
+        try:
+            if query_type == 'lstm_prediction':
+                # Get device_id and sensor_key
+                device_id = entities.get('device_id')
+                sensor_key = entities.get('sensor_key')
+
+                # If not provided, try to find from database
+                if not device_id and sensor_key:
+                    device_id = self._get_device_id_for_sensor(sensor_key)
+
+                if not device_id or not sensor_key:
+                    return {
+                        'error': 'Need device ID and sensor key for prediction',
+                        'suggestion': 'Try: "Predict sensor 146 failure" or specify device name'
+                    }
+
+                # Make prediction
+                result = self.lstm_forecaster.predict_future(device_id, sensor_key)
+
+                if not result.get('success'):
+                    return result
+
+                # Format answer
+                failure_risk = result['failure_risk']
+                forecasts = result['forecasts']
+
+                answer = self._format_lstm_answer(
+                    sensor_key,
+                    entities.get('device_name', 'device'),
+                    failure_risk,
+                    forecasts
+                )
+
+                return {
+                    'answer': answer,
+                    'results': [failure_risk],
+                    'result_count': 1,
+                    'forecasts': forecasts[:12],  # First 12 hours
+                    'prediction_data': result
+                }
+
+            elif query_type == 'maintenance_schedule':
+                # Get maintenance schedule
+                models = self.lstm_forecaster.list_models()
+
+                schedule = []
+                for model in models:
+                    try:
+                        prediction = self.lstm_forecaster.predict_future(
+                            model['device_id'],
+                            model['sensor_key']
+                        )
+
+                        if prediction.get('success'):
+                            failure_risk = prediction['failure_risk']
+
+                            if failure_risk['risk_level'] in ['high', 'medium']:
+                                schedule.append({
+                                    'device_name': model['device_name'],
+                                    'sensor_key': model['sensor_key'],
+                                    'risk_level': failure_risk['risk_level'],
+                                    'risk_score': failure_risk['risk_score'],
+                                    'time_to_failure_hours': failure_risk['time_to_failure_hours'],
+                                    'recommended_action': failure_risk['recommended_action']
+                                })
+                    except Exception as e:
+                        self.logger.warning(f"Error predicting for {model['device_id']}: {e}")
+                        continue
+
+                # Sort by priority
+                schedule.sort(key=lambda x: (
+                    1 if x['risk_level'] == 'high' else 2,
+                    x['time_to_failure_hours'] or 999
+                ))
+
+                answer = self._format_maintenance_schedule(schedule)
+
+                return {
+                    'answer': answer,
+                    'results': schedule,
+                    'result_count': len(schedule),
+                    'summary': {
+                        'high_risk': len([s for s in schedule if s['risk_level'] == 'high']),
+                        'medium_risk': len([s for s in schedule if s['risk_level'] == 'medium'])
+                    }
+                }
+
+            elif query_type == 'failure_risk':
+                # Similar to lstm_prediction but focus on risk assessment
+                device_id = entities.get('device_id')
+                sensor_key = entities.get('sensor_key')
+
+                if not device_id and sensor_key:
+                    device_id = self._get_device_id_for_sensor(sensor_key)
+
+                if not device_id or not sensor_key:
+                    return {
+                        'error': 'Need device ID and sensor key for risk assessment',
+                        'suggestion': 'Try: "What is the failure risk for sensor 146?"'
+                    }
+
+                result = self.lstm_forecaster.predict_future(device_id, sensor_key)
+
+                if not result.get('success'):
+                    return result
+
+                failure_risk = result['failure_risk']
+
+                answer = self._format_risk_answer(
+                    sensor_key,
+                    entities.get('device_name', 'device'),
+                    failure_risk
+                )
+
+                return {
+                    'answer': answer,
+                    'results': [failure_risk],
+                    'result_count': 1,
+                    'risk_assessment': failure_risk
+                }
+
+            else:
+                return {
+                    'error': f'Unsupported LSTM query type: {query_type}'
+                }
+
+        except Exception as e:
+            self.logger.error(f"Error handling LSTM query: {e}")
+            return {
+                'error': f'LSTM query failed: {str(e)}'
+            }
+
+    def _get_device_id_for_sensor(self, sensor_key: str) -> Optional[str]:
+        """Get device ID for a sensor key from database"""
+        conn = self._get_db_connection()
+        if not conn:
+            return None
+
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT DISTINCT device_id
+                FROM telemetry
+                WHERE key = %s
+                LIMIT 1
+            """, (sensor_key,))
+
+            row = cur.fetchone()
+            cur.close()
+            conn.close()
+
+            if row:
+                return str(row[0])
+            return None
+
+        except Exception as e:
+            self.logger.error(f"Error getting device ID: {e}")
+            return None
+
+    def _format_lstm_answer(self, sensor_key: str, device_name: str,
+                           failure_risk: Dict, forecasts: List[Dict]) -> str:
+        """Format LSTM prediction answer"""
+        risk_level = failure_risk['risk_level']
+        risk_score = failure_risk['risk_score']
+        time_to_failure = failure_risk.get('time_to_failure_hours')
+        action = failure_risk['recommended_action']
+
+        # Risk emoji
+        risk_emoji = "🔴" if risk_level == "high" else "🟡" if risk_level == "medium" else "🟢"
+
+        answer = f"{risk_emoji} Sensor {sensor_key} on {device_name}: "
+
+        if time_to_failure:
+            answer += f"Predicted failure in {time_to_failure} hours. "
+        else:
+            answer += f"Risk level: {risk_level.upper()} ({risk_score}/100). "
+
+        answer += f"Recommendation: {action}"
+
+        # Add forecast preview
+        if len(forecasts) > 0:
+            first_forecast = forecasts[0]
+            answer += f" Next hour prediction: {first_forecast['predicted_value']:.2f}"
+
+        return answer
+
+    def _format_maintenance_schedule(self, schedule: List[Dict]) -> str:
+        """Format maintenance schedule answer"""
+        if not schedule:
+            return "✅ All systems healthy! No maintenance required at this time."
+
+        high_risk = [s for s in schedule if s['risk_level'] == 'high']
+        medium_risk = [s for s in schedule if s['risk_level'] == 'medium']
+
+        answer = f"🔧 Maintenance Schedule: {len(schedule)} items requiring attention.\n\n"
+
+        if high_risk:
+            answer += f"🔴 URGENT ({len(high_risk)}): "
+            urgent_devices = [f"{s['device_name']} sensor {s['sensor_key']}" for s in high_risk[:3]]
+            answer += ", ".join(urgent_devices)
+            if len(high_risk) > 3:
+                answer += f" and {len(high_risk) - 3} more"
+            answer += "\n\n"
+
+        if medium_risk:
+            answer += f"🟡 MONITOR ({len(medium_risk)}): "
+            monitor_devices = [f"{s['device_name']} sensor {s['sensor_key']}" for s in medium_risk[:3]]
+            answer += ", ".join(monitor_devices)
+            if len(medium_risk) > 3:
+                answer += f" and {len(medium_risk) - 3} more"
+
+        return answer
+
+    def _format_risk_answer(self, sensor_key: str, device_name: str,
+                          failure_risk: Dict) -> str:
+        """Format failure risk answer"""
+        risk_level = failure_risk['risk_level']
+        risk_score = failure_risk['risk_score']
+        risk_factors = failure_risk.get('risk_factors', [])
+
+        risk_emoji = "🔴" if risk_level == "high" else "🟡" if risk_level == "medium" else "🟢"
+
+        answer = f"{risk_emoji} Sensor {sensor_key} on {device_name}: {risk_level.upper()} risk ({risk_score}/100)."
+
+        if risk_factors:
+            answer += f" Factors: {'; '.join(risk_factors[:2])}"
+
+        return answer
+
     def query(self, question: str, use_ai: bool = True) -> Dict[str, Any]:
         """
         Process natural language question and return answer
@@ -499,11 +759,32 @@ Answer:"""
                     'Show me sensor 146 values',
                     'What is the average temperature for sensor 80?',
                     'List all devices in Vidrio Andino',
-                    'Show me anomalies from the last week'
+                    'Show me anomalies from the last week',
+                    'Predict sensor 146 failure',
+                    'Show maintenance schedule'
                 ]
             }
 
-        # Generate SQL
+        # Handle LSTM queries separately (no SQL needed)
+        if intent['type'] in ['lstm_prediction', 'maintenance_schedule', 'failure_risk']:
+            lstm_result = self._handle_lstm_query(intent)
+
+            if 'error' in lstm_result:
+                return {
+                    'question': question,
+                    'intent': intent,
+                    'error': lstm_result['error'],
+                    'suggestions': [lstm_result.get('suggestion', 'Try with a different query')]
+                }
+
+            # Add metadata and return
+            lstm_result['question'] = question
+            lstm_result['intent'] = intent
+            lstm_result['timestamp'] = datetime.now().isoformat()
+
+            return lstm_result
+
+        # Generate SQL for non-LSTM queries
         sql, params = self.generate_sql(intent)
         if not sql:
             return {

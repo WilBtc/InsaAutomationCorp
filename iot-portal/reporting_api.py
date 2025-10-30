@@ -30,16 +30,21 @@ def get_report_generator() -> Optional[AIReportGenerator]:
     return _report_generator
 
 
-def init_reporting_api(db_config: dict):
+def init_reporting_api(db_config: dict, lstm_forecaster=None):
     """
-    Initialize the reporting API with database configuration
+    Initialize the reporting API with database configuration and LSTM forecaster
 
     Args:
         db_config: Database connection configuration
+        lstm_forecaster: Optional LSTMForecaster instance for predictive maintenance
     """
     global _report_generator
-    _report_generator = AIReportGenerator(db_config)
-    logger.info("Reporting API initialized")
+    _report_generator = AIReportGenerator(db_config, lstm_forecaster=lstm_forecaster)
+    if lstm_forecaster:
+        logger.info("Reporting API initialized with LSTM predictions enabled")
+    else:
+        logger.info("Reporting API initialized (LSTM predictions disabled)")
+
 
 
 # Authentication decorator (uses existing JWT from app_advanced.py)

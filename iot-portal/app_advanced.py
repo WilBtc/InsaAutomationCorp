@@ -37,7 +37,7 @@ from retention_api import retention_bp
 from retention_scheduler import init_retention_scheduler, get_retention_scheduler
 from reporting_api import reporting_bp, init_reporting_api
 from nl_query_api import nl_query_bp, init_nl_query_api
-from lstm_api import lstm_bp, init_lstm_api
+from lstm_api import lstm_bp, init_lstm_api, get_forecaster
 from tenant_middleware import (
     TenantContextMiddleware,
     require_tenant,
@@ -4360,23 +4360,30 @@ if __name__ == '__main__':
         for job in scheduled_jobs:
             logger.info(f"   📅 {job['name']}: next run at {job['next_run_time']}")
 
-        # Initialize AI Reporting API (Phase B - ML AI Reporting System)
-        logger.info("Initializing AI Reporting API...")
-        init_reporting_api(DB_CONFIG)
-        logger.info("✅ AI Reporting API initialized")
-        logger.info("📊 Report endpoints: /api/v1/reports/generate, /api/v1/reports/test")
-
-        # Initialize NL Query API (Phase C - Natural Language Query Interface)
-        logger.info("Initializing NL Query API...")
-        init_nl_query_api(DB_CONFIG)
-        logger.info("✅ NL Query API initialized")
-        logger.info("💬 Query endpoints: /api/v1/query/ask, /api/v1/query/test")
-
         # Initialize LSTM API (Phase A - Predictive LSTM Forecasting)
         logger.info("Initializing LSTM API...")
         init_lstm_api(DB_CONFIG)
         logger.info("✅ LSTM API initialized")
         logger.info("🔮 Forecast endpoints: /api/v1/lstm/train, /api/v1/lstm/predict, /api/v1/lstm/maintenance-schedule")
+
+        # Get LSTM forecaster for integration with other APIs
+        lstm_forecaster = get_forecaster()
+
+        # Initialize AI Reporting API with LSTM integration (Phase B + Phase A Integration)
+        logger.info("Initializing AI Reporting API with LSTM predictions...")
+        init_reporting_api(DB_CONFIG, lstm_forecaster=lstm_forecaster)
+        logger.info("✅ AI Reporting API initialized")
+        logger.info("📊 Report endpoints: /api/v1/reports/generate, /api/v1/reports/test")
+        if lstm_forecaster:
+            logger.info("🔮 LSTM predictions integrated: Reports now include 12h failure forecasts")
+
+        # Initialize NL Query API with LSTM integration (Phase C - Natural Language Query Interface)
+        logger.info("Initializing NL Query API with LSTM integration...")
+        init_nl_query_api(DB_CONFIG, lstm_forecaster)
+        logger.info("✅ NL Query API initialized")
+        logger.info("💬 Query endpoints: /api/v1/query/ask, /api/v1/query/test")
+        if lstm_forecaster:
+            logger.info("🔮 LSTM queries enabled: 'When will sensor X fail?', 'Show maintenance schedule'")
 
         # Initialize email notifier
         logger.info("Initializing email notifier...")
