@@ -8,20 +8,22 @@ Date: October 27, 2025
 Author: INSA Automation Corp
 """
 
-from flask import Flask, request, jsonify, send_file, render_template_string
+from flask import Flask, request, jsonify, send_file, render_template_string, g, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import (
     JWTManager, create_access_token, create_refresh_token,
-    jwt_required, get_jwt_identity
+    jwt_required, get_jwt_identity, get_jwt
 )
 from flasgger import Swagger, swag_from
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import pandas as pd
 import json
+import os
 import uuid
 from datetime import datetime, timedelta
 import hashlib
+import bcrypt
 import secrets
 from functools import wraps
 import logging
@@ -29,6 +31,20 @@ from mqtt_broker import init_broker, get_broker
 from socketio_server import init_websocket_server, get_websocket_server
 from rule_engine import init_rule_engine, get_rule_engine
 from rate_limiter import create_rate_limiter, get_rate_limiter
+from ml_api import ml_api
+from alerting_api import alerting_api, init_alerting_api
+from retention_api import retention_bp
+from retention_scheduler import init_retention_scheduler, get_retention_scheduler
+from tenant_middleware import (
+    TenantContextMiddleware,
+    require_tenant,
+    check_tenant_quota,
+    require_tenant_admin,
+    check_tenant_feature,
+    get_current_tenant,
+    get_current_tenant_id
+)
+from tenant_manager import TenantManager, TenantManagerException
 
 # Configure logging
 logging.basicConfig(
@@ -39,8 +55,9 @@ logger = logging.getLogger(__name__)
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = secrets.token_hex(32)
-app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)
+# TEMPORARY: Use fixed secrets for testing (should be from env vars in production)
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-please-change-in-production')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'dev-jwt-secret-please-change-in-production')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=7)
 
@@ -140,11 +157,19 @@ swagger_template = {
         {
             "name": "MQTT",
             "description": "MQTT broker operations"
+        },
+        {
+            "name": "Machine Learning",
+            "description": "ML model training, prediction, and anomaly detection"
         }
     ]
 }
 
 swagger = Swagger(app, config=swagger_config, template=swagger_template)
+
+# Register ML API Blueprint (Phase 3 Feature 2)
+app.register_blueprint(ml_api)
+logger.info("✅ ML API Blueprint registered at /api/v1/ml")
 
 # Database configuration
 DB_CONFIG = {
@@ -154,6 +179,18 @@ DB_CONFIG = {
     'password': 'iiot_secure_2025',
     'port': 5432
 }
+
+# Store DB_CONFIG in app for middleware access
+app.config['DB_CONFIG'] = DB_CONFIG
+
+# Register Alerting API Blueprint (Phase 3 Feature 8)
+init_alerting_api(DB_CONFIG)
+app.register_blueprint(alerting_api)
+logger.info("✅ Alerting API Blueprint registered at /api/v1/alerts, /api/v1/escalation-policies, /api/v1/on-call, /api/v1/groups")
+
+# Register Retention API Blueprint (Phase 3 Feature 7)
+app.register_blueprint(retention_bp)
+logger.info("✅ Retention API Blueprint registered at /api/v1/retention")
 
 # SMTP configuration for email notifications
 SMTP_CONFIG = {
@@ -349,12 +386,30 @@ def init_database():
 # ============================================================================
 
 def hash_password(password):
-    """Hash password using SHA256"""
-    return hashlib.sha256(password.encode()).hexdigest()
+    """Hash password using bcrypt with salt (12 rounds)"""
+    salt = bcrypt.gensalt(rounds=12)
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
 
 def verify_password(password, password_hash):
-    """Verify password against hash"""
-    return hash_password(password) == password_hash
+    """
+    Verify password against bcrypt hash, with fallback to SHA256 for migration.
+    Returns tuple: (is_valid, needs_rehash)
+    """
+    # Try bcrypt first (new format)
+    try:
+        is_valid = bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+        return (is_valid, False)  # Valid bcrypt, no rehash needed
+    except (ValueError, AttributeError):
+        # Not a bcrypt hash, try SHA256 (old format - 64 chars hex)
+        if len(password_hash) == 64:
+            old_hash = hashlib.sha256(password.encode()).hexdigest()
+            if old_hash == password_hash:
+                logger.warning(f"User logged in with old SHA256 hash, needs migration")
+                return (True, True)  # Valid SHA256, needs rehash
+
+        logger.warning("Invalid password hash format detected")
+        return (False, False)
 
 def generate_api_key():
     """Generate secure API key"""
@@ -412,6 +467,44 @@ def api_key_required(f):
             return jsonify({'error': 'Authentication error'}), 500
         finally:
             conn.close()
+
+    return decorated_function
+
+
+def require_auth(f):
+    """
+    Decorator to require JWT authentication and set g.current_user.
+
+    This replaces @jwt_required() to provide tenant context.
+
+    Usage:
+        @app.route('/api/v1/devices')
+        @require_auth
+        def list_devices():
+            user_id = g.current_user['id']
+            tenant_id = g.current_user['tenant_id']
+    """
+    @wraps(f)
+    @jwt_required()
+    def decorated_function(*args, **kwargs):
+        # Get full JWT claims
+        claims = get_jwt()
+
+        # Set tenant_id in Flask g (required by @require_tenant decorator)
+        g.tenant_id = claims.get('tenant_id')
+
+        # Set current user in Flask g
+        g.current_user = {
+            'id': claims.get('user_id'),
+            'email': get_jwt_identity(),
+            'tenant_id': claims.get('tenant_id'),
+            'tenant_slug': claims.get('tenant_slug'),
+            'role': claims.get('role'),
+            'permissions': claims.get('permissions', []),
+            'is_tenant_admin': claims.get('is_tenant_admin', False)
+        }
+
+        return f(*args, **kwargs)
 
     return decorated_function
 
@@ -658,18 +751,67 @@ def login():
 
         user = cur.fetchone()
 
-        if not user or not verify_password(data['password'], user['password_hash']):
+        if not user:
             return jsonify({'error': 'Invalid credentials'}), 401
+
+        # Verify password (may return tuple for migration)
+        password_result = verify_password(data['password'], user['password_hash'])
+        is_valid, needs_rehash = password_result if isinstance(password_result, tuple) else (password_result, False)
+
+        if not is_valid:
+            return jsonify({'error': 'Invalid credentials'}), 401
+
+        # Automatic migration: rehash SHA256 passwords to bcrypt on login
+        if needs_rehash:
+            new_hash = hash_password(data['password'])
+            cur.execute(
+                "UPDATE users SET password_hash = %s WHERE id = %s",
+                (new_hash, user['id'])
+            )
+            conn.commit()
+            logger.info(f"Migrated user {user['email']} from SHA256 to bcrypt")
+
+        # Get user's tenant(s) - users can belong to multiple tenants
+        cur.execute("""
+            SELECT tu.tenant_id, t.name, t.slug, t.status, tu.role_id, tu.is_tenant_admin
+            FROM tenant_users tu
+            JOIN tenants t ON tu.tenant_id = t.id
+            WHERE tu.user_id = %s AND t.status = 'active'
+            ORDER BY tu.created_at ASC
+        """, (user['id'],))
+
+        tenant_memberships = cur.fetchall()
+
+        if not tenant_memberships:
+            return jsonify({'error': 'No active tenant found for user'}), 403
+
+        # Use first tenant as default (in future, allow tenant selection)
+        primary_tenant = tenant_memberships[0]
 
         # Update last login
         cur.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user['id'],))
         conn.commit()
 
-        # Create tokens
-        access_token = create_access_token(identity=data['email'])
-        refresh_token = create_refresh_token(identity=data['email'])
+        # Create tokens with tenant context
+        additional_claims = {
+            'user_id': str(user['id']),
+            'tenant_id': str(primary_tenant['tenant_id']),
+            'tenant_slug': primary_tenant['slug'],
+            'role': user['role'],
+            'permissions': user['permissions'],
+            'is_tenant_admin': primary_tenant['is_tenant_admin']
+        }
 
-        logger.info(f"User logged in: {user['email']}")
+        access_token = create_access_token(
+            identity=data['email'],
+            additional_claims=additional_claims
+        )
+        refresh_token = create_refresh_token(
+            identity=data['email'],
+            additional_claims=additional_claims
+        )
+
+        logger.info(f"User logged in: {user['email']} (tenant: {primary_tenant['slug']})")
 
         return jsonify({
             'access_token': access_token,
@@ -677,7 +819,12 @@ def login():
             'user': {
                 'id': str(user['id']),
                 'email': user['email'],
-                'role': user['role']
+                'role': user['role'],
+                'tenant': {
+                    'id': str(primary_tenant['tenant_id']),
+                    'name': primary_tenant['name'],
+                    'slug': primary_tenant['slug']
+                }
             }
         }), 200
 
@@ -1956,9 +2103,13 @@ def get_forecast(device_id, metric):
 
 @app.route('/api/v1/devices', methods=['GET'])
 @limiter.limit("200 per minute")  # Generous limit for authenticated device listing
-@jwt_required()
+@require_auth
+@require_tenant
 def list_devices():
-    """List all devices with optional filtering"""
+    """List all devices for current tenant with optional filtering"""
+    # Get tenant context
+    tenant_id = g.tenant_id
+
     # Query parameters
     status = request.args.get('status')
     area = request.args.get('area')
@@ -1973,9 +2124,9 @@ def list_devices():
     try:
         cur = conn.cursor()
 
-        # Build query
-        query = "SELECT * FROM devices WHERE 1=1"
-        params = []
+        # Build query with tenant filtering
+        query = "SELECT * FROM devices WHERE tenant_id = %s"
+        params = [tenant_id]
 
         if status:
             query += " AND status = %s"
@@ -2016,9 +2167,14 @@ def list_devices():
         conn.close()
 
 @app.route('/api/v1/devices', methods=['POST'])
-@jwt_required()
+@require_auth
+@require_tenant
+@check_tenant_quota('device')
 def create_device():
-    """Register new device"""
+    """Register new device for current tenant"""
+    # Get tenant context
+    tenant_id = g.tenant_id
+
     data = request.get_json()
 
     required_fields = ['name', 'type']
@@ -2035,9 +2191,9 @@ def create_device():
         cur.execute("""
             INSERT INTO devices (
                 name, type, location, area, protocol,
-                connection_string, config, metadata
+                connection_string, config, metadata, tenant_id
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id, name, type, status, created_at
         """, (
             data['name'],
@@ -2047,7 +2203,8 @@ def create_device():
             data.get('protocol', 'http'),
             data.get('connection_string'),
             json.dumps(data.get('config', {})),
-            json.dumps(data.get('metadata', {}))
+            json.dumps(data.get('metadata', {})),
+            tenant_id
         ))
 
         device = cur.fetchone()
@@ -2071,9 +2228,13 @@ def create_device():
         conn.close()
 
 @app.route('/api/v1/devices/<device_id>', methods=['GET'])
-@jwt_required()
+@require_auth
+@require_tenant
 def get_device(device_id):
-    """Get device details"""
+    """Get device details for current tenant"""
+    # Get tenant context
+    tenant_id = g.tenant_id
+
     conn = get_db_connection()
     if not conn:
         return jsonify({'error': 'Database error'}), 500
@@ -2081,7 +2242,7 @@ def get_device(device_id):
     try:
         cur = conn.cursor()
 
-        cur.execute("SELECT * FROM devices WHERE id = %s", (device_id,))
+        cur.execute("SELECT * FROM devices WHERE id = %s AND tenant_id = %s", (device_id, tenant_id))
         device = cur.fetchone()
 
         if not device:
@@ -2111,9 +2272,13 @@ def get_device(device_id):
         conn.close()
 
 @app.route('/api/v1/devices/<device_id>', methods=['PUT'])
-@jwt_required()
+@require_auth
+@require_tenant
 def update_device(device_id):
-    """Update device"""
+    """Update device for current tenant"""
+    # Get tenant context
+    tenant_id = g.tenant_id
+
     data = request.get_json()
 
     conn = get_db_connection()
@@ -2147,9 +2312,9 @@ def update_device(device_id):
             return jsonify({'error': 'No fields to update'}), 400
 
         update_fields.append("updated_at = NOW()")
-        params.append(device_id)
+        params.extend([device_id, tenant_id])
 
-        query = f"UPDATE devices SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
+        query = f"UPDATE devices SET {', '.join(update_fields)} WHERE id = %s AND tenant_id = %s RETURNING *"
 
         cur.execute(query, params)
         device = cur.fetchone()
@@ -2177,9 +2342,13 @@ def update_device(device_id):
         conn.close()
 
 @app.route('/api/v1/devices/<device_id>', methods=['DELETE'])
-@jwt_required()
+@require_auth
+@require_tenant
 def delete_device(device_id):
-    """Delete device"""
+    """Delete device for current tenant"""
+    # Get tenant context
+    tenant_id = g.tenant_id
+
     conn = get_db_connection()
     if not conn:
         return jsonify({'error': 'Database error'}), 500
@@ -2187,7 +2356,7 @@ def delete_device(device_id):
     try:
         cur = conn.cursor()
 
-        cur.execute("DELETE FROM devices WHERE id = %s RETURNING name", (device_id,))
+        cur.execute("DELETE FROM devices WHERE id = %s AND tenant_id = %s RETURNING name", (device_id, tenant_id))
         device = cur.fetchone()
 
         if not device:
@@ -2239,6 +2408,15 @@ def ingest_telemetry():
     try:
         cur = conn.cursor()
 
+        # Get device tenant_id
+        cur.execute("SELECT tenant_id FROM devices WHERE id = %s", (device_id,))
+        device = cur.fetchone()
+
+        if not device:
+            return jsonify({'error': 'Device not found'}), 404
+
+        tenant_id = device['tenant_id']
+
         # Update device last_seen
         cur.execute("""
             UPDATE devices
@@ -2246,7 +2424,7 @@ def ingest_telemetry():
             WHERE id = %s
         """, (device_id,))
 
-        # Insert telemetry points
+        # Insert telemetry points with tenant_id
         timestamp = data.get('timestamp', datetime.now())
         inserted_count = 0
 
@@ -2261,9 +2439,9 @@ def ingest_telemetry():
                 quality = 100
 
             cur.execute("""
-                INSERT INTO telemetry (device_id, timestamp, key, value, unit, quality)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (device_id, timestamp, key, value, unit, quality))
+                INSERT INTO telemetry (device_id, timestamp, key, value, unit, quality, tenant_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (device_id, timestamp, key, value, unit, quality, tenant_id))
 
             inserted_count += 1
 
@@ -2282,9 +2460,13 @@ def ingest_telemetry():
         conn.close()
 
 @app.route('/api/v1/telemetry', methods=['GET'])
-@jwt_required()
+@require_auth
+@require_tenant
 def query_telemetry():
-    """Query telemetry data"""
+    """Query telemetry data for current tenant"""
+    # Get tenant context
+    tenant_id = g.tenant_id
+
     device_id = request.args.get('device_id')
     keys = request.args.getlist('key')
     start_time = request.args.get('start')
@@ -2301,8 +2483,8 @@ def query_telemetry():
     try:
         cur = conn.cursor()
 
-        query = "SELECT timestamp, key, value, unit FROM telemetry WHERE device_id = %s"
-        params = [device_id]
+        query = "SELECT timestamp, key, value, unit FROM telemetry WHERE device_id = %s AND tenant_id = %s"
+        params = [device_id, tenant_id]
 
         if keys:
             query += " AND key = ANY(%s)"
@@ -2335,9 +2517,13 @@ def query_telemetry():
         conn.close()
 
 @app.route('/api/v1/telemetry/latest', methods=['GET'])
-@jwt_required()
+@require_auth
+@require_tenant
 def get_latest_telemetry():
-    """Get latest telemetry values for device(s)"""
+    """Get latest telemetry values for device(s) in current tenant"""
+    # Get tenant context
+    tenant_id = g.tenant_id
+
     device_id = request.args.get('device_id')
 
     conn = get_db_connection()
@@ -2348,24 +2534,25 @@ def get_latest_telemetry():
         cur = conn.cursor()
 
         if device_id:
-            # Latest for specific device
+            # Latest for specific device within tenant
             query = """
                 SELECT DISTINCT ON (key)
                     key, value, unit, timestamp
                 FROM telemetry
-                WHERE device_id = %s
+                WHERE device_id = %s AND tenant_id = %s
                 ORDER BY key, timestamp DESC
             """
-            cur.execute(query, (device_id,))
+            cur.execute(query, (device_id, tenant_id))
         else:
-            # Latest for all devices
+            # Latest for all devices in tenant
             query = """
                 SELECT DISTINCT ON (device_id, key)
                     device_id, key, value, unit, timestamp
                 FROM telemetry
+                WHERE tenant_id = %s
                 ORDER BY device_id, key, timestamp DESC
             """
-            cur.execute(query)
+            cur.execute(query, (tenant_id,))
 
         data = cur.fetchall()
 
@@ -2385,9 +2572,13 @@ def get_latest_telemetry():
 # ============================================================================
 
 @app.route('/api/v1/alerts', methods=['GET'])
-@jwt_required()
+@require_auth
+@require_tenant
 def list_alerts():
-    """List alerts with filtering"""
+    """List alerts for current tenant with filtering"""
+    # Get tenant context
+    tenant_id = g.tenant_id
+
     status = request.args.get('status', 'active')
     severity = request.args.get('severity')
     device_id = request.args.get('device_id')
@@ -2400,8 +2591,8 @@ def list_alerts():
     try:
         cur = conn.cursor()
 
-        query = "SELECT * FROM alerts WHERE status = %s"
-        params = [status]
+        query = "SELECT * FROM alerts WHERE tenant_id = %s AND status = %s"
+        params = [tenant_id, status]
 
         if severity:
             query += " AND severity = %s"
@@ -2443,9 +2634,13 @@ def list_alerts():
 # ============================================================================
 
 @app.route('/api/v1/api-keys', methods=['POST'])
-@jwt_required()
+@require_auth
+@require_tenant
 def create_api_key():
-    """Create new API key for device"""
+    """Create new API key for device in current tenant"""
+    # Get tenant context
+    tenant_id = g.tenant_id
+
     data = request.get_json()
 
     if 'name' not in data:
@@ -2465,9 +2660,9 @@ def create_api_key():
         cur.execute("""
             INSERT INTO api_keys (
                 key_hash, name, device_id, permissions,
-                rate_limit, expires_at
+                rate_limit, expires_at, tenant_id
             )
-            VALUES (%s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING id, name, created_at
         """, (
             key_hash,
@@ -2475,7 +2670,8 @@ def create_api_key():
             data.get('device_id'),
             json.dumps(data.get('permissions', {'read': True, 'write': True})),
             data.get('rate_limit', 1000),
-            data.get('expires_at')
+            data.get('expires_at'),
+            tenant_id
         ))
 
         key_info = cur.fetchone()
@@ -2507,7 +2703,22 @@ def create_api_key():
 
 @app.route('/')
 def index():
-    """Main dashboard"""
+    """Main dashboard - Glass Manufacturing with Real-Time Data"""
+    return send_from_directory('static', 'dashboard_glass.html')
+
+@app.route('/dashboard-dark')
+def index_dark():
+    """Generic dark theme dashboard"""
+    return send_from_directory('static', 'dashboard_dark.html')
+
+@app.route('/dashboard-light')
+def index_light():
+    """Light theme dashboard"""
+    return send_from_directory('static', 'index.html')
+
+@app.route('/dashboard-old')
+def index_old():
+    """Old embedded dashboard"""
     return render_template_string("""
     <!DOCTYPE html>
     <html>
@@ -2663,6 +2874,13 @@ def health():
         'timestamp': datetime.now().isoformat()
     }), 200
 
+@app.route('/mobile')
+def mobile_dashboard():
+    """Mobile-responsive dashboard (Phase 3 Feature 3)"""
+    import os
+    mobile_path = os.path.join(os.path.dirname(__file__), 'static', 'mobile_dashboard.html')
+    return send_file(mobile_path)
+
 @app.route('/api/v1/status')
 @limiter.limit("100 per minute")  # Moderate limit for status checks
 def api_status():
@@ -2687,6 +2905,9 @@ def api_status():
         cur.execute("SELECT COUNT(*) as count FROM telemetry WHERE timestamp > NOW() - INTERVAL '1 hour'")
         recent_telemetry = cur.fetchone()['count']
 
+        cur.execute("SELECT COUNT(*) as count FROM rules WHERE enabled = true")
+        active_rules = cur.fetchone()['count']
+
         return jsonify({
             'status': 'operational',
             'version': '2.0',
@@ -2694,13 +2915,220 @@ def api_status():
                 'total_devices': device_count,
                 'online_devices': online_count,
                 'active_alerts': active_alerts,
-                'telemetry_last_hour': recent_telemetry
+                'telemetry_last_hour': recent_telemetry,
+                'active_rules': active_rules
             },
             'timestamp': datetime.now().isoformat()
         }), 200
 
     except Exception as e:
         logger.error(f"Status error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+# ============================================================================
+# PUBLIC DASHBOARD ENDPOINTS (No Authentication Required)
+# ============================================================================
+
+@app.route('/api/v1/dashboard/devices', methods=['GET'])
+@limiter.limit("100 per minute")
+def dashboard_devices():
+    """Public endpoint for dashboard - Get recent devices (no auth required)"""
+    limit = int(request.args.get('limit', 5))
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database error'}), 500
+
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id, name, type as device_type, location, status, protocol, created_at
+            FROM devices
+            ORDER BY created_at DESC
+            LIMIT %s
+        """, (limit,))
+
+        devices = cur.fetchall()
+        devices_list = []
+        for device in devices:
+            device_dict = dict(device)
+            device_dict['id'] = str(device_dict['id'])
+            devices_list.append(device_dict)
+
+        return jsonify({
+            'devices': devices_list,
+            'count': len(devices_list)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Dashboard devices error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+@app.route('/api/v1/dashboard/alerts', methods=['GET'])
+@limiter.limit("100 per minute")
+def dashboard_alerts():
+    """Public endpoint for dashboard - Get recent alerts (no auth required)"""
+    limit = int(request.args.get('limit', 5))
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database error'}), 500
+
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id, device_id, rule_id, severity, message, status, created_at
+            FROM alerts
+            WHERE status = 'active'
+            ORDER BY created_at DESC
+            LIMIT %s
+        """, (limit,))
+
+        alerts = cur.fetchall()
+        alerts_list = []
+        for alert in alerts:
+            alert_dict = dict(alert)
+            alert_dict['id'] = str(alert_dict['id'])
+            if alert_dict['device_id']:
+                alert_dict['device_id'] = str(alert_dict['device_id'])
+            if alert_dict['rule_id']:
+                alert_dict['rule_id'] = str(alert_dict['rule_id'])
+            alerts_list.append(alert_dict)
+
+        return jsonify({
+            'alerts': alerts_list,
+            'count': len(alerts_list)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Dashboard alerts error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+@app.route('/api/v1/dashboard/rules', methods=['GET'])
+@limiter.limit("100 per minute")
+def dashboard_rules():
+    """Public endpoint for dashboard - Get active rules (no auth required)"""
+    limit = int(request.args.get('limit', 20))
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database error'}), 500
+
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id, name, rule_type, conditions, enabled, created_at
+            FROM rules
+            WHERE enabled = true
+            ORDER BY created_at DESC
+            LIMIT %s
+        """, (limit,))
+
+        rules = cur.fetchall()
+        rules_list = []
+        for rule in rules:
+            rule_dict = dict(rule)
+            rule_dict['id'] = str(rule_dict['id'])
+            rules_list.append(rule_dict)
+
+        return jsonify({
+            'rules': rules_list,
+            'count': len(rules_list)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Dashboard rules error: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+@app.route('/api/v1/dashboard/telemetry', methods=['GET'])
+@limiter.limit("100 per minute")
+def dashboard_telemetry():
+    """Public endpoint for dashboard - Get recent telemetry (no auth required)"""
+    limit = int(request.args.get('limit', 50))
+    device_id = request.args.get('device_id')  # Optional filter
+    location = request.args.get('location')  # Optional filter by device location
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database error'}), 500
+
+    try:
+        cur = conn.cursor()
+
+        if device_id:
+            # Get telemetry for specific device
+            cur.execute("""
+                SELECT
+                    t.id,
+                    t.device_id,
+                    t.timestamp,
+                    t.key,
+                    t.value,
+                    t.unit,
+                    d.name as device_name
+                FROM telemetry t
+                JOIN devices d ON t.device_id = d.id
+                WHERE t.device_id = %s
+                ORDER BY t.timestamp DESC
+                LIMIT %s
+            """, (device_id, limit))
+        elif location:
+            # Get telemetry for devices at specific location
+            cur.execute("""
+                SELECT
+                    t.id,
+                    t.device_id,
+                    t.timestamp,
+                    t.key,
+                    t.value,
+                    t.unit,
+                    d.name as device_name
+                FROM telemetry t
+                JOIN devices d ON t.device_id = d.id
+                WHERE d.location = %s
+                ORDER BY t.timestamp DESC
+                LIMIT %s
+            """, (location, limit))
+        else:
+            # Get recent telemetry from all devices
+            cur.execute("""
+                SELECT
+                    t.id,
+                    t.device_id,
+                    t.timestamp,
+                    t.key,
+                    t.value,
+                    t.unit,
+                    d.name as device_name
+                FROM telemetry t
+                JOIN devices d ON t.device_id = d.id
+                ORDER BY t.timestamp DESC
+                LIMIT %s
+            """, (limit,))
+
+        telemetry = cur.fetchall()
+        telemetry_list = []
+        for point in telemetry:
+            point_dict = dict(point)
+            point_dict['id'] = str(point_dict['id'])
+            point_dict['device_id'] = str(point_dict['device_id'])
+            telemetry_list.append(point_dict)
+
+        return jsonify({
+            'telemetry': telemetry_list,
+            'count': len(telemetry_list)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Dashboard telemetry error: {e}")
         return jsonify({'error': str(e)}), 500
     finally:
         conn.close()
@@ -3001,10 +3429,11 @@ def test_websocket_alert():
 # ============================================================================
 
 @app.route('/api/v1/rules', methods=['POST'])
-@jwt_required()
+@require_auth
+@require_tenant
 def create_rule():
     """
-    Create a new rule
+    Create a new rule for current tenant
 
     Request body:
     {
@@ -3018,6 +3447,9 @@ def create_rule():
     }
     """
     try:
+        # Get tenant context
+        tenant_id = g.tenant_id
+
         data = request.get_json()
 
         required_fields = ['name', 'device_id', 'rule_type', 'conditions', 'actions']
@@ -3033,8 +3465,8 @@ def create_rule():
         rule_id = str(uuid.uuid4())
 
         cur.execute("""
-            INSERT INTO rules (id, name, device_id, rule_type, conditions, actions, priority, enabled, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+            INSERT INTO rules (id, name, device_id, rule_type, conditions, actions, priority, enabled, created_at, tenant_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)
             RETURNING *
         """, (
             rule_id,
@@ -3044,7 +3476,8 @@ def create_rule():
             json.dumps(data['conditions']),
             json.dumps(data['actions']),
             data.get('priority', 5),
-            data.get('enabled', True)
+            data.get('enabled', True),
+            tenant_id
         ))
 
         rule = cur.fetchone()
@@ -3064,10 +3497,11 @@ def create_rule():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/v1/rules', methods=['GET'])
-@jwt_required()
+@require_auth
+@require_tenant
 def list_rules():
     """
-    List all rules with optional filtering
+    List all rules for current tenant with optional filtering
 
     Query parameters:
     - device_id: Filter by device
@@ -3075,15 +3509,18 @@ def list_rules():
     - enabled: Filter by enabled status
     """
     try:
+        # Get tenant context
+        tenant_id = g.tenant_id
+
         conn = get_db_connection()
         if not conn:
             return jsonify({'error': 'Database connection failed'}), 500
 
         cur = conn.cursor()
 
-        # Build query with filters
-        query = "SELECT * FROM rules WHERE 1=1"
-        params = []
+        # Build query with tenant filtering
+        query = "SELECT * FROM rules WHERE tenant_id = %s"
+        params = [tenant_id]
 
         if request.args.get('device_id'):
             query += " AND device_id = %s"
@@ -3116,17 +3553,21 @@ def list_rules():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/v1/rules/<rule_id>', methods=['GET'])
-@jwt_required()
+@require_auth
+@require_tenant
 def get_rule(rule_id):
-    """Get rule details by ID"""
+    """Get rule details by ID for current tenant"""
     try:
+        # Get tenant context
+        tenant_id = g.tenant_id
+
         conn = get_db_connection()
         if not conn:
             return jsonify({'error': 'Database connection failed'}), 500
 
         cur = conn.cursor()
 
-        cur.execute("SELECT * FROM rules WHERE id = %s", (rule_id,))
+        cur.execute("SELECT * FROM rules WHERE id = %s AND tenant_id = %s", (rule_id, tenant_id))
         rule = cur.fetchone()
 
         cur.close()
@@ -3142,10 +3583,14 @@ def get_rule(rule_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/v1/rules/<rule_id>', methods=['PUT'])
-@jwt_required()
+@require_auth
+@require_tenant
 def update_rule(rule_id):
-    """Update rule by ID"""
+    """Update rule by ID for current tenant"""
     try:
+        # Get tenant context
+        tenant_id = g.tenant_id
+
         data = request.get_json()
 
         conn = get_db_connection()
@@ -3181,9 +3626,9 @@ def update_rule(rule_id):
         if not update_fields:
             return jsonify({'error': 'No fields to update'}), 400
 
-        params.append(rule_id)
+        params.extend([rule_id, tenant_id])
 
-        query = f"UPDATE rules SET {', '.join(update_fields)} WHERE id = %s RETURNING *"
+        query = f"UPDATE rules SET {', '.join(update_fields)} WHERE id = %s AND tenant_id = %s RETURNING *"
 
         cur.execute(query, params)
         rule = cur.fetchone()
@@ -3208,17 +3653,21 @@ def update_rule(rule_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/v1/rules/<rule_id>', methods=['DELETE'])
-@jwt_required()
+@require_auth
+@require_tenant
 def delete_rule(rule_id):
-    """Delete rule by ID"""
+    """Delete rule by ID for current tenant"""
     try:
+        # Get tenant context
+        tenant_id = g.tenant_id
+
         conn = get_db_connection()
         if not conn:
             return jsonify({'error': 'Database connection failed'}), 500
 
         cur = conn.cursor()
 
-        cur.execute("DELETE FROM rules WHERE id = %s RETURNING id", (rule_id,))
+        cur.execute("DELETE FROM rules WHERE id = %s AND tenant_id = %s RETURNING id", (rule_id, tenant_id))
         deleted = cur.fetchone()
 
         if not deleted:
@@ -3238,21 +3687,25 @@ def delete_rule(rule_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/v1/rules/<rule_id>/test', methods=['POST'])
-@jwt_required()
+@require_auth
+@require_tenant
 def test_rule(rule_id):
     """
-    Test rule evaluation without triggering actions
+    Test rule evaluation without triggering actions for current tenant
 
     Returns whether rule would be triggered with current telemetry
     """
     try:
+        # Get tenant context
+        tenant_id = g.tenant_id
+
         conn = get_db_connection()
         if not conn:
             return jsonify({'error': 'Database connection failed'}), 500
 
         cur = conn.cursor()
 
-        cur.execute("SELECT * FROM rules WHERE id = %s", (rule_id,))
+        cur.execute("SELECT * FROM rules WHERE id = %s AND tenant_id = %s", (rule_id, tenant_id))
         rule = cur.fetchone()
 
         cur.close()
@@ -3294,6 +3747,505 @@ def test_rule(rule_id):
     except Exception as e:
         logger.error(f"Test rule error: {e}")
         return jsonify({'error': str(e)}), 500
+
+# ============================================================================
+# TENANT MANAGEMENT (Phase 3 Feature 6 - Phase 3)
+# ============================================================================
+
+@app.route('/api/v1/tenants', methods=['GET'])
+@require_auth
+def list_tenants():
+    """
+    List all tenants (system admin only)
+
+    Query Parameters:
+        - page (int): Page number (default: 1)
+        - limit (int): Items per page (default: 50, max: 100)
+        - tier (str): Filter by tier (free|startup|professional|enterprise)
+        - search (str): Search by name or slug
+
+    Returns:
+        200: {"tenants": [...], "total": 1, "page": 1, "limit": 50}
+        403: Not system admin
+    """
+    # Get current user from g.current_user (set by @require_auth)
+    user_id = g.current_user['id']
+
+    # Check if system admin
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT is_admin FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+
+    if not user or not user['is_admin']:
+        return jsonify({'error': 'System admin access required'}), 403
+
+    # Get query parameters
+    page = request.args.get('page', 1, type=int)
+    limit = min(request.args.get('limit', 50, type=int), 100)
+    tier = request.args.get('tier')
+    search = request.args.get('search')
+
+    # Build query
+    query = "SELECT * FROM tenants WHERE 1=1"
+    params = []
+
+    if tier:
+        query += " AND tier = %s"
+        params.append(tier)
+
+    if search:
+        query += " AND (name ILIKE %s OR slug ILIKE %s)"
+        params.extend([f"%{search}%", f"%{search}%"])
+
+    # Count total
+    count_query = query.replace("SELECT *", "SELECT COUNT(*)")
+    cur.execute(count_query, params)
+    total = cur.fetchone()['count']
+
+    # Get paginated results
+    query += " ORDER BY created_at DESC LIMIT %s OFFSET %s"
+    params.extend([limit, (page - 1) * limit])
+
+    cur.execute(query, params)
+    tenants = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return jsonify({
+        'tenants': [dict(t) for t in tenants],
+        'total': total,
+        'page': page,
+        'limit': limit
+    }), 200
+
+@app.route('/api/v1/tenants', methods=['POST'])
+@require_auth
+def create_tenant():
+    """
+    Create new tenant (system admin only)
+
+    Request Body:
+        {
+            "name": "Acme Corp",
+            "slug": "acme-corp",
+            "tier": "professional",
+            "max_devices": 100,
+            "max_users": 10
+        }
+
+    Returns:
+        201: Tenant object
+        403: Not system admin
+        400: Validation error
+    """
+    # Check system admin
+    user_id = g.current_user['id']
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT is_admin FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+
+    if not user or not user['is_admin']:
+        return jsonify({'error': 'System admin access required'}), 403
+
+    # Validate request
+    data = request.get_json()
+    required = ['name', 'slug', 'tier']
+    if not all(field in data for field in required):
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    # Validate tier (must match database constraint)
+    valid_tiers = ['starter', 'professional', 'enterprise']
+    if data['tier'] not in valid_tiers:
+        return jsonify({'error': f'Invalid tier. Must be one of: {", ".join(valid_tiers)}'}), 400
+
+    # Use tenant_manager to create tenant
+    try:
+        with TenantManager(DB_CONFIG) as manager:
+            tenant = manager.create_tenant(
+                name=data['name'],
+                slug=data['slug'],
+                tier=data['tier'],
+                max_devices=data.get('max_devices'),
+                max_users=data.get('max_users')
+            )
+
+        return jsonify(tenant), 201
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        logger.error(f"Failed to create tenant: {e}")
+        return jsonify({'error': 'Failed to create tenant'}), 500
+
+@app.route('/api/v1/tenants/<tenant_id>', methods=['GET'])
+@require_auth
+@require_tenant
+def get_tenant(tenant_id):
+    """
+    Get tenant details (must be member of tenant or system admin)
+
+    Returns:
+        200: Tenant object
+        403: Not authorized
+        404: Tenant not found
+    """
+    # Check access
+    user_id = g.current_user['id']
+    user_tenant_id = g.tenant_id
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Check if system admin or tenant member
+    cur.execute("SELECT is_admin FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+    is_admin = user and user['is_admin']
+
+    if not is_admin and str(user_tenant_id) != tenant_id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    # Get tenant
+    cur.execute("SELECT * FROM tenants WHERE id = %s", (tenant_id,))
+    tenant = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    if not tenant:
+        return jsonify({'error': 'Tenant not found'}), 404
+
+    return jsonify(dict(tenant)), 200
+
+@app.route('/api/v1/tenants/<tenant_id>', methods=['PATCH'])
+@require_auth
+@require_tenant_admin
+def update_tenant(tenant_id):
+    """
+    Update tenant settings (tenant admin or system admin only)
+
+    Request Body:
+        {
+            "name": "New Name",
+            "tier": "enterprise",
+            "max_devices": 200
+        }
+
+    Returns:
+        200: Updated tenant object
+        403: Not authorized
+        400: Validation error
+    """
+    # Update using tenant_manager
+    data = request.get_json()
+
+    try:
+        # Only pass fields that are in the request data
+        updates = {}
+        if 'name' in data:
+            updates['name'] = data['name']
+        if 'tier' in data:
+            updates['tier'] = data['tier']
+        if 'max_devices' in data:
+            updates['max_devices'] = data['max_devices']
+        if 'max_users' in data:
+            updates['max_users'] = data['max_users']
+
+        with TenantManager(DB_CONFIG) as manager:
+            manager.update_tenant(tenant_id=tenant_id, **updates)
+
+            # Get updated tenant
+            tenant = manager.get_tenant(tenant_id)
+
+        return jsonify(tenant), 200
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        logger.error(f"Failed to update tenant: {e}")
+        return jsonify({'error': 'Failed to update tenant'}), 500
+
+@app.route('/api/v1/tenants/<tenant_id>/stats', methods=['GET'])
+@require_auth
+@require_tenant
+def get_tenant_stats(tenant_id):
+    """
+    Get tenant statistics (usage counts)
+
+    Returns:
+        200: Statistics object
+        403: Not authorized
+    """
+    # Check access
+    user_id = g.current_user['id']
+    user_tenant_id = g.tenant_id
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT is_admin FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+    is_admin = user and user['is_admin']
+
+    if not is_admin and str(user_tenant_id) != tenant_id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    # Get stats using tenant_manager
+    try:
+        with TenantManager(DB_CONFIG) as manager:
+            stats = manager.get_tenant_stats(tenant_id)
+
+        return jsonify(stats), 200
+
+    except Exception as e:
+        logger.error(f"Failed to get tenant stats: {e}")
+        return jsonify({'error': 'Failed to get tenant stats'}), 500
+
+@app.route('/api/v1/tenants/<tenant_id>/users', methods=['GET'])
+@require_auth
+@require_tenant
+def list_tenant_users(tenant_id):
+    """
+    List all users in tenant
+
+    Returns:
+        200: {"users": [...]}
+        403: Not authorized
+    """
+    # Check access
+    user_id = g.current_user['id']
+    user_tenant_id = g.tenant_id
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT is_admin FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+    is_admin = user and user['is_admin']
+
+    if not is_admin and str(user_tenant_id) != tenant_id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    # Get tenant users
+    cur.execute("""
+        SELECT
+            tu.user_id,
+            u.email,
+            tu.role_id,
+            r.name as role_name,
+            tu.is_tenant_admin,
+            tu.created_at
+        FROM tenant_users tu
+        JOIN users u ON tu.user_id = u.id
+        LEFT JOIN roles r ON tu.role_id = r.id
+        WHERE tu.tenant_id = %s
+        ORDER BY tu.created_at ASC
+    """, (tenant_id,))
+    users = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return jsonify({'users': [dict(u) for u in users]}), 200
+
+@app.route('/api/v1/tenants/<tenant_id>/users/invite', methods=['POST'])
+@require_auth
+@require_tenant_admin
+def invite_user_to_tenant(tenant_id):
+    """
+    Invite user to tenant (tenant admin only)
+
+    Request Body:
+        {
+            "email": "newuser@example.com",
+            "role": "member"
+        }
+
+    Returns:
+        201: Invitation object
+        400: Validation error
+    """
+    data = request.get_json()
+
+    if not data.get('email'):
+        return jsonify({'error': 'Email required'}), 400
+
+    # Get current user_id (not email)
+    user_id = g.current_user['id']
+
+    # Get role_id from role name
+    conn = get_db_connection()
+    cur = conn.cursor()
+    role_name = data.get('role', 'viewer')
+    cur.execute("SELECT id FROM roles WHERE name = %s", (role_name,))
+    role = cur.fetchone()
+    if not role:
+        return jsonify({'error': f'Invalid role: {role_name}'}), 400
+    role_id = role['id']
+
+    # Use tenant_manager to create invitation
+    try:
+        with TenantManager(DB_CONFIG) as manager:
+            invitation = manager.create_invitation(
+                tenant_id=tenant_id,
+                email=data['email'],
+                role_id=role_id,
+                invited_by=user_id
+            )
+
+        # TODO: Send invitation email
+
+        return jsonify(invitation), 201
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        logger.error(f"Failed to invite user: {e}")
+        return jsonify({'error': 'Failed to invite user'}), 500
+
+@app.route('/api/v1/tenants/<tenant_id>/users/<user_id>', methods=['DELETE'])
+@require_auth
+@require_tenant_admin
+def remove_user_from_tenant(tenant_id, user_id):
+    """
+    Remove user from tenant (tenant admin only)
+
+    Returns:
+        204: User removed
+        400: Cannot remove
+        404: User not found
+    """
+    # Use tenant_manager
+    try:
+        with TenantManager(DB_CONFIG) as manager:
+            manager.remove_user(tenant_id, user_id)
+
+        return '', 204
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        logger.error(f"Failed to remove user: {e}")
+        return jsonify({'error': 'Failed to remove user'}), 500
+
+@app.route('/api/v1/tenants/<tenant_id>/users/<user_id>/role', methods=['PATCH'])
+@require_auth
+@require_tenant_admin
+def update_user_role(tenant_id, user_id):
+    """
+    Update user role in tenant (tenant admin only)
+
+    Request Body:
+        {
+            "role": "admin",
+            "is_tenant_admin": true
+        }
+
+    Returns:
+        200: Updated user object
+        400: Invalid role
+        404: User not found
+    """
+    data = request.get_json()
+
+    # Use tenant_manager
+    try:
+        with TenantManager(DB_CONFIG) as manager:
+            manager.update_user_role(
+                tenant_id=tenant_id,
+                user_id=user_id,
+                role=data.get('role'),
+                is_tenant_admin=data.get('is_tenant_admin')
+            )
+
+            # Get updated user
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT user_id, role, is_tenant_admin
+                FROM tenant_users
+                WHERE tenant_id = %s AND user_id = %s
+            """, (tenant_id, user_id))
+            user = cur.fetchone()
+            cur.close()
+            conn.close()
+
+        return jsonify(dict(user)), 200
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        logger.error(f"Failed to update user role: {e}")
+        return jsonify({'error': 'Failed to update user role'}), 500
+
+@app.route('/api/v1/tenants/<tenant_id>/quotas', methods=['GET'])
+@require_auth
+@require_tenant
+def get_tenant_quotas(tenant_id):
+    """
+    Get tenant quota usage
+
+    Returns:
+        200: Quota usage object
+        403: Not authorized
+    """
+    # Check access
+    user_id = g.current_user['id']
+    user_tenant_id = g.tenant_id
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT is_admin FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+    is_admin = user and user['is_admin']
+
+    if not is_admin and str(user_tenant_id) != tenant_id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    # Get tenant limits
+    cur.execute("""
+        SELECT max_devices, max_users, max_telemetry_points_per_day, max_retention_days
+        FROM tenants
+        WHERE id = %s
+    """, (tenant_id,))
+    tenant = cur.fetchone()
+
+    # Get usage stats
+    try:
+        with TenantManager(DB_CONFIG) as manager:
+            stats = manager.get_tenant_stats(tenant_id)
+
+        # Calculate quotas
+        quotas = {
+            'devices': {
+                'used': stats['device_count'],
+                'limit': tenant['max_devices'],
+                'percentage': (stats['device_count'] / tenant['max_devices'] * 100) if tenant['max_devices'] else None
+            },
+            'users': {
+                'used': stats['user_count'],
+                'limit': tenant['max_users'],
+                'percentage': (stats['user_count'] / tenant['max_users'] * 100) if tenant['max_users'] else None
+            },
+            'telemetry_points': {
+                'used_today': stats.get('telemetry_points_today', 0),
+                'limit_per_day': tenant['max_telemetry_points_per_day'],
+                'percentage': (stats.get('telemetry_points_today', 0) / tenant['max_telemetry_points_per_day'] * 100) if tenant['max_telemetry_points_per_day'] else None
+            },
+            'data_retention': {
+                'current_days': tenant['max_retention_days'],
+                'oldest_data_age_days': stats.get('oldest_data_days', 0)
+            }
+        }
+
+        return jsonify(quotas), 200
+
+    except Exception as e:
+        logger.error(f"Failed to get quotas: {e}")
+        return jsonify({'error': 'Failed to get quotas'}), 500
 
 # ============================================================================
 # INITIALIZATION & MAIN
@@ -3343,6 +4295,14 @@ if __name__ == '__main__':
         # Create default user
         create_default_user()
 
+        # Multi-tenancy context (Phase 3 Feature 6)
+        # Note: Using decorator-based approach (@require_tenant) instead of middleware
+        # to avoid conflicts with Socket.IO wrapping
+        logger.info("🏢 Multi-tenancy enabled:")
+        logger.info("   - Tenant isolation via @require_tenant decorator")
+        logger.info("   - JWT tokens include tenant_id claim")
+        logger.info("   - Quota management via @check_tenant_quota decorator")
+
         # Initialize WebSocket server
         logger.info("Initializing WebSocket server...")
         ws_server = init_websocket_server(app)
@@ -3371,6 +4331,14 @@ if __name__ == '__main__':
         rule_engine.start()
         logger.info("✅ Rule engine started - evaluating every 30 seconds")
         logger.info("📋 Supported rule types: threshold, comparison, time_based, statistical")
+
+        # Initialize and start retention scheduler (Phase 3 Feature 7)
+        logger.info("Initializing retention scheduler...")
+        retention_scheduler = init_retention_scheduler(DB_CONFIG)
+        scheduled_jobs = retention_scheduler.get_scheduled_jobs()
+        logger.info(f"✅ Retention scheduler started - {len(scheduled_jobs)} policies scheduled")
+        for job in scheduled_jobs:
+            logger.info(f"   📅 {job['name']}: next run at {job['next_run_time']}")
 
         # Initialize email notifier
         logger.info("Initializing email notifier...")
@@ -3429,6 +4397,12 @@ if __name__ == '__main__':
         logger.info("📋 API Spec (JSON): http://localhost:5002/apispec.json")
         logger.info("💚 Health Check: http://localhost:5002/health")
         logger.info("🔌 WebSocket Endpoint: ws://localhost:5002/socket.io/")
+        logger.info("🤖 ML API Endpoints: http://localhost:5002/api/v1/ml/*")
+        logger.info("   - POST /api/v1/ml/models/train (train model)")
+        logger.info("   - POST /api/v1/ml/predict (single prediction)")
+        logger.info("   - POST /api/v1/ml/predict/batch (batch predictions)")
+        logger.info("   - GET /api/v1/ml/models (list models)")
+        logger.info("   - GET /api/v1/ml/anomalies (query anomalies)")
         logger.info("=" * 60)
 
         # Run server with Socket.IO (uses eventlet)
