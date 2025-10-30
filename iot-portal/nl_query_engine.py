@@ -172,8 +172,29 @@ class NLQueryEngine:
         if 'vidrio andino' in question_lower:
             intent['entities']['location'] = 'Vidrio Andino'
 
-        # Detect query types
-        if any(word in question_lower for word in ['average', 'avg', 'mean']):
+        # Detect query types - LSTM queries FIRST (highest priority)
+        # LSTM prediction queries - check for multi-word patterns
+        if (('will' in question_lower and 'fail' in question_lower) or
+            ('when' in question_lower and 'fail' in question_lower) or
+            any(word in question_lower for word in ['predict', 'forecast', 'future']) or
+            'failure' in question_lower):
+            intent['type'] = 'lstm_prediction'
+            intent['confidence'] = 0.9
+        # Maintenance schedule queries
+        elif (('maintenance' in question_lower and 'schedule' in question_lower) or
+              ('show' in question_lower and 'maintenance' in question_lower) or
+              ('which' in question_lower and 'maintenance' in question_lower) or
+              any(word in question_lower for word in ['maintain', 'need maintenance', 'needs maintenance'])):
+            intent['type'] = 'maintenance_schedule'
+            intent['confidence'] = 0.9
+        # Failure risk queries
+        elif (('risk' in question_lower and ('failure' in question_lower or 'fail' in question_lower)) or
+              ('health' in question_lower and 'sensor' in question_lower) or
+              'risk level' in question_lower):
+            intent['type'] = 'failure_risk'
+            intent['confidence'] = 0.85
+        # Regular queries (lower priority)
+        elif any(word in question_lower for word in ['average', 'avg', 'mean']):
             intent['type'] = 'statistics'
             intent['confidence'] = 0.8
         elif any(word in question_lower for word in ['maximum', 'max', 'highest', 'peak']):
@@ -207,16 +228,6 @@ class NLQueryEngine:
             elif 'sensor' in question_lower:
                 intent['type'] = 'list_sensors'
                 intent['confidence'] = 0.8
-        # LSTM prediction queries
-        elif any(word in question_lower for word in ['predict', 'forecast', 'future', 'will fail', 'failure']):
-            intent['type'] = 'lstm_prediction'
-            intent['confidence'] = 0.9
-        elif any(word in question_lower for word in ['maintenance', 'schedule', 'maintain']):
-            intent['type'] = 'maintenance_schedule'
-            intent['confidence'] = 0.9
-        elif any(word in question_lower for word in ['risk', 'failure risk', 'health']):
-            intent['type'] = 'failure_risk'
-            intent['confidence'] = 0.85
 
         return intent
 

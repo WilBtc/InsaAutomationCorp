@@ -312,12 +312,34 @@ class LSTMForecaster:
         """
         model_key = f"{device_id}_{sensor_key}"
 
-        # Check if model exists
+        # Check if model exists in cache
         if model_key not in self.models:
-            return {
-                'success': False,
-                'error': f'No trained model found for {model_key}'
-            }
+            # Try to reload model from database (model might have been trained by another instance)
+            logger.info(f"Model {model_key} not in cache, checking database...")
+            metadata = self._get_model_metadata(device_id, sensor_key)
+
+            if metadata:
+                # Model exists in database but not in cache - retrain it
+                logger.info(f"Model found in database, retraining to load into cache...")
+                train_result = self.train_model(
+                    device_id,
+                    sensor_key,
+                    sequence_length=metadata['sequence_length'],
+                    forecast_horizon=metadata['forecast_horizon']
+                )
+
+                if not train_result.get('success'):
+                    return {
+                        'success': False,
+                        'error': f'Failed to reload model for {model_key}'
+                    }
+
+                logger.info(f"Model {model_key} successfully loaded into cache")
+            else:
+                return {
+                    'success': False,
+                    'error': f'No trained model found for {model_key}'
+                }
 
         model = self.models[model_key]
         scaler = self.scalers[model_key]

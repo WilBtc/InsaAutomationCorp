@@ -110,7 +110,7 @@ class SessionClaudeManager:
     - Thread-safe operations
     """
 
-    def __init__(self, cleanup_interval: int = 300, session_timeout: int = 1800):
+    def __init__(self, cleanup_interval: int = 300, session_timeout: int = 18000):  # ✅ INCREASED from 1800s (30min) to 18000s (300min/5hr) - User requested Oct 30, 2025
         """
         Args:
             cleanup_interval: How often to check for stale sessions (seconds)

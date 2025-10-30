@@ -417,8 +417,9 @@ if __name__ == '__main__':
     for i in range(10):
         try:
             stat_test()
-        except:
-            pass
+        except Exception as e:
+            # Silently ignore expected test failures
+            logger.debug(f"Test iteration {i} failed (expected): {e}")
 
     stats = retry_stats.get_stats()
     print(f"   Stats: {stats}")

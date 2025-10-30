@@ -41,11 +41,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     ALGORITHM: str = "HS256"
 
-    # CORS
+    # CORS (can be overridden via CORS_ORIGINS env var - comma-separated)
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
-        "http://100.100.101.1",
-        "http://100.105.64.109"
+        "http://localhost:8007",
+        "https://localhost",
+        "https://iac1.tailc58ea3.ts.net"
     ]
 
     # Logging
