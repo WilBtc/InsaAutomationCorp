@@ -14,12 +14,15 @@ env/
 ENV/
 .venv/
 
-# Test files
+# Test files (UPDATED Oct 30, 2025 - Allow tests/ directory for test infrastructure)
 test_*.py
 *_test.py
-tests/
+# tests/  # COMMENTED OUT - We want to commit our test infrastructure
 *test*.py
 pytest_cache/
+.pytest_cache/
+htmlcov/
+.coverage
 
 # IDE
 .vscode/
@@ -28,10 +31,11 @@ pytest_cache/
 *.swo
 *~
 
-# Environment
+# Environment (UPDATED Oct 30, 2025 - Allow .env.example)
 .env
-.env.*
-*.env
+.env.local
+.env.*.local
+!.env.example
 
 # Logs
 *.log
