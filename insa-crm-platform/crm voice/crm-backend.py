@@ -132,8 +132,8 @@ def get_auth_token_and_verify(request) -> Optional[Dict[str, Any]]:
             data = request.get_json(silent=True)
             if data:
                 token = data.get('token')
-        except:
-            pass
+        except Exception as e:
+            logger.debug(f"Failed to parse JSON body for token: {e}")
 
     # 3. Form data
     if not token:
@@ -238,8 +238,8 @@ def call_claude_code_subprocess(text, agent_context=None, session_history=None):
         timeout = 3600  # 1 hour for complex design tasks
         timeout_label = "1 hour"
     else:
-        timeout = 120  # 2 minutes for standard queries
-        timeout_label = "2 minutes"
+        timeout = 540  # 9 minutes for standard queries (✅ INCREASED from 120s to 540s - User requested Oct 30, 2025)
+        timeout_label = "9 minutes"
 
     try:
         # Build context prompt for Claude Code
@@ -359,12 +359,12 @@ def query_claude_code(text, session_id='default', user_id=None, file_paths=None)
         )
 
         # Use session-persistent Claude Code instance (lower latency + better context)
-        # ✅ TIMEOUT INCREASED: 60s (was 30s in test script)
+        # ✅ TIMEOUT INCREASED: 300s (5 minutes) - User requested change Oct 30, 2025
         # ✅ FILE UPLOAD FIX: Pass file_paths to session manager
         response = claude_mgr.query(
             session_id=session_id,
             prompt=full_prompt,
-            timeout=60,  # ✅ INCREASED from 30s to 60s
+            timeout=300,  # ✅ INCREASED from 60s to 300s (5 minutes)
             file_paths=file_paths  # ✅ Pass uploaded files
         )
 

@@ -185,7 +185,9 @@ class CustomerCommunicationAgent:
             # HTML part (with optional tracking)
             if track_opens:
                 # Add tracking pixel
-                tracking_pixel = f'<img src="http://100.100.101.1:8003/track/open/{message_id}" width="1" height="1" />'
+                # Get CRM API URL from environment
+                crm_api_url = os.getenv("CRM_API_URL", "http://localhost:8003")
+                tracking_pixel = f'<img src="{crm_api_url}/track/open/{message_id}" width="1" height="1" />'
                 body_html += tracking_pixel
 
             msg.attach(MIMEText(body_html, 'html'))
@@ -303,7 +305,7 @@ class CustomerCommunicationAgent:
 
                 <p>Our team has <strong>{quote_data.get('metadata', {}).get('similar_projects_count', 0)} similar projects</strong> in our portfolio, ensuring proven expertise in your industry.</p>
 
-                <a href="http://100.100.101.1:8003/quotes/{quote_id}" class="cta">View Full Quote Details</a>
+                <a href="{os.getenv('CRM_API_URL', 'http://localhost:8003')}/quotes/{quote_id}" class="cta">View Full Quote Details</a>
 
                 <p>Questions? We're here to help:</p>
                 <ul>

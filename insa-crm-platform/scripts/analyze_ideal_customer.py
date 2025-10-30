@@ -25,10 +25,14 @@ Date: October 18, 2025
 import sys
 import csv
 import json
+import logging
 from pathlib import Path
 from typing import Dict, Any, List
 from collections import defaultdict
 from statistics import mean, median
+
+# Setup logging
+logger = logging.getLogger(__name__)
 
 
 class IdealCustomerAnalyzer:
@@ -63,10 +67,9 @@ class IdealCustomerAnalyzer:
                 else:
                     self.lost_deals.append(deal)
 
-        print(f"✓ Loaded {len(self.deals)} deals")
-        print(f"  - Won: {len(self.won_deals)}")
-        print(f"  - Lost: {len(self.lost_deals)}")
-        print(f"  - Win Rate: {len(self.won_deals)/len(self.deals)*100:.1f}%")
+        logger.info(f"Loaded {len(self.deals)} deals")
+        logger.info(f"Won: {len(self.won_deals)}, Lost: {len(self.lost_deals)}")
+        logger.info(f"Win Rate: {len(self.won_deals)/len(self.deals)*100:.1f}%")
 
     def analyze_budget_range(self) -> Dict[str, Any]:
         """Analyze ideal budget range"""
@@ -336,30 +339,26 @@ class IdealCustomerAnalyzer:
         with open(output_path, 'w') as f:
             json.dump(weights, f, indent=2)
 
-        print(f"✅ Scoring weights saved to: {output_path}")
-        print("")
-        print("To use these weights, update:")
-        print("  ~/insa-crm-platform/core/agents/lead_qualification_agent.py")
-        print("")
-        print("Replace SCORING_WEIGHTS with the generated configuration.")
+        logger.info(f"Scoring weights saved to: {output_path}")
+        logger.info("To use these weights, update:")
+        logger.info("  ~/insa-crm-platform/core/agents/lead_qualification_agent.py")
+        logger.info("Replace SCORING_WEIGHTS with the generated configuration.")
 
 
 def main():
     """Main entry point"""
     if len(sys.argv) < 2:
-        print("Usage: python3 analyze_ideal_customer.py <historical_deals.csv>")
-        print("")
-        print("Example:")
-        print("  python3 analyze_ideal_customer.py /var/lib/insa-crm/historical_deals.csv")
-        print("")
-        print("CSV Format:")
-        print("  customer_name, industry, budget, company_size, geography, won, margin, close_time_days")
+        logger.error("Usage: python3 analyze_ideal_customer.py <historical_deals.csv>")
+        logger.info("Example:")
+        logger.info("  python3 analyze_ideal_customer.py /var/lib/insa-crm/historical_deals.csv")
+        logger.info("CSV Format:")
+        logger.info("  customer_name, industry, budget, company_size, geography, won, margin, close_time_days")
         sys.exit(1)
 
     csv_path = Path(sys.argv[1])
 
     if not csv_path.exists():
-        print(f"❌ File not found: {csv_path}")
+        logger.error(f"File not found: {csv_path}")
         sys.exit(1)
 
     # Analyze
