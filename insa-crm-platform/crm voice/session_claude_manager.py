@@ -35,17 +35,45 @@ class ClaudeSession:
         logger.info(f"Session {self.session_id}: Initialized")
         self.last_used = time.time()
 
-    def query(self, prompt: str, timeout: int = 120) -> str:
-        """Send query to Claude Code subprocess"""
+    def query(self, prompt: str, timeout: int = 120, file_paths: list = None) -> str:
+        """
+        Send query to Claude Code subprocess
+
+        Args:
+            prompt: Query prompt text
+            timeout: Timeout in seconds
+            file_paths: Optional list of file paths to read and include in context
+
+        Returns:
+            Claude Code response
+        """
         with self.lock:
             self.last_used = time.time()
             self.query_count += 1
 
             try:
+                # If files provided, read them and add content to prompt
+                enhanced_prompt = prompt
+                if file_paths:
+                    enhanced_prompt += "\n\n=== UPLOADED FILES ===="
+                    for file_path in file_paths:
+                        try:
+                            # Read file content
+                            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                                content = f.read()
+
+                            # Add to prompt
+                            filename = Path(file_path).name
+                            enhanced_prompt += f"\n\n--- File: {filename} ---\n{content}\n--- End of {filename} ---"
+                            logger.info(f"Read uploaded file: {filename} ({len(content)} chars)")
+                        except Exception as e:
+                            logger.error(f"Failed to read file {file_path}: {e}")
+                            enhanced_prompt += f"\n\n❌ Failed to read file: {Path(file_path).name}"
+
                 # Call Claude Code with full prompt (use --print for non-interactive mode)
                 # Working directory: Project root so Claude Code has access to all files
                 result = subprocess.run(
-                    ["claude", "--print", prompt],
+                    ["claude", "--print", enhanced_prompt],
                     capture_output=True,
                     text=True,
                     timeout=timeout,
@@ -113,7 +141,7 @@ class SessionClaudeManager:
 
             return session
 
-    def query(self, session_id: str, prompt: str, timeout: int = 120) -> str:
+    def query(self, session_id: str, prompt: str, timeout: int = 120, file_paths: list = None) -> str:
         """
         Send query to Claude Code for this session
 
@@ -121,12 +149,13 @@ class SessionClaudeManager:
             session_id: User session ID
             prompt: Full prompt including context
             timeout: Timeout in seconds
+            file_paths: Optional list of file paths to include
 
         Returns:
             Claude Code response
         """
         session = self.get_session(session_id)
-        return session.query(prompt, timeout)
+        return session.query(prompt, timeout, file_paths)
 
     def _cleanup_loop(self):
         """Background thread to cleanup stale sessions"""
