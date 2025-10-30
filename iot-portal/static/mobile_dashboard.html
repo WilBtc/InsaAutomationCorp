@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>INSA IIoT Mobile - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .header-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.25rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:active {
+            transform: scale(0.98);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .stat-change.positive {
+            color: var(--secondary-color);
+        }
+
+        .stat-change.negative {
+            color: var(--danger-color);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 0.25rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border: none;
+            background: none;
+            font-size: 0.875rem;
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab:active {
+            transform: scale(0.95);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Device List */
+        .device-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .device-card {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .device-card:active {
+            transform: scale(0.98);
+        }
+
+        .device-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .device-icon.online {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .device-icon.offline {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .device-info {
+            flex: 1;
+        }
+
+        .device-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .device-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .device-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+
+        .device-status.online {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary-color);
+        }
+
+        .device-status.offline {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        /* Telemetry Chart */
+        .chart-container {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .chart-timeframe {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Alerts */
+        .alert-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .alert-card {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid;
+        }
+
+        .alert-card.critical {
+            border-left-color: var(--danger-color);
+        }
+
+        .alert-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .alert-card.info {
+            border-left-color: var(--primary-color);
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+
+        .alert-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .alert-message {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Refresh Button */
+        .refresh-btn {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 50;
+            font-size: 1.5rem;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.9);
+        }
+
+        .refresh-btn.spinning {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 1rem;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .header h1 {
+                font-size: 1.125rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Pull to Refresh */
+        .pull-to-refresh {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            transition: opacity 0.3s;
+        }
+
+        .pull-to-refresh.hidden {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <h1>INSA IIoT Platform</h1>
+                <div class="header-subtitle">Mobile Dashboard</div>
+            </div>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span id="connection-status">Connected</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container -->
+    <div class="container">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Devices</div>
+                <div class="stat-value" id="stat-devices">-</div>
+                <div class="stat-change positive" id="stat-devices-change">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Alerts</div>
+                <div class="stat-value" id="stat-alerts">-</div>
+                <div class="stat-change" id="stat-alerts-change">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Telemetry</div>
+                <div class="stat-value" id="stat-telemetry">-</div>
+                <div class="stat-change positive" id="stat-telemetry-change">Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Rules</div>
+                <div class="stat-value" id="stat-rules">-</div>
+                <div class="stat-change" id="stat-rules-change">Active</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="devices">🖥️ Devices</button>
+            <button class="tab" data-tab="telemetry">📊 Telemetry</button>
+            <button class="tab" data-tab="alerts">🔔 Alerts</button>
+            <button class="tab" data-tab="rules">⚙️ Rules</button>
+        </div>
+
+        <!-- Tab Content: Devices -->
+        <div class="tab-content active" id="tab-devices">
+            <div id="devices-loading" class="loading">
+                <div class="spinner"></div>
+                <div>Loading devices...</div>
+            </div>
+            <div id="devices-list" class="device-list" style="display: none;"></div>
+            <div id="devices-empty" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">📱</div>
+                <div>No devices registered yet</div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Telemetry -->
+        <div class="tab-content" id="tab-telemetry">
+            <div id="telemetry-loading" class="loading">
+                <div class="spinner"></div>
+                <div>Loading telemetry...</div>
+            </div>
+            <div id="telemetry-list" class="device-list" style="display: none;"></div>
+            <div id="telemetry-empty" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">📊</div>
+                <div>No telemetry data available</div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Alerts -->
+        <div class="tab-content" id="tab-alerts">
+            <div id="alerts-loading" class="loading">
+                <div class="spinner"></div>
+                <div>Loading alerts...</div>
+            </div>
+            <div id="alerts-list" class="alert-list" style="display: none;"></div>
+            <div id="alerts-empty" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">✅</div>
+                <div>No active alerts</div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Rules -->
+        <div class="tab-content" id="tab-rules">
+            <div id="rules-loading" class="loading">
+                <div class="spinner"></div>
+                <div>Loading rules...</div>
+            </div>
+            <div id="rules-list" style="display: none;"></div>
+            <div id="rules-empty" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">📋</div>
+                <div>No rules configured</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="refresh-btn" id="refresh-btn" title="Refresh data">
+        🔄
+    </button>
+
+    <script>
+        // API Base URL
+        const API_BASE = window.location.origin + '/api/v1';
+
+        // State
+        let currentTab = 'devices';
+        let refreshInterval = null;
+        let data = {
+            devices: [],
+            alerts: [],
+            rules: [],
+            telemetry: []
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupTabs();
+            setupRefresh();
+            loadAllData();
+            startAutoRefresh();
+        });
+
+        // Tab Management
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    switchTab(tabName);
+                });
+            });
+        }
+
+        function switchTab(tabName) {
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            currentTab = tabName;
+
+            // Load data for this tab if empty
+            if (tabName === 'devices' && data.devices.length === 0) {
+                loadDevices();
+            } else if (tabName === 'telemetry' && data.telemetry.length === 0) {
+                loadTelemetry();
+            } else if (tabName === 'alerts' && data.alerts.length === 0) {
+                loadAlerts();
+            } else if (tabName === 'rules' && data.rules.length === 0) {
+                loadRules();
+            }
+        }
+
+        // Refresh
+        function setupRefresh() {
+            const refreshBtn = document.getElementById('refresh-btn');
+            refreshBtn.addEventListener('click', () => {
+                refreshBtn.classList.add('spinning');
+                loadAllData().finally(() => {
+                    setTimeout(() => refreshBtn.classList.remove('spinning'), 500);
+                });
+            });
+        }
+
+        function startAutoRefresh() {
+            // Refresh every 30 seconds
+            refreshInterval = setInterval(loadAllData, 30000);
+        }
+
+        // Data Loading
+        async function loadAllData() {
+            try {
+                await Promise.all([
+                    loadStats(),
+                    loadDevices(),
+                    loadTelemetry(),
+                    loadAlerts(),
+                    loadRules()
+                ]);
+                updateConnectionStatus('online');
+            } catch (error) {
+                console.error('Error loading data:', error);
+                updateConnectionStatus('offline');
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const status = await response.json();
+
+                // Use statistics object from API response
+                document.getElementById('stat-devices').textContent = status.statistics?.total_devices || 0;
+                document.getElementById('stat-alerts').textContent = status.statistics?.active_alerts || 0;
+                document.getElementById('stat-telemetry').textContent = formatNumber(status.statistics?.telemetry_last_hour || 0);
+                document.getElementById('stat-rules').textContent = status.statistics?.active_rules || 0;
+
+                // Update changes
+                const onlineDevices = status.statistics?.online_devices || 0;
+                const totalDevices = status.statistics?.total_devices || 0;
+                document.getElementById('stat-devices-change').textContent = `${onlineDevices} online`;
+
+                // Update alerts change indicator
+                const activeAlerts = status.statistics?.active_alerts || 0;
+                const alertsChangeEl = document.getElementById('stat-alerts-change');
+                if (activeAlerts > 5) {
+                    alertsChangeEl.textContent = `${activeAlerts} active`;
+                    alertsChangeEl.className = 'stat-change negative';
+                } else if (activeAlerts > 0) {
+                    alertsChangeEl.textContent = `${activeAlerts} active`;
+                    alertsChangeEl.className = 'stat-change';
+                } else {
+                    alertsChangeEl.textContent = 'All clear';
+                    alertsChangeEl.className = 'stat-change positive';
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadDevices() {
+            const loadingEl = document.getElementById('devices-loading');
+            const listEl = document.getElementById('devices-list');
+            const emptyEl = document.getElementById('devices-empty');
+
+            try {
+                loadingEl.style.display = 'block';
+                listEl.style.display = 'none';
+                emptyEl.style.display = 'none';
+
+                const response = await fetch(`${API_BASE}/dashboard/devices`);
+                const result = await response.json();
+                data.devices = result.devices || [];
+
+                loadingEl.style.display = 'none';
+
+                if (data.devices.length === 0) {
+                    emptyEl.style.display = 'block';
+                } else {
+                    listEl.style.display = 'grid';
+                    renderDevices();
+                }
+            } catch (error) {
+                console.error('Error loading devices:', error);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+            }
+        }
+
+        function renderDevices() {
+            const listEl = document.getElementById('devices-list');
+            listEl.innerHTML = data.devices.map(device => `
+                <div class="device-card">
+                    <div class="device-icon ${device.status || 'offline'}">
+                        ${device.status === 'active' ? '🟢' : '🔴'}
+                    </div>
+                    <div class="device-info">
+                        <div class="device-name">${device.name || 'Unnamed Device'}</div>
+                        <div class="device-meta">${device.device_type || 'Unknown'} • ${device.location || 'No location'}</div>
+                    </div>
+                    <div class="device-status ${device.status || 'offline'}">
+                        ${device.status || 'offline'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadAlerts() {
+            const loadingEl = document.getElementById('alerts-loading');
+            const listEl = document.getElementById('alerts-list');
+            const emptyEl = document.getElementById('alerts-empty');
+
+            try {
+                loadingEl.style.display = 'block';
+                listEl.style.display = 'none';
+                emptyEl.style.display = 'none';
+
+                const response = await fetch(`${API_BASE}/dashboard/alerts?limit=20`);
+                const result = await response.json();
+                data.alerts = result.alerts || [];
+
+                loadingEl.style.display = 'none';
+
+                if (data.alerts.length === 0) {
+                    emptyEl.style.display = 'block';
+                } else {
+                    listEl.style.display = 'grid';
+                    renderAlerts();
+                }
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+            }
+        }
+
+        function renderAlerts() {
+            const listEl = document.getElementById('alerts-list');
+            listEl.innerHTML = data.alerts.map(alert => `
+                <div class="alert-card ${alert.severity || 'info'}">
+                    <div class="alert-header">
+                        <div class="alert-title">${alert.message || 'Alert'}</div>
+                        <div class="alert-time">${formatTime(alert.created_at)}</div>
+                    </div>
+                    <div class="alert-message">
+                        ${alert.rule_name || 'System Alert'} • ${alert.severity || 'info'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadRules() {
+            const loadingEl = document.getElementById('rules-loading');
+            const listEl = document.getElementById('rules-list');
+            const emptyEl = document.getElementById('rules-empty');
+
+            try {
+                loadingEl.style.display = 'block';
+                listEl.style.display = 'none';
+                emptyEl.style.display = 'none';
+
+                const response = await fetch(`${API_BASE}/dashboard/rules`);
+                const result = await response.json();
+                data.rules = result.rules || [];
+
+                loadingEl.style.display = 'none';
+
+                if (data.rules.length === 0) {
+                    emptyEl.style.display = 'block';
+                } else {
+                    listEl.style.display = 'block';
+                    renderRules();
+                }
+            } catch (error) {
+                console.error('Error loading rules:', error);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+            }
+        }
+
+        function renderRules() {
+            const listEl = document.getElementById('rules-list');
+            listEl.innerHTML = data.rules.map(rule => `
+                <div class="device-card">
+                    <div class="device-icon ${rule.enabled ? 'online' : 'offline'}">
+                        ${rule.enabled ? '✅' : '❌'}
+                    </div>
+                    <div class="device-info">
+                        <div class="device-name">${rule.name || 'Unnamed Rule'}</div>
+                        <div class="device-meta">${rule.rule_type || 'Unknown'} • ${rule.condition || ''}</div>
+                    </div>
+                    <div class="device-status ${rule.enabled ? 'online' : 'offline'}">
+                        ${rule.enabled ? 'enabled' : 'disabled'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadTelemetry() {
+            const loadingEl = document.getElementById('telemetry-loading');
+            const listEl = document.getElementById('telemetry-list');
+            const emptyEl = document.getElementById('telemetry-empty');
+
+            try {
+                loadingEl.style.display = 'block';
+                listEl.style.display = 'none';
+                emptyEl.style.display = 'none';
+
+                const response = await fetch(`${API_BASE}/dashboard/telemetry?limit=20`);
+                const result = await response.json();
+                data.telemetry = result.telemetry || [];
+
+                loadingEl.style.display = 'none';
+
+                if (data.telemetry.length === 0) {
+                    emptyEl.style.display = 'block';
+                } else {
+                    listEl.style.display = 'grid';
+                    renderTelemetry();
+                }
+            } catch (error) {
+                console.error('Error loading telemetry:', error);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+            }
+        }
+
+        function renderTelemetry() {
+            const listEl = document.getElementById('telemetry-list');
+            listEl.innerHTML = data.telemetry.map(point => `
+                <div class="device-card">
+                    <div class="device-icon online">
+                        📊
+                    </div>
+                    <div class="device-info">
+                        <div class="device-name">${point.device_name || 'Unknown Device'}</div>
+                        <div class="device-meta">${point.key}: ${point.value}${point.unit ? ' ' + point.unit : ''} • ${formatTime(point.timestamp)}</div>
+                    </div>
+                    <div class="device-status online">
+                        ${point.value}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Utilities
+        function updateConnectionStatus(status) {
+            const statusEl = document.getElementById('connection-status');
+            const dotEl = document.querySelector('.status-dot');
+
+            if (status === 'online') {
+                statusEl.textContent = 'Connected';
+                dotEl.style.background = 'var(--secondary-color)';
+            } else {
+                statusEl.textContent = 'Offline';
+                dotEl.style.background = 'var(--danger-color)';
+            }
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            return `${days}d ago`;
+        }
+
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) clearInterval(refreshInterval);
+        });
+    </script>
+</body>
+</html>

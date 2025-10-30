@@ -35,6 +35,7 @@ from ml_api import ml_api
 from alerting_api import alerting_api, init_alerting_api
 from retention_api import retention_bp
 from retention_scheduler import init_retention_scheduler, get_retention_scheduler
+from reporting_api import reporting_bp, init_reporting_api
 from tenant_middleware import (
     TenantContextMiddleware,
     require_tenant,
@@ -191,6 +192,10 @@ logger.info("✅ Alerting API Blueprint registered at /api/v1/alerts, /api/v1/es
 # Register Retention API Blueprint (Phase 3 Feature 7)
 app.register_blueprint(retention_bp)
 logger.info("✅ Retention API Blueprint registered at /api/v1/retention")
+
+# Register Reporting API Blueprint (AI Narrative Reports)
+app.register_blueprint(reporting_bp)
+logger.info("✅ Reporting API Blueprint registered at /api/v1/reports")
 
 # SMTP configuration for email notifications
 SMTP_CONFIG = {
@@ -4339,6 +4344,12 @@ if __name__ == '__main__':
         logger.info(f"✅ Retention scheduler started - {len(scheduled_jobs)} policies scheduled")
         for job in scheduled_jobs:
             logger.info(f"   📅 {job['name']}: next run at {job['next_run_time']}")
+
+        # Initialize AI Reporting API (Phase B - ML AI Reporting System)
+        logger.info("Initializing AI Reporting API...")
+        init_reporting_api(DB_CONFIG)
+        logger.info("✅ AI Reporting API initialized")
+        logger.info("📊 Report endpoints: /api/v1/reports/generate, /api/v1/reports/test")
 
         # Initialize email notifier
         logger.info("Initializing email notifier...")
