@@ -33,15 +33,17 @@ class AIReportGenerator:
     - Multiple report formats (HTML, PDF, Email)
     """
 
-    def __init__(self, db_config: Dict[str, str]):
+    def __init__(self, db_config: Dict[str, str], lstm_forecaster=None):
         """
         Initialize report generator
 
         Args:
             db_config: Database connection configuration
+            lstm_forecaster: Optional LSTMForecaster instance for predictive maintenance
         """
         self.db_config = db_config
         self.logger = logging.getLogger(__name__)
+        self.lstm_forecaster = lstm_forecaster
 
     def _get_db_connection(self):
         """Get database connection"""
@@ -260,19 +262,69 @@ class AIReportGenerator:
         finally:
             conn.close()
 
+    def get_lstm_predictions(self, sensor_keys: List[Tuple[str, str]]) -> List[Dict]:
+        """
+        Get LSTM failure predictions for multiple sensors
+
+        Args:
+            sensor_keys: List of (device_id, sensor_key) tuples
+
+        Returns:
+            List of prediction records with failure risk assessments
+        """
+        if not self.lstm_forecaster:
+            self.logger.warning("LSTM forecaster not available - skipping predictions")
+            return []
+
+        predictions = []
+
+        for device_id, sensor_key in sensor_keys:
+            try:
+                # Get prediction from LSTM model
+                result = self.lstm_forecaster.predict_future(device_id, sensor_key)
+
+                if result.get('success'):
+                    prediction_record = {
+                        'device_id': device_id,
+                        'sensor_key': sensor_key,
+                        'forecast_horizon_hours': result['forecast_horizon_hours'],
+                        'failure_risk': result['failure_risk'],
+                        'forecasts': result['forecasts'][:6],  # First 6 hours
+                        'last_value': result['metadata']['last_actual_value'],
+                        'model_accuracy': result['metadata']['model_accuracy']
+                    }
+                    predictions.append(prediction_record)
+                    self.logger.info(
+                        f"LSTM prediction for {device_id}/{sensor_key}: "
+                        f"{result['failure_risk']['risk_level']} risk"
+                    )
+
+            except Exception as e:
+                self.logger.error(f"Error getting LSTM prediction for {device_id}/{sensor_key}: {e}")
+                continue
+
+        return predictions
+
     def generate_narrative_with_ai(self, report_data: Dict) -> str:
         """
         Generate human-readable narrative using Claude Code subprocess
         (Zero API cost - uses local Claude Code instance)
 
         Args:
-            report_data: Dictionary with sensor statistics, anomalies, correlations
+            report_data: Dictionary with sensor statistics, anomalies, correlations, LSTM predictions
 
         Returns:
             Natural language narrative text
         """
         try:
             # Create a prompt for Claude to analyze the data
+            lstm_section = ""
+            if report_data.get('lstm_predictions'):
+                lstm_section = f"""
+
+LSTM FAILURE PREDICTIONS (12-hour forecast):
+{json.dumps(report_data.get('lstm_predictions', []), indent=2, default=str)}"""
+
             prompt = f"""You are an industrial IoT analyst for a glass manufacturing plant.
 
 Analyze the following sensor data and generate a concise, actionable executive summary (3-5 paragraphs):
@@ -284,14 +336,15 @@ DETECTED ANOMALIES:
 {json.dumps(report_data.get('anomalies', []), indent=2, default=str)}
 
 CROSS-SENSOR CORRELATIONS:
-{json.dumps(report_data.get('correlations', []), indent=2, default=str)}
+{json.dumps(report_data.get('correlations', []), indent=2, default=str)}{lstm_section}
 
 Generate a professional report that:
 1. Summarizes key findings in plain language
 2. Highlights any concerning trends or anomalies
 3. Explains correlations in context of glass manufacturing
-4. Provides actionable recommendations
-5. Prioritizes critical issues
+4. PRIORITIZE LSTM predictions - identify high-risk equipment failures
+5. Provides actionable maintenance recommendations with timeframes
+6. Prioritizes critical issues by urgency
 
 Format as plain text paragraphs (not markdown). Be concise but specific with numbers."""
 
@@ -370,14 +423,45 @@ Format as plain text paragraphs (not markdown). Be concise but specific with num
                     f"({s1['change_percent']:+.1f}% and {s2['change_percent']:+.1f}%)"
                 )
 
+        # LSTM Predictions
+        lstm_predictions = report_data.get('lstm_predictions', [])
+        if lstm_predictions:
+            narrative_parts.append(f"\n\n🔮 PREDICTIVE MAINTENANCE FORECAST ({len(lstm_predictions)} sensors):")
+            high_risk_count = sum(1 for p in lstm_predictions if p['failure_risk']['risk_level'] == 'high')
+            medium_risk_count = sum(1 for p in lstm_predictions if p['failure_risk']['risk_level'] == 'medium')
+
+            if high_risk_count > 0:
+                narrative_parts.append(f"\n⚠️ HIGH RISK ({high_risk_count} sensors):")
+                for pred in lstm_predictions:
+                    if pred['failure_risk']['risk_level'] == 'high':
+                        ttf = pred['failure_risk'].get('time_to_failure_hours')
+                        ttf_text = f"{ttf}h" if ttf else "N/A"
+                        narrative_parts.append(
+                            f"\n  • Sensor {pred['sensor_key']} ({pred['device_id']}): "
+                            f"Time to failure: {ttf_text} - "
+                            f"{pred['failure_risk']['recommended_action']}"
+                        )
+
+            if medium_risk_count > 0:
+                narrative_parts.append(f"\n⚠️ MEDIUM RISK ({medium_risk_count} sensors):")
+                for pred in lstm_predictions:
+                    if pred['failure_risk']['risk_level'] == 'medium':
+                        narrative_parts.append(
+                            f"\n  • Sensor {pred['sensor_key']}: {pred['failure_risk']['recommended_action']}"
+                        )
+
         # Recommendations
-        narrative_parts.append("\n\nRECOMMENDATIONS:")
+        narrative_parts.append("\n\n📋 RECOMMENDATIONS:")
+        if lstm_predictions:
+            high_risk = [p for p in lstm_predictions if p['failure_risk']['risk_level'] == 'high']
+            if high_risk:
+                narrative_parts.append("\n🔴 URGENT: Address high-risk equipment failures within 24-48 hours")
         if anomalies:
-            narrative_parts.append("\n• Investigate anomalies listed above within 24 hours")
+            narrative_parts.append("\n• Investigate detected anomalies within 24 hours")
         if any(abs(stats.get('change_percent', 0)) > 10 for stats in sensor_stats.values()):
             narrative_parts.append("\n• Review sensors with >10% change for equipment issues")
-        if not anomalies and not correlations:
-            narrative_parts.append("\n• All systems operating normally - continue monitoring")
+        if not anomalies and not correlations and not lstm_predictions:
+            narrative_parts.append("\n✅ All systems operating normally - continue monitoring")
 
         return '\n'.join(narrative_parts)
 
@@ -449,6 +533,13 @@ Format as plain text paragraphs (not markdown). Be concise but specific with num
             # Detect correlations
             correlations = self.detect_correlations(sensor_keys_for_correlation, hours, use_all_data)
 
+            # Get LSTM predictions (if forecaster available)
+            lstm_predictions = []
+            if self.lstm_forecaster:
+                self.logger.info("Fetching LSTM predictions for sensors...")
+                lstm_predictions = self.get_lstm_predictions(sensor_keys_for_correlation)
+                self.logger.info(f"Retrieved {len(lstm_predictions)} LSTM predictions")
+
             # Compile report data
             report_data = {
                 'location': device_location,
@@ -457,7 +548,8 @@ Format as plain text paragraphs (not markdown). Be concise but specific with num
                 'device_count': len(devices),
                 'sensor_stats': sensor_stats,
                 'anomalies': anomalies,
-                'correlations': correlations
+                'correlations': correlations,
+                'lstm_predictions': lstm_predictions
             }
 
             # Generate narrative
@@ -581,6 +673,54 @@ Format as plain text paragraphs (not markdown). Be concise but specific with num
             margin: 10px 0;
             border-radius: 6px;
         }}
+        .lstm-prediction {{
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 4px solid #8b5cf6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+        }}
+        .lstm-prediction.high-risk {{
+            background: rgba(239, 68, 68, 0.15);
+            border-left-color: #ef4444;
+        }}
+        .lstm-prediction.medium-risk {{
+            background: rgba(251, 191, 36, 0.15);
+            border-left-color: #fbbf24;
+        }}
+        .lstm-prediction .risk-badge {{
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }}
+        .lstm-prediction .risk-badge.high {{
+            background: #ef4444;
+            color: white;
+        }}
+        .lstm-prediction .risk-badge.medium {{
+            background: #fbbf24;
+            color: #0a0e27;
+        }}
+        .lstm-prediction .risk-badge.low {{
+            background: #10b981;
+            color: white;
+        }}
+        .lstm-forecast {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+        }}
+        .lstm-forecast .hour {{
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            border-radius: 4px;
+            text-align: center;
+        }}
         .footer {{
             text-align: center;
             margin-top: 40px;
@@ -615,9 +755,11 @@ Format as plain text paragraphs (not markdown). Be concise but specific with num
 
     {correlations_section}
 
+    {lstm_section}
+
     <div class="footer">
         INSA Automation Corp | Advanced Industrial IoT Platform v2.0<br>
-        Report generated automatically by AI Narrative Engine
+        Report generated automatically by AI Narrative Engine + LSTM Forecasting
     </div>
 </body>
 </html>
@@ -681,6 +823,59 @@ Format as plain text paragraphs (not markdown). Be concise but specific with num
         else:
             correlations_section = ""
 
+        # Generate LSTM predictions section
+        lstm_predictions = report_data.get('lstm_predictions', [])
+        if lstm_predictions:
+            lstm_items = []
+            for pred in lstm_predictions:
+                risk = pred['failure_risk']
+                risk_level = risk['risk_level']
+                risk_class = f"{risk_level}-risk" if risk_level in ['high', 'medium'] else ""
+
+                # Format forecasts (first 6 hours)
+                forecast_html = []
+                for fc in pred['forecasts'][:6]:
+                    forecast_html.append(f"""
+                    <div class="hour">
+                        +{fc['hours_ahead']}h<br>
+                        <strong>{fc['predicted_value']:.1f}</strong>
+                    </div>
+                    """)
+
+                ttf = risk.get('time_to_failure_hours')
+                ttf_text = f"{ttf} hours" if ttf else "N/A"
+
+                lstm_items.append(f"""
+                <div class="lstm-prediction {risk_class}">
+                    <strong>🔮 Sensor {pred['sensor_key']}</strong>
+                    <span class="risk-badge {risk_level}">{risk_level.upper()} RISK</span>
+                    <br>
+                    <div style="margin-top: 8px;">
+                        Current Value: {pred['last_value']:.2f} |
+                        Time to Failure: {ttf_text} |
+                        Model MAE: {pred['model_accuracy']['val_mae']:.2f}
+                    </div>
+                    <div style="margin-top: 8px; font-size: 13px; opacity: 0.9;">
+                        {risk['recommended_action']}
+                    </div>
+                    <div class="lstm-forecast">
+                        {''.join(forecast_html)}
+                    </div>
+                </div>
+                """)
+
+            lstm_section = f"""
+            <div class="section">
+                <h2>🔮 LSTM Predictive Maintenance Forecast ({len(lstm_predictions)} sensors)</h2>
+                <p style="opacity: 0.9; margin-bottom: 15px;">
+                    12-hour equipment failure predictions using deep learning time-series analysis
+                </p>
+                {''.join(lstm_items)}
+            </div>
+            """
+        else:
+            lstm_section = ""
+
         # Fill template
         html = html_template.format(
             location=report_data.get('location', 'Unknown'),
@@ -689,7 +884,8 @@ Format as plain text paragraphs (not markdown). Be concise but specific with num
             narrative=report_data.get('narrative', 'No narrative generated'),
             sensor_cards=''.join(sensor_cards) if sensor_cards else '<p>No sensor data available</p>',
             anomalies_section=anomalies_section,
-            correlations_section=correlations_section
+            correlations_section=correlations_section,
+            lstm_section=lstm_section
         )
 
         return html

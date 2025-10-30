@@ -30,16 +30,19 @@ def get_query_engine() -> Optional[NLQueryEngine]:
     return _query_engine
 
 
-def init_nl_query_api(db_config: dict):
+def init_nl_query_api(db_config: dict, lstm_forecaster=None):
     """
     Initialize the NL query API with database configuration
 
     Args:
         db_config: Database connection configuration
+        lstm_forecaster: Optional LSTMForecaster instance for predictions
     """
     global _query_engine
-    _query_engine = NLQueryEngine(db_config)
+    _query_engine = NLQueryEngine(db_config, lstm_forecaster)
     logger.info("Natural Language Query API initialized")
+    if lstm_forecaster:
+        logger.info("✅ LSTM forecasting enabled for NL queries")
 
 
 @nl_query_bp.route('/ask', methods=['POST'])
@@ -196,6 +199,13 @@ def get_suggestions():
             "Show me temperature trends for the past month",
             "Compare sensor 146 and 147 values",
             "What is the quality yield trend?"
+        ],
+        'lstm_queries': [
+            "When will sensor 146 fail?",
+            "Predict sensor 147 failure",
+            "What's the failure risk for sensor 146?",
+            "Show maintenance schedule",
+            "Which devices need maintenance?"
         ],
         'quick_queries': [
             "Show me furnace temperatures",
