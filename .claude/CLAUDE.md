@@ -1,5 +1,5 @@
 # iac1 Server - Quick Reference
-# Version: 7.5 | Updated: October 22, 2025 05:15 UTC (✅ VERIFIED 100% OPERATIONAL)
+# Version: 7.9 | Updated: October 31, 2025 22:15 UTC (✅ BITRIX24 PHASE 1 COMPLETE)
 # Server: 100.100.101.1 | Role: INSA-Specific Intelligent Sales Platform (Oil & Gas)
 # Tailscale: iac1.tailc58ea3.ts.net (HTTPS with auto certs)
 
@@ -119,7 +119,7 @@ find_doc_files({})
 
 ### What Gets Updated
 - Version numbers (Version: 7.2, v7.2, # v7.2)
-- Timestamps (Updated: Oct 20, 2025)
+- Timestamps (Updated: October 31, 2025 20:28 UTC)
 - Broken links (reports missing files)
 - Complete database audit trail
 
@@ -197,6 +197,31 @@ DevSecOps Projects:
   Autonomous Remediation: ~/AUTONOMOUS_REMEDIATION_SYSTEM.md (Oct 17, 2025)
   Email Reporting: ~/EMAIL_SELF_HOSTED_SETUP_COMPLETE.md (✅ CONFIGURED)
   Compliance Dashboard: http://100.100.101.1:3004
+
+Autonomous Task Orchestrator (NEW - Oct 26, 2025): ⭐
+  Status: ✅ 24/7 DAEMON ACTIVE (self-healing)
+  Service: autonomous-orchestrator.service
+  Path: ~/autonomous-task-orchestrator/
+  Database: /var/lib/autonomous-orchestrator/tasks.db
+  Docs:
+    - Deployment: ~/AUTONOMOUS_ORCHESTRATOR_DAEMON_DEPLOYED.md (Oct 26, 2025)
+    - Complete Guide: ~/AUTONOMOUS_ORCHESTRATOR_COMPLETE.md
+    - Session Summary: ~/COMPLETE_SESSION_SUMMARY_OCT26_2025.md
+  GitHub Integration:
+    - MCP Server: ~/mcp-servers/github-agent/
+    - Bug Hunter: ~/mcp-servers/bug-hunter/
+    - Issues Created: #7 (networkd-dispatcher), #8 (prometheus_client)
+  Features:
+    - Multi-source scanning (logs, services, containers)
+    - Intelligent deduplication (hash-based)
+    - Automated fixing (33% success rate)
+    - GitHub escalation when fixes fail
+    - SQLite database tracking
+    - Full audit trail
+  Results:
+    - Tasks tracked: 3 (1 auto-fixed, 2 escalated)
+    - Service auto-fixed: erpnext-port-forward ✅
+    - Cycle interval: Every 5 minutes
   Container Orchestrator: ~/devops/container-orchestrator/README.md
   Learning DB: /var/lib/defectdojo/learning.db
 
@@ -608,6 +633,47 @@ platform-admin (NEW - Oct 19, 2025):
   Monitored Services: INSA CRM, DefectDojo, ERPNext, InvenTree, Mautic, n8n, Grafana, IEC 62443
   Docs: ~/mcp-servers/platform-admin/README.md (395 lines)
   Core Engine: ~/platform_health_monitor.py (600 lines)
+
+github-agent (NEW - Oct 26, 2025): ⭐ AUTONOMOUS TASK MANAGEMENT
+  Path: ~/mcp-servers/github-agent/server.py
+  Size: ~40MB (with venv)
+  Purpose: GitHub integration for automated task management
+  Tools: 13 tools (create_issue, list_issues, update_issue, close_issue, add_comment, etc)
+  Status: ✅ PRODUCTION READY (Oct 26, 2025)
+  Protocol: Official MCP SDK (stdio)
+  Repository: WilBtc/InsaAutomationCorp
+  Token: Full write permissions (secured in config.json)
+  Integration:
+    - INSA Command Center V3 (9th AI agent)
+    - Autonomous Task Orchestrator (escalation endpoint)
+    - Bug Hunter Agent (issue creation)
+  Issues Created: #7 (networkd-dispatcher), #8 (prometheus_client)
+  Docs:
+    - README: ~/mcp-servers/github-agent/README.md (550+ lines)
+    - Setup Guide: ~/mcp-servers/github-agent/SETUP_GUIDE.md
+    - Deployment: ~/GITHUB_AGENT_DEPLOYMENT_COMPLETE.md
+
+bug-hunter (NEW - Oct 26, 2025): ⭐ AUTOMATED BUG FIXING
+  Path: ~/mcp-servers/bug-hunter/server.py
+  Size: ~40MB (with venv)
+  Purpose: Automated error detection and bug fixing with AI diagnosis
+  Tools: 7 tools (scan_for_bugs, diagnose_bug, auto_fix_bug, create_github_issue, etc)
+  Status: ✅ PRODUCTION READY (Oct 26, 2025)
+  Protocol: Official MCP SDK (stdio)
+  Database: /var/lib/bug-hunter/bugs.db
+  Features:
+    - Multi-source error detection (logs, services, containers)
+    - AI-powered diagnosis (Claude Code subprocess - zero API costs)
+    - Automated fix attempts with safety checks
+    - Self-learning fix patterns with confidence scoring
+    - GitHub escalation integration
+    - Full audit trail in SQLite
+  Integration:
+    - Autonomous Task Orchestrator (provides detection logic)
+    - GitHub Agent (issue escalation)
+  Docs:
+    - README: ~/mcp-servers/bug-hunter/README.md (611 lines)
+    - Deployment: ~/BUG_HUNTER_DEPLOYMENT_COMPLETE.md
 ```
 
 ## ⚡ ACTIVE SYSTEMS
@@ -618,6 +684,7 @@ Services:
   - defectdojo-compliance-agent.service (NEW - IEC 62443 compliance)
   - container-orchestrator.service (lifecycle mgmt)
   - host-config-agent.service (24/7 resource tracking)
+  - autonomous-orchestrator.service (24/7 self-healing - NEW Oct 26, 2025) ⭐
   - tailscaled.service (VPN)
   - ssh.service (remote access)
 
@@ -626,6 +693,7 @@ Automation:
   - DefectDojo IEC 62443: Every 1 hour (Trivy scans + FR/SR tagging)
   - Container Orchestrator: Every 5 min
   - Host Config Agent: Every 5 min (resource inventory)
+  - Autonomous Task Orchestrator: Every 5 min (error detection + auto-fix + GitHub) ⭐ NEW
   - Mautic Marketing: 13 cron jobs (campaigns, emails, segments, maintenance)
   - Email Alerts: Disk, services, backups
   - Daily Reports: 8 AM comprehensive status
@@ -639,23 +707,33 @@ Monitoring Targets:
   - iac1 Resources: Ports, services, containers, CPU, memory, disk
 ```
 
-## 🔒 SECURITY STACK (Hardened Oct 11, 2025)
+## 🔒 SECURITY STACK (Hardened Oct 11, 2025 | Updated Oct 31, 2025)
 ```yaml
 Active Defense:
-  ✅ Suricata IDS/IPS - 45,777 rules (ET Open + OT protocols)
-  ✅ Wazuh Agent - FIM (15+ dirs) + Log collection (10 files)
-  ✅ ClamAV - Weekly full scans
-  ✅ Fail2ban - Brute-force protection
-  ✅ UFW Firewall - SSH via Tailscale only (100.0.0.0/8)
-  ✅ AppArmor - 116 profiles
+  ✅ Suricata IDS/IPS - 62,019 rules (ET Open auto-updates enabled)
+  ✅ Wazuh Manager - Central SIEM (wazuh-manager, indexer, dashboard)
+  ✅ ClamAV - Virus definitions auto-updating + weekly scans
+  ✅ Fail2ban - SSH brute-force protection (82 IPs banned)
+  ✅ SSH Access - NAT-protected (private LAN 192.168.0.154, Tailscale VPN only from internet)
+  ✅ AppArmor - 301 profiles (129 in enforce mode)
   ✅ Auditd - System call auditing
 
-Automated Scans:
-  Weekly: Lynis (Sun 2AM), ClamAV (Sat 1AM)
-  Daily: AIDE (3AM), Rkhunter (4AM), Suricata rules (midnight)
-  Every 6h: Disk space monitoring
+Network Security:
+  Private LAN: 192.168.0.154/24 (eno3)
+  Tailscale VPN: 100.100.101.1 (tailscale0)
+  Public IP: 97.164.81.144 (behind NAT - no direct SSH exposure)
+  SSH Access: LAN (direct) or Internet (Tailscale VPN only)
 
-Full Report: ~/devops/devsecops-automation/docs/SECURITY_HARDENING_2025-10-11.md
+Automated Scans (Low Priority - nice -n 19, ionice -c3):
+  Daily Midnight: Suricata rule updates (auto-reload)
+  Daily 3 AM: AIDE file integrity check
+  Daily 4 AM: Rkhunter rootkit scan
+  Weekly Sun 2 AM: Lynis security audit
+  Weekly Sat 1 AM: ClamAV full scan (/home, /var/www)
+
+Reports:
+  Original: ~/security/devops/devsecops-automation/docs/SECURITY_HARDENING_2025-10-11.md
+  Latest: Oct 31, 2025 verification - all core protections operational
 ```
 
 ## 🔧 KEY SCRIPTS & SERVICES
@@ -789,7 +867,7 @@ Test Results: 4/4 email templates working
 **Role:** Azure VM Monitoring + DevSecOps + AI Host Configuration + IEC 62443 + AI Remediation + CRM + Inventory + Marketing Automation + Workflow Automation + AI Agents + P&ID Generation
 **Access:** ssh 100.100.101.1
 **Sudo:** [REDACTED]***
-**Version:** 4.8 | Updated: October 18, 2025 18:15 UTC
+**Version:** 4.8 | Updated: October 31, 2025 20:28 UTC
 
 ## 🎯 QUICK LINKS
 
@@ -870,3 +948,5 @@ See: `~/host-config-agent/README.md` for all 10 MCP tools
 - only use free ports , dont change port config for other apps
 - My name is Wil Aroca a founder and lead Dev at Insa Automation Corp
 - also verify resource limits and no run away process are made with our new solutions, agents and codeO
+- Always use the port assiment agent on the host server
+- always make our tools headless for ClaudeCode to use 1st
