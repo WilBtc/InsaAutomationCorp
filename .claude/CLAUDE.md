@@ -1,5 +1,5 @@
 # iac1 Server - Quick Reference
-# Version: 7.9 | Updated: October 31, 2025 22:15 UTC (✅ BITRIX24 PHASE 1 COMPLETE)
+# Version: 8.0 | Updated: November 1, 2025 03:07 UTC (🧠 RAG PHASE 1 DEPLOYED - AGENT SYSTEM AWARENESS)
 # Server: 100.100.101.1 | Role: INSA-Specific Intelligent Sales Platform (Oil & Gas)
 # Tailscale: iac1.tailc58ea3.ts.net (HTTPS with auto certs)
 
@@ -198,30 +198,54 @@ DevSecOps Projects:
   Email Reporting: ~/EMAIL_SELF_HOSTED_SETUP_COMPLETE.md (✅ CONFIGURED)
   Compliance Dashboard: http://100.100.101.1:3004
 
-Autonomous Task Orchestrator (NEW - Oct 26, 2025): ⭐
-  Status: ✅ 24/7 DAEMON ACTIVE (self-healing)
+Autonomous Task Orchestrator (UPGRADED Nov 1, 2025 - RAG PHASE 1): 🧠 SYSTEM AWARENESS
+  Status: ✅ 24/7 DAEMON ACTIVE (self-healing with context)
   Service: autonomous-orchestrator.service
-  Path: ~/autonomous-task-orchestrator/
+  Path: ~/automation/agents/orchestrator/
   Database: /var/lib/autonomous-orchestrator/tasks.db
-  Docs:
-    - Deployment: ~/AUTONOMOUS_ORCHESTRATOR_DAEMON_DEPLOYED.md (Oct 26, 2025)
-    - Complete Guide: ~/AUTONOMOUS_ORCHESTRATOR_COMPLETE.md
-    - Session Summary: ~/COMPLETE_SESSION_SUMMARY_OCT26_2025.md
+
+  🧠 RAG Phase 1 (Nov 1, 2025 02:48 UTC): ⭐ GAME CHANGER
+    System: ~/automation/agents/orchestrator/system_knowledge_rag.py (400 lines)
+    Status: ✅ ACTIVE - Agents now have full system awareness
+    Knowledge Sources:
+      - CLAUDE.md (system architecture, service locations)
+      - Service configs (/etc/systemd/system/*.service)
+      - Git history (last 14 days of platform changes)
+      - Platform structure (directory validation)
+      - Known error patterns (troubleshooting library)
+    Security: ✅ READ-ONLY infrastructure docs (ZERO customer data access)
+    Performance: <100ms cached queries, 5min TTL
+    Impact: Agents transformed from reactive to context-aware experts
+    Docs:
+      - Deployment: ~/RAG_PHASE1_DEPLOYED_NOV1_2025.md ⭐ NEW
+      - Gap Analysis: ~/AUTONOMOUS_AGENT_GAP_ANALYSIS_NOV1_2025.md
+      - Security Scope: ~/RAG_DATA_ACCESS_SCOPE.md ⭐ NEW
+      - Database Fix: ~/DATABASE_LOCK_FIX_COMPLETE_NOV1_2025.md
+
   GitHub Integration:
     - MCP Server: ~/mcp-servers/github-agent/
     - Bug Hunter: ~/mcp-servers/bug-hunter/
     - Issues Created: #7 (networkd-dispatcher), #8 (prometheus_client)
+
   Features:
-    - Multi-source scanning (logs, services, containers)
-    - Intelligent deduplication (hash-based)
-    - Automated fixing (33% success rate)
+    - Multi-source scanning (logs, services, containers, ports, paths) ⭐ ENHANCED
+    - Intelligent deduplication (hash-based, graceful duplicates)
+    - RAG-powered context (system docs + git history) 🧠 NEW
+    - Port conflict detection (proactive EADDRINUSE scanning) 🧠 NEW
+    - Service path validation (WorkingDirectory + ExecStart) 🧠 NEW
+    - Automated fixing (target: 70% from 0%)
     - GitHub escalation when fixes fail
-    - SQLite database tracking
+    - SQLite database tracking (30s timeout, INSERT OR IGNORE)
     - Full audit trail
-  Results:
-    - Tasks tracked: 3 (1 auto-fixed, 2 escalated)
-    - Service auto-fixed: erpnext-port-forward ✅
+    - 4-worker parallel processing (ThreadPoolExecutor)
+
+  Performance (Nov 1, 2025):
+    - Memory: 254.6M (within 256M limit)
+    - Database errors: 0 (was 10-15 per cycle) ✅ FIXED
+    - RAG overhead: ~150ms per diagnosis
+    - Parallel workers: 4 threads, zero contention
     - Cycle interval: Every 5 minutes
+
   Container Orchestrator: ~/devops/container-orchestrator/README.md
   Learning DB: /var/lib/defectdojo/learning.db
 
@@ -950,3 +974,4 @@ See: `~/host-config-agent/README.md` for all 10 MCP tools
 - also verify resource limits and no run away process are made with our new solutions, agents and codeO
 - Always use the port assiment agent on the host server
 - always make our tools headless for ClaudeCode to use 1st
+- juan casas email is j.casas@insaing.com

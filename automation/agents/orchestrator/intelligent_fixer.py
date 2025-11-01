@@ -203,6 +203,17 @@ class ResearchAgent:
         self.learning_db = LearningDatabase()
         self.timeout = 30  # AI diagnosis timeout
 
+        # NEW: System Knowledge RAG
+        try:
+            from system_knowledge_rag import SystemKnowledgeRAG
+            self.rag = SystemKnowledgeRAG()
+            self.rag_enabled = True
+            print("      ✅ RAG system loaded - Agents now have system knowledge!")
+        except Exception as e:
+            print(f"      ⚠️  RAG system not available: {e}")
+            self.rag = None
+            self.rag_enabled = False
+
     def diagnose_issue(self, issue: Dict, previous_attempts: List[Dict]) -> Dict:
         """
         Use AI (Claude Code subprocess) to diagnose issue and suggest fixes
@@ -262,13 +273,68 @@ class ResearchAgent:
         return f"{issue['type']}:{error_pattern}"
 
     def build_diagnosis_context(self, issue: Dict, previous_attempts: List[Dict]) -> str:
-        """Build comprehensive context for AI diagnosis"""
+        """Build comprehensive context for AI diagnosis WITH RAG"""
         attempts_text = "\n".join([
             f"  {i+1}. {att['strategy']} - {'SUCCESS' if att['success'] else 'FAILED'}: {att['message']}"
             for i, att in enumerate(previous_attempts)
         ])
 
-        context = f"""Analyze this infrastructure issue and suggest fixes:
+        # NEW: Get system knowledge from RAG
+        rag_context = ""
+        if self.rag_enabled and self.rag:
+            try:
+                knowledge = self.rag.query(issue)
+                rag_context = self.rag.format_for_ai(knowledge)
+                print("      📚 RAG context loaded - Agent has full system awareness")
+            except Exception as e:
+                print(f"      ⚠️  RAG query failed: {e}")
+                rag_context = ""
+
+        # Build enhanced context with RAG
+        if rag_context:
+            context = f"""**SYSTEM KNOWLEDGE (from documentation):**
+
+{rag_context}
+
+**CURRENT ISSUE:**
+
+**Error Details:**
+- Type: {issue['type']}
+- Source: {issue['source']}
+- Service/Container: {issue.get('service') or issue.get('container', 'unknown')}
+- Error Message:
+  {issue['message']}
+
+**Previous Fix Attempts ({len(previous_attempts)}):**
+{attempts_text if previous_attempts else '  (None yet)'}
+
+**YOUR TASK:**
+Using the SYSTEM KNOWLEDGE above, diagnose this issue and suggest fixes.
+
+CRITICAL: Pay special attention to:
+1. Platform path changes (insa-crm-platform → platforms/insa-crm)
+2. Service file configurations (paths must exist)
+3. Port conflicts (check for stale processes)
+4. Recent platform consolidations
+
+Provide:
+1. Root cause diagnosis (use system knowledge)
+2. 2-3 prioritized fix strategies
+3. Specific commands for each strategy
+4. Confidence rating (0-100%)
+
+**Format your response as:**
+DIAGNOSIS: [Root cause based on system knowledge - be specific about paths/configs]
+CONFIDENCE: [0-100]%
+FIX_1: [Strategy name] | [Description] | [Commands]
+FIX_2: [Strategy name] | [Description] | [Commands]
+FIX_3: [Strategy name] | [Description] | [Commands]
+
+Focus on practical, safe solutions that can be executed automatically.
+"""
+        else:
+            # Fallback: Original generic context (if RAG fails)
+            context = f"""Analyze this infrastructure issue and suggest fixes:
 
 **Error Details:**
 - Type: {issue['type']}
@@ -295,6 +361,7 @@ FIX_3: [Strategy name] | [Description] | [Commands]
 
 Focus on practical, safe solutions that can be executed automatically.
 """
+
         return context
 
     def parse_ai_response(self, response: str) -> Dict:
