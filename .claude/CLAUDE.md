@@ -1,5 +1,5 @@
 # iac1 Server - Quick Reference
-# Version: 8.0 | Updated: November 1, 2025 03:07 UTC (🧠 RAG PHASE 1 DEPLOYED - AGENT SYSTEM AWARENESS)
+# Version: 8.1 | Updated: November 1, 2025 04:05 UTC (🧠 RAG PHASE 2 COMPLETE - 24MB CYBERSECURITY KNOWLEDGE)
 # Server: 100.100.101.1 | Role: INSA-Specific Intelligent Sales Platform (Oil & Gas)
 # Tailscale: iac1.tailc58ea3.ts.net (HTTPS with auto certs)
 
@@ -204,9 +204,9 @@ Autonomous Task Orchestrator (UPGRADED Nov 1, 2025 - RAG PHASE 1): 🧠 SYSTEM A
   Path: ~/automation/agents/orchestrator/
   Database: /var/lib/autonomous-orchestrator/tasks.db
 
-  🧠 RAG Phase 1 (Nov 1, 2025 02:48 UTC): ⭐ GAME CHANGER
+  🧠 RAG Phase 1 (Nov 1, 2025 02:48 UTC): System Awareness
     System: ~/automation/agents/orchestrator/system_knowledge_rag.py (400 lines)
-    Status: ✅ ACTIVE - Agents now have full system awareness
+    Status: ✅ ACTIVE - Agents have full system awareness
     Knowledge Sources:
       - CLAUDE.md (system architecture, service locations)
       - Service configs (/etc/systemd/system/*.service)
@@ -215,12 +215,40 @@ Autonomous Task Orchestrator (UPGRADED Nov 1, 2025 - RAG PHASE 1): 🧠 SYSTEM A
       - Known error patterns (troubleshooting library)
     Security: ✅ READ-ONLY infrastructure docs (ZERO customer data access)
     Performance: <100ms cached queries, 5min TTL
-    Impact: Agents transformed from reactive to context-aware experts
     Docs:
-      - Deployment: ~/RAG_PHASE1_DEPLOYED_NOV1_2025.md ⭐ NEW
-      - Gap Analysis: ~/AUTONOMOUS_AGENT_GAP_ANALYSIS_NOV1_2025.md
-      - Security Scope: ~/RAG_DATA_ACCESS_SCOPE.md ⭐ NEW
-      - Database Fix: ~/DATABASE_LOCK_FIX_COMPLETE_NOV1_2025.md
+      - Deployment: ~/RAG_PHASE1_DEPLOYED_NOV1_2025.md
+      - Security Scope: ~/RAG_DATA_ACCESS_SCOPE.md
+
+  🧠 RAG Phase 2 (Nov 1, 2025 04:00 UTC): ⭐ CYBERSECURITY EXPERTISE (24 MB)
+    Status: ✅ COMPLETE - CRM agents now have CISA/NIST/SANS expertise
+    Location: ~/automation/agents/orchestrator/knowledge/
+
+    SANS Institute (13 MB - Live Threat Intelligence):
+      - blocklist.txt (2.1 KB) - Top malicious IPs to block
+      - top_100_ips.txt (16 KB) - Top 100 attackers
+      - threat_intel.txt (13 MB) - Comprehensive threat feed
+      - Auto-update: Hourly via update_sans_feeds.sh
+      - License: Creative Commons Share Alike (free with attribution)
+      - User's School: SANS Institute (professional cybersecurity training)
+
+    Industrial Cybersecurity (11 MB - 8 PDFs):
+      - CISA ICS Security (7.4 MB, 5 PDFs) - 7-step defense framework
+      - NIST CSF 2.0 (1.5 MB) - Latest cybersecurity framework (2024)
+      - NIST CSF 1.1 (1.1 MB) - Legacy reference
+      - Oil & Gas Guide (662 KB) - Sector-specific security
+
+    Impact:
+      - Lead Qualification: CISA 7-step framework + NIST Implementation Tiers
+      - Quote Generation: NIST CSF-based scoping + authoritative pricing
+      - Customer Answers: Cite CISA, NIST, SANS (government standards)
+      - Threat Intelligence: Check IPs against SANS blocklist
+      - Credibility: Government-approved sources (vs generic advice)
+
+    Docs:
+      - Complete: ~/RAG_PHASE_2_COMPLETE_NOV1_2025.md ⭐ NEW
+      - SANS Plan: ~/SANS_RAG_INTEGRATION_PLAN_NOV1_2025.md
+      - Industrial: ~/INDUSTRIAL_CYBER_RAG_DEPLOYMENT_NOV1_2025.md
+      - Agent Guide: knowledge/industrial-cyber/QUICK_REFERENCE.md
 
   GitHub Integration:
     - MCP Server: ~/mcp-servers/github-agent/
