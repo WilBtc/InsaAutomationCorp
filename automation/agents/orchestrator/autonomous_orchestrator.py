@@ -628,6 +628,99 @@ class BugScanner:
 
         return issues
 
+    def check_port_conflicts(self) -> List[Dict]:
+        """NEW: Detect port binding conflicts in service logs"""
+        conflicts = []
+
+        try:
+            # Scan recent service logs for port binding errors
+            result = subprocess.run(
+                ['journalctl', '--since', '10 minutes ago', '--priority=err',
+                 '--grep', 'address already in use|bind.*failed', '--no-pager'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if result.stdout:
+                lines = result.stdout.strip().split('\n')
+                for line in lines:
+                    if 'address already in use' in line.lower() or 'bind' in line.lower():
+                        # Extract service name and port
+                        service_match = re.search(r'(\S+\.service)', line)
+                        port_match = re.search(r':(\d+)', line)
+
+                        service_name = service_match.group(1) if service_match else 'unknown'
+                        port = port_match.group(1) if port_match else 'unknown'
+
+                        conflicts.append({
+                            'type': 'port_conflict',
+                            'source': 'systemd',
+                            'service': service_name,
+                            'port': port,
+                            'message': f"Service {service_name} cannot bind to port {port} - address already in use"
+                        })
+
+        except Exception as e:
+            print(f"⚠️  Could not scan for port conflicts: {e}")
+
+        return conflicts
+
+    def check_service_path_validity(self) -> List[Dict]:
+        """NEW: Proactive validation of service file paths"""
+        invalid_paths = []
+
+        try:
+            import glob
+
+            # Scan all active service files
+            for service_file in glob.glob('/etc/systemd/system/*.service'):
+                if not os.path.exists(service_file):
+                    continue
+
+                try:
+                    with open(service_file, 'r') as f:
+                        config = f.read()
+
+                    service_name = os.path.basename(service_file)
+
+                    # Check WorkingDirectory
+                    working_dir_match = re.search(r'^WorkingDirectory=(.+)$', config, re.MULTILINE)
+                    if working_dir_match:
+                        working_dir = working_dir_match.group(1).strip()
+                        if not os.path.exists(working_dir):
+                            invalid_paths.append({
+                                'type': 'invalid_service_path',
+                                'source': 'systemd',
+                                'service': service_name,
+                                'path': working_dir,
+                                'config_line': 'WorkingDirectory',
+                                'message': f"Service {service_name} WorkingDirectory does not exist: {working_dir}"
+                            })
+
+                    # Check ExecStart path
+                    exec_start_match = re.search(r'^ExecStart=(.+)$', config, re.MULTILINE)
+                    if exec_start_match:
+                        exec_start = exec_start_match.group(1).strip()
+                        exec_path = exec_start.split()[0] if exec_start else ''
+                        if exec_path and not os.path.exists(exec_path):
+                            invalid_paths.append({
+                                'type': 'invalid_service_path',
+                                'source': 'systemd',
+                                'service': service_name,
+                                'path': exec_path,
+                                'config_line': 'ExecStart',
+                                'message': f"Service {service_name} ExecStart binary does not exist: {exec_path}"
+                            })
+
+                except Exception as e:
+                    pass  # Skip problematic service files
+
+        except Exception as e:
+            print(f"⚠️  Could not validate service paths: {e}")
+
+        return invalid_paths
+
     def scan_all(self) -> List[Dict]:
         """Comprehensive scan of all sources"""
         all_issues = []
@@ -649,6 +742,12 @@ class BugScanner:
 
         print("🔍 Checking ML model health...")
         all_issues.extend(self.check_ml_models())
+
+        print("🔍 Checking for port conflicts...")
+        all_issues.extend(self.check_port_conflicts())
+
+        print("🔍 Validating service paths...")
+        all_issues.extend(self.check_service_path_validity())
 
         return all_issues
 
@@ -747,7 +846,7 @@ class TaskOrchestrator:
 
     def init_database(self):
         """Initialize task tracking database"""
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
         c = conn.cursor()
 
         c.execute('''
@@ -791,7 +890,7 @@ class TaskOrchestrator:
     def task_exists(self, issue_hash: str) -> Optional[int]:
         """Check if task already exists and is not closed"""
         with self.db_lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=30.0)
             c = conn.cursor()
             c.execute(
                 "SELECT id FROM tasks WHERE issue_hash = ? AND status != 'closed' ORDER BY id DESC LIMIT 1",
@@ -804,7 +903,7 @@ class TaskOrchestrator:
     def get_task_status(self, task_id: int) -> Optional[Dict]:
         """Get full task details including status"""
         with self.db_lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=30.0)
             c = conn.cursor()
             c.execute(
                 """SELECT id, status, fix_attempted, fix_successful, fix_message,
@@ -830,22 +929,32 @@ class TaskOrchestrator:
     def create_task(self, issue: Dict) -> int:
         """Create new task in database"""
         with self.db_lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=30.0)
             c = conn.cursor()
 
             issue_hash = self.generate_issue_hash(issue)
 
+            # Try to insert, but if it already exists, get the existing task_id
             c.execute('''
-                INSERT INTO tasks (issue_hash, issue_type, issue_source, issue_message)
+                INSERT OR IGNORE INTO tasks (issue_hash, issue_type, issue_source, issue_message)
                 VALUES (?, ?, ?, ?)
             ''', (issue_hash, issue['type'], issue['source'], issue['message']))
 
-            task_id = c.lastrowid
-
-            c.execute('''
-                INSERT INTO task_history (task_id, action, details)
-                VALUES (?, ?, ?)
-            ''', (task_id, 'detected', f"Issue detected: {issue['message'][:100]}"))
+            if c.lastrowid > 0:
+                # New task created
+                task_id = c.lastrowid
+                c.execute('''
+                    INSERT INTO task_history (task_id, action, details)
+                    VALUES (?, ?, ?)
+                ''', (task_id, 'detected', f"Issue detected: {issue['message'][:100]}"))
+            else:
+                # Task already exists, get its ID
+                c.execute(
+                    "SELECT id FROM tasks WHERE issue_hash = ? ORDER BY id DESC LIMIT 1",
+                    (issue_hash,)
+                )
+                result = c.fetchone()
+                task_id = result[0] if result else None
 
             conn.commit()
             conn.close()
@@ -855,7 +964,7 @@ class TaskOrchestrator:
     def update_task_github(self, task_id: int, issue_number: int):
         """Update task with GitHub issue number"""
         with self.db_lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=30.0)
             c = conn.cursor()
             c.execute('''
                 UPDATE tasks
@@ -874,7 +983,7 @@ class TaskOrchestrator:
     def update_task_fix_attempt(self, task_id: int, success: bool, message: str):
         """Update task with fix attempt result"""
         with self.db_lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=30.0)
             c = conn.cursor()
 
             status = 'fixed' if success else 'fix_failed'
@@ -897,7 +1006,7 @@ class TaskOrchestrator:
     def close_task(self, task_id: int):
         """Mark task as closed"""
         with self.db_lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=30.0)
             c = conn.cursor()
             c.execute('''
                 UPDATE tasks
