@@ -8,7 +8,7 @@ Creates n8n owner account and API key directly in SQLite database.
 
 Organization: INSA Automation Corp
 Server: iac1 (100.100.101.1)
-Date: October 18, 2025
+Date: October 31, 2025 20:30 UTC
 """
 
 import sqlite3
