@@ -96,6 +96,24 @@
       },
       "_description": "CadQuery CAD MCP for INSA Automation (bertvanbrakel) - Production-ready headless 3D CAD: execute scripts, STEP/STL/SVG export, part library management, BOM-driven CAD generation for ERPNext/InvenTree integration"
     },
+    "bitrix24-official": {
+      "transport": "sse",
+      "url": "https://mcp-dev.bitrix24.com/mcp",
+      "env": {},
+      "_description": "🆕 OFFICIAL Bitrix24 MCP Server (Bitrix24 Developers) - Direct access to up-to-date Bitrix24 REST API documentation. Provides: real-time API method descriptions, parameter lists, acceptable values, usage hints, field definitions. NO AUTHENTICATION REQUIRED. Always synchronized with latest Bitrix24 API changes. Reduces errors by providing structured data instead of free text. Use this for accurate API integration guidance and code generation."
+    },
+    "bitrix24-crm": {
+      "transport": "stdio",
+      "command": "/home/wil/insa-crm-platform/mcp-servers/bitrix24-crm/venv/bin/python",
+      "args": [
+        "/home/wil/insa-crm-platform/mcp-servers/bitrix24-crm/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "_description": "⚠️ DEPRECATED - Use bitrix24-official instead. Legacy custom Bitrix24 CRM with 27 tools: Lead management (list/get/create/update), Contact management (list/get/create/update), Deal management (list/get/create/update), Company management (list/get/create/update), Task management (list/get/create/update), Activity management (list/create), Comment management (add to any entity), Utilities (search/get_fields/user_info). Webhook-based authentication."
+    },
     "mautic-admin": {
       "transport": "stdio",
       "command": "/home/wil/platforms/insa-crm/mcp-servers/mautic-admin/venv/bin/python",

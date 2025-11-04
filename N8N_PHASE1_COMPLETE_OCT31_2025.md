@@ -45,4 +45,4 @@ Full documentation: `/home/wil/platforms/insa-crm/N8N_PHASE1_WORKFLOWS_ACTIVATED
 ---
 **Created:** October 31, 2025 13:00 UTC
 **Method:** Headless CLI via docker exec
-**Container:** n8n_mautic_erpnext (v1.117.2)
+**Container:** n8n_mautic_erpnext (v1.118)
