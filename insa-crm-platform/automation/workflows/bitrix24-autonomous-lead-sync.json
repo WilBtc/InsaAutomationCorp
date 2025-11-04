@@ -110,6 +110,37 @@
     },
     {
       "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Intelligent Lead Routing by Industry\nconst lead = $input.item.json;\n\n// Determine best assignee based on industry expertise\nlet assignedUserId;\nlet assignedUserName;\nlet routingReason;\n\n// Juan Carlos Casas (ID 1) - Oil & Gas industry expert + Director General\nconst JUAN_ID = 1;\nconst JUAN_NAME = 'Juan Carlos Casas';\n\n// Wil Aroca (ID 27) - Engineering/Technical expert + Founder\nconst WIL_ID = 27;\nconst WIL_NAME = 'Wil Aroca';\n\nif (lead.industry === 'Oil & Gas') {\n  // Oil & Gas → Juan (industry expertise)\n  assignedUserId = JUAN_ID;\n  assignedUserName = JUAN_NAME;\n  routingReason = 'Oil & Gas industry expert';\n} else if (lead.industry === 'Engineering' || lead.industry === 'Instrumentation & Controls') {\n  // Engineering/Instrumentation → Wil (technical expertise)\n  assignedUserId = WIL_ID;\n  assignedUserName = WIL_NAME;\n  routingReason = 'Engineering/technical expert';\n} else if (lead.qualification_score >= 80) {\n  // HOT leads → Juan (Director General handles high-value)\n  assignedUserId = JUAN_ID;\n  assignedUserName = JUAN_NAME;\n  routingReason = 'HOT lead - Director General priority';\n} else {\n  // Default → Balance by workload (Juan for now, can add round-robin logic)\n  assignedUserId = JUAN_ID;\n  assignedUserName = JUAN_NAME;\n  routingReason = 'Default assignment';\n}\n\nconst routedLead = {\n  ...lead,\n  assigned_user_id: assignedUserId,\n  assigned_user_name: assignedUserName,\n  routing_reason: routingReason\n};\n\nreturn { json: routedLead };"
+      },
+      "id": "intelligent-lead-routing",
+      "name": "Code: Intelligent Routing by Industry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://insa.bitrix24.es/rest/27/r72rpvf6gd4i89y2/crm.lead.update",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"id\": {{$json.bitrix24_lead_id}}, \"fields\": {\"ASSIGNED_BY_ID\": {{$json.assigned_user_id}}}}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "update-bitrix24-assignment",
+      "name": "Bitrix24: Update Assignment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1650, 300]
+    },
+    {
+      "parameters": {
         "url": "http://100.100.101.1:9000",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBasicAuth",
@@ -122,7 +153,7 @@
               },
               {
                 "name": "doc",
-                "value": "={\"doctype\": \"Lead\", \"lead_name\": \"{{$json.lead_name}}\", \"email_id\": \"{{$json.email_id}}\", \"company_name\": \"{{$json.company_name}}\", \"phone\": \"{{$json.phone}}\", \"source\": \"Bitrix24\", \"status\": \"{{$json.pipeline === 'fast_track_sales' ? 'Qualified' : 'Open'}}\", \"custom_lead_score\": {{$json.qualification_score}}, \"custom_pipeline\": \"{{$json.pipeline}}\", \"custom_priority\": \"{{$json.priority}}\", \"notes\": \"Bitrix24 Lead ID: {{$json.bitrix24_lead_id}}\\\\n\\\\nAI Score: {{$json.qualification_score}}/100\\\\nCategory: {{$json.category}}\\\\nFactors: {{$json.scoring_factors}}\\\\n\\\\n{{$json.notes}}\"}"
+                "value": "={\"doctype\": \"Lead\", \"lead_name\": \"{{$json.lead_name}}\", \"email_id\": \"{{$json.email_id}}\", \"company_name\": \"{{$json.company_name}}\", \"phone\": \"{{$json.phone}}\", \"source\": \"Bitrix24\", \"status\": \"{{$json.pipeline === 'fast_track_sales' ? 'Qualified' : 'Open'}}\", \"custom_lead_score\": {{$json.qualification_score}}, \"custom_pipeline\": \"{{$json.pipeline}}\", \"custom_priority\": \"{{$json.priority}}\", \"notes\": \"Bitrix24 Lead ID: {{$json.bitrix24_lead_id}}\\\\n\\\\nAI Score: {{$json.qualification_score}}/100\\\\nCategory: {{$json.category}}\\\\nFactors: {{$json.scoring_factors}}\\\\nAssigned: {{$json.assigned_user_name}} ({{$json.routing_reason}})\\\\n\\\\n{{$json.notes}}\"}"
               }
             ]
           }
@@ -132,7 +163,7 @@
       "name": "ERPNext: Create Lead",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [1450, 200]
+      "position": [1850, 200]
     },
     {
       "parameters": {
@@ -141,41 +172,41 @@
         "genericAuthType": "httpBasicAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"email\": \"{{$json.email_id}}\", \"firstname\": \"{{$json.lead_name.split(' ')[0]}}\", \"lastname\": \"{{$json.lead_name.split(' ').slice(1).join(' ')}}\", \"company\": \"{{$json.company_name}}\", \"phone\": \"{{$json.phone}}\", \"tags\": [\"Bitrix24\", \"{{$json.pipeline}}\", \"{{$json.priority}}\", \"{{$json.industry}}\"], \"points\": {{Math.floor($json.qualification_score * 10)}}}",
+        "jsonBody": "={\"email\": \"{{$json.email_id}}\", \"firstname\": \"{{$json.lead_name.split(' ')[0]}}\", \"lastname\": \"{{$json.lead_name.split(' ').slice(1).join(' ')}}\", \"company\": \"{{$json.company_name}}\", \"phone\": \"{{$json.phone}}\", \"tags\": [\"Bitrix24\", \"{{$json.pipeline}}\", \"{{$json.priority}}\", \"{{$json.industry}}\", \"{{$json.assigned_user_name}}\"], \"points\": {{Math.floor($json.qualification_score * 10)}}}",
         "options": {}
       },
       "id": "create-contact-in-mautic",
       "name": "Mautic: Create Contact",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [1450, 400]
+      "position": [1850, 400]
     },
     {
       "parameters": {
         "url": "https://insa.bitrix24.es/rest/27/r72rpvf6gd4i89y2/crm.timeline.comment.add",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"fields\": {\"ENTITY_ID\": {{$json.bitrix24_lead_id}}, \"ENTITY_TYPE\": \"lead\", \"COMMENT\": \"✅ Synced to INSA CRM\\\\n\\\\n🎯 AI Score: {{$json.qualification_score}}/100 ({{$json.category}})\\\\n📊 Pipeline: {{$json.pipeline}}\\\\n⚡ Priority: {{$json.priority}}\\\\n\\\\nFactors: {{$json.scoring_factors}}\\\\n\\\\nNext: {{$json.recommended_action}}\"}}",
+        "jsonBody": "={\"fields\": {\"ENTITY_ID\": {{$json.bitrix24_lead_id}}, \"ENTITY_TYPE\": \"lead\", \"COMMENT\": \"✅ Synced to INSA CRM\\\\n\\\\n🎯 AI Score: {{$json.qualification_score}}/100 ({{$json.category}})\\\\n📊 Pipeline: {{$json.pipeline}}\\\\n⚡ Priority: {{$json.priority}}\\\\n👤 Assigned: {{$json.assigned_user_name}}\\\\n📍 Routing: {{$json.routing_reason}}\\\\n\\\\nFactors: {{$json.scoring_factors}}\\\\n\\\\nNext: {{$json.recommended_action}}\"}}",
         "options": {}
       },
       "id": "add-comment-to-bitrix24",
-      "name": "Bitrix24: Add AI Score Comment",
+      "name": "Bitrix24: Add AI Insights Comment",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [1650, 300]
+      "position": [2050, 300]
     },
     {
       "parameters": {
         "respondWith": "allIncomingItems",
         "options": {
-          "responseData": "={\"status\": \"success\", \"lead_id\": \"{{$json.bitrix24_lead_id}}\", \"score\": {{$json.qualification_score}}, \"category\": \"{{$json.category}}\", \"pipeline\": \"{{$json.pipeline}}\", \"synced_to\": [\"ERPNext\", \"Mautic\", \"Bitrix24 Comments\"]}"
+          "responseData": "={\"status\": \"success\", \"lead_id\": \"{{$json.bitrix24_lead_id}}\", \"score\": {{$json.qualification_score}}, \"category\": \"{{$json.category}}\", \"pipeline\": \"{{$json.pipeline}}\", \"assigned_to\": \"{{$json.assigned_user_name}}\", \"routing_reason\": \"{{$json.routing_reason}}\", \"synced_to\": [\"ERPNext\", \"Mautic\", \"Bitrix24 Assignment\", \"Bitrix24 Comments\"]}"
         }
       },
       "id": "webhook-response",
       "name": "Webhook Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1850, 300]
+      "position": [2250, 300]
     }
   ],
   "connections": {
@@ -195,18 +226,24 @@
       "main": [[{"node": "Code: AI Lead Scoring", "type": "main", "index": 0}]]
     },
     "Code: AI Lead Scoring": {
+      "main": [[{"node": "Code: Intelligent Routing by Industry", "type": "main", "index": 0}]]
+    },
+    "Code: Intelligent Routing by Industry": {
+      "main": [[{"node": "Bitrix24: Update Assignment", "type": "main", "index": 0}]]
+    },
+    "Bitrix24: Update Assignment": {
       "main": [[
         {"node": "ERPNext: Create Lead", "type": "main", "index": 0},
         {"node": "Mautic: Create Contact", "type": "main", "index": 0}
       ]]
     },
     "ERPNext: Create Lead": {
-      "main": [[{"node": "Bitrix24: Add AI Score Comment", "type": "main", "index": 0}]]
+      "main": [[{"node": "Bitrix24: Add AI Insights Comment", "type": "main", "index": 0}]]
     },
     "Mautic: Create Contact": {
-      "main": [[{"node": "Bitrix24: Add AI Score Comment", "type": "main", "index": 0}]]
+      "main": [[{"node": "Bitrix24: Add AI Insights Comment", "type": "main", "index": 0}]]
     },
-    "Bitrix24: Add AI Score Comment": {
+    "Bitrix24: Add AI Insights Comment": {
       "main": [[{"node": "Webhook Response", "type": "main", "index": 0}]]
     }
   },
