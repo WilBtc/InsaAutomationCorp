@@ -1,0 +1,266 @@
+{
+  "mcpServers": {
+    "azure-vm-monitor": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/active/azure-vm-monitor/venv/bin/python",
+      "args": [
+        "/home/wil/mcp-servers/active/azure-vm-monitor/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      }
+    },
+    "azure-alert": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/active/azure-alert/venv/bin/python",
+      "args": [
+        "/home/wil/mcp-servers/active/azure-alert/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      }
+    },
+    "chrome-devtools": {
+      "transport": "stdio",
+      "command": "node",
+      "args": [
+        "/home/wil/mcp-servers/active/chrome-devtools/server.js"
+      ],
+      "env": {},
+      "_description": "Chrome DevTools for UI/UX testing - screenshot, inspect CSS, inject CSS, get page info"
+    },
+    "defectdojo-iec62443": {
+      "transport": "stdio",
+      "command": "/usr/bin/python3",
+      "args": [
+        "/home/wil/mcp-servers/active/defectdojo-iec62443/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "_description": "DefectDojo IEC 62443 Compliance - Import scans, tag findings with FR/SR requirements, generate compliance reports"
+    },
+    "tailscale-devops": {
+      "transport": "stdio",
+      "command": "/usr/bin/node",
+      "args": [
+        "/home/wil/tailscale-devops-mcp.js"
+      ],
+      "env": {
+        "NODE_ENV": "production",
+        "NODE_PATH": "/home/wil/mcp-servers/node_modules"
+      },
+      "_description": "Tailscale DevOps automation and network management for INSA infrastructure - 10 tools for network status, SSH, tunnels, routing, access control, service discovery, traffic analysis, health checks, deployment, and optimization"
+    },
+    "erpnext-crm": {
+      "transport": "stdio",
+      "command": "/home/wil/platforms/insa-crm/mcp-servers/erpnext-crm/venv/bin/python",
+      "args": [
+        "/home/wil/platforms/insa-crm/mcp-servers/erpnext-crm/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1",
+        "ERPNEXT_URL": "http://100.100.101.1:9000",
+        "ERPNEXT_USERNAME": "Administrator",
+        "ERPNEXT_PASSWORD": "admin"
+      },
+      "_description": "ERPNext CRM automation for INSA Automation (LOCAL on iac1) - 29 tools for complete sales cycle: lead management, opportunities, quotations, sales orders, delivery notes, invoices, payments, customers, contacts, catalog, and analytics"
+    },
+    "inventree-crm": {
+      "transport": "stdio",
+      "command": "/home/wil/platforms/insa-crm/mcp-servers/inventree-crm/venv/bin/python",
+      "args": [
+        "/home/wil/platforms/insa-crm/mcp-servers/inventree-crm/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1",
+        "INVENTREE_URL": "http://100.100.101.1:9600",
+        "INVENTREE_USERNAME": "admin",
+        "INVENTREE_PASSWORD": "insaadmin2025"
+      },
+      "_description": "InvenTree inventory management for INSA Automation (LOCAL on iac1) - 5 tools for complete inventory and BOM tracking: list parts, get part details, create BOMs, calculate pricing, track customer equipment"
+    },
+    "cadquery-mcp": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/active/mcp-cadquery/server_stdio.sh",
+      "args": [],
+      "env": {
+        "PATH": "/home/wil/.local/bin:/usr/local/bin:/usr/bin:/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "_description": "CadQuery CAD MCP for INSA Automation (bertvanbrakel) - Production-ready headless 3D CAD: execute scripts, STEP/STL/SVG export, part library management, BOM-driven CAD generation for ERPNext/InvenTree integration"
+    },
+    "bitrix24-official": {
+      "transport": "sse",
+      "url": "https://mcp-dev.bitrix24.com/mcp",
+      "env": {},
+      "_description": "🆕 OFFICIAL Bitrix24 MCP Server (Bitrix24 Developers) - Direct access to up-to-date Bitrix24 REST API documentation. Provides: real-time API method descriptions, parameter lists, acceptable values, usage hints, field definitions. NO AUTHENTICATION REQUIRED. Always synchronized with latest Bitrix24 API changes. Reduces errors by providing structured data instead of free text. Use this for accurate API integration guidance and code generation."
+    },
+    "bitrix24-crm": {
+      "transport": "stdio",
+      "command": "/home/wil/insa-crm-platform/mcp-servers/bitrix24-crm/venv/bin/python",
+      "args": [
+        "/home/wil/insa-crm-platform/mcp-servers/bitrix24-crm/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "_description": "⚠️ DEPRECATED - Use bitrix24-official instead. Legacy custom Bitrix24 CRM with 27 tools: Lead management (list/get/create/update), Contact management (list/get/create/update), Deal management (list/get/create/update), Company management (list/get/create/update), Task management (list/get/create/update), Activity management (list/create), Comment management (add to any entity), Utilities (search/get_fields/user_info). Webhook-based authentication."
+    },
+    "mautic-admin": {
+      "transport": "stdio",
+      "command": "/home/wil/platforms/insa-crm/mcp-servers/mautic-admin/venv/bin/python",
+      "args": [
+        "/home/wil/platforms/insa-crm/mcp-servers/mautic-admin/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1",
+        "MAUTIC_URL": "http://100.100.101.1:9700",
+        "MAUTIC_USERNAME": "admin",
+        "MAUTIC_PASSWORD": "mautic_admin_2025"
+      },
+      "_description": "Mautic Marketing Automation Admin for INSA Automation - 27 COMPLETE ADMINISTRATIVE TOOLS: CLI installation, system config, contacts (CRUD), segments (create/update), campaigns (trigger/rebuild), email queue, broadcasts, maintenance, cleanup, webhooks, imports, stats - Full programmatic control via CLI + REST API"
+    },
+    "grafana-admin": {
+      "transport": "stdio",
+      "command": "/usr/local/bin/mcp-grafana",
+      "args": [],
+      "env": {
+        "GRAFANA_URL": "http://100.100.101.1:3002",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "***REMOVED***"
+      },
+      "_description": "Official Grafana MCP Server (v0.7.8 from Grafana Labs) - 43+ professional tools: dashboards, datasources (Prometheus/Loki queries), Tempo 2.9 tracing with TraceQL, incidents, OnCall scheduling, alerting, admin operations, navigation deeplinks - Full Grafana Cloud & local support"
+    },
+    "mautic-browser-automation": {
+      "transport": "stdio",
+      "command": "node",
+      "args": [
+        "/home/wil/mcp-servers/active/mautic-browser-automation/server.js"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "_description": "Mautic Browser Automation for INSA Automation - HEADLESS BROWSER CONTROL: create landing pages via UI automation, create forms, screenshot debugging, login verification, list pages - Puppeteer-based automation for operations not available via API"
+    },
+    "n8n-admin": {
+      "transport": "stdio",
+      "command": "/home/wil/platforms/insa-crm/mcp-servers/n8n-admin/venv/bin/python",
+      "args": [
+        "/home/wil/platforms/insa-crm/mcp-servers/n8n-admin/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1",
+        "N8N_API_URL": "http://100.100.101.1:5678",
+        "N8N_API_KEY": "n8n_sOoLjMTjrKWPVh7qQXqGrJaJOvjDSmKa0HiPqxPq"
+      },
+      "_description": "n8n Workflow Automation Admin for INSA Automation - 23 COMPLETE ADMINISTRATIVE TOOLS: workflow management (list/get/create/update/delete/activate/duplicate), execution control (list/get/trigger/retry/cancel/delete), credential management (list/get/create/delete), monitoring & analytics (stats/workflow_stats/execution_summary/health_check), administration (settings/export_workflows) - Full autonomous control for ERPNext \u2194 Mautic integration workflows"
+    },
+    "n8n-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "n8n-mcp"
+      ],
+      "env": {
+        "N8N_HOST": "http://100.100.101.1:5678",
+        "N8N_API_KEY": "n8n_sOoLjMTjrKWPVh7qQXqGrJaJOvjDSmKa0HiPqxPq"
+      },
+      "_description": "n8n MCP Server - Full headless workflow control with 536 nodes, 90% docs coverage. Enables Claude Code to create, manage, and execute n8n workflows programmatically. Production-ready for ERPNext \u2194 Mautic integration. CLI-based setup complete!"
+    },
+    "n8n-cli": {
+      "transport": "stdio",
+      "command": "/usr/bin/python3",
+      "args": [
+        "/home/wil/mcp-servers/n8n-cli/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "_description": "n8n CLI MCP Server (Headless Mode) - Direct CLI control bypassing API authentication. 7 TOOLS: n8n_list_workflows_cli (list all workflows), n8n_get_workflow_cli (export workflow JSON), n8n_import_workflow_cli (import from JSON), n8n_activate_workflow_cli (activate/deactivate), n8n_execute_workflow_cli (manual execution), n8n_export_all_workflows_cli (bulk export), n8n_cli_health_check (verify CLI availability). Uses docker exec for zero-auth workflow management. Same pattern as ERPNext headless mode."
+    },
+    "platform-admin": {
+      "transport": "stdio",
+      "command": "/usr/bin/python3",
+      "args": [
+        "/home/wil/mcp-servers/active/platform-admin/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1",
+        "PYTHONPATH": "/home/wil"
+      },
+      "_description": "INSA Platform Admin - Headless control for all 8 web services (INSA CRM, DefectDojo, ERPNext, InvenTree, Mautic, n8n, Grafana, IEC 62443). 8 AUTONOMOUS TOOLS: platform_health_check, platform_auto_heal (fixes ERPNext/n8n/Grafana), service_restart, service_logs, service_status, get_credentials, test_service_login, platform_report. Enables Claude Code to monitor, diagnose, and auto-repair the entire platform without human intervention."
+    },
+    "host-config-agent": {
+      "transport": "stdio",
+      "command": "/usr/bin/node",
+      "args": [
+        "/home/wil/automation/agents/host-config/mcp/server.js"
+      ],
+      "env": {
+        "NODE_ENV": "production",
+        "DB_PATH": "/var/lib/host-config-agent/host_config.db"
+      },
+      "_description": "Host Configuration Agent - Multi-agent server management with AUTOMATIC DEPLOYMENT. 19 TOOLS including: auto_deploy_service (zero-touch deployment with port assignment), get_deployed_services, get_deployment_details, check_deployment_health, request_deployment, find_available_port, get_server_status, get_resource_allocations, analyze_config_file, ask_inventory_agent (natural language), get_agent_decisions, query_database, update_port_allocation. Enables Claude Code to autonomously deploy services with automatic port assignment, configuration updates, and health verification. ZERO API COSTS via Claude Code subprocess integration."
+    },
+    "bitwarden-secrets": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/active/bitwarden-secrets/venv/bin/python3",
+      "args": [
+        "/home/wil/mcp-servers/active/bitwarden-secrets/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1",
+        "BW_SESSION": ""
+      },
+      "_description": "Bitwarden Secret Management for INSA Automation - Enterprise-grade secret vault integration. 8 COMPLETE ADMINISTRATIVE TOOLS: bw_list_secrets (list/filter vault items), bw_get_secret (retrieve by name/ID), bw_store_secret (create secure notes/logins), bw_update_secret (modify existing), bw_delete_secret (permanent deletion), bw_generate_password (32-char secure passwords/passphrases), bw_sync_vault (cloud sync), bw_get_status (vault status check). Enables Claude Code to autonomously manage encryption keys, API tokens, credentials with end-to-end AES-256 encryption and zero-knowledge architecture. HEADLESS operation via Bitwarden CLI."
+    },
+    "wazuh-admin": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/active/wazuh-admin/venv/bin/python",
+      "args": [
+        "/home/wil/mcp-servers/active/wazuh-admin/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "_description": "Wazuh Security Platform Admin for INSA Automation - Complete headless control combining Wazuh Manager API + Elasticsearch Indexer. 19 ADMINISTRATIVE TOOLS: Manager (get_manager_info, get_manager_config, restart_manager), Agents (list_agents, get_agent_details, restart_agent, add_agent, delete_agent), Alerts (get_alerts from Elasticsearch, search_alerts with custom queries), Rules (list_rules, get_rule_details, list_decoders), Cluster (get_cluster_status, list_cluster_nodes), Security (list_users, list_roles), Health (health_check, get_stats). Enables Claude Code to autonomously manage Wazuh security infrastructure (iac1 agent reports to 100.121.213.50 manager). HEADLESS operation via REST API + Elasticsearch."
+    },
+    "github-agent": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/active/github-agent/venv/bin/python",
+      "args": [
+        "/home/wil/mcp-servers/active/github-agent/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "_description": "GitHub Agent for INSA Command Center V3 - Complete task management via GitHub Issues. 13 ADMINISTRATIVE TOOLS: Issues (github_create_issue, github_list_issues, github_get_issue, github_update_issue, github_close_issue, github_add_comment), Labels (github_list_labels, github_add_label), Milestones (github_list_milestones), Pull Requests (github_list_prs, github_create_pr), Repository (github_list_repos, github_get_stats). Enables Claude Code to autonomously manage development tasks, track progress, and integrate with Command Center V3 as 9th AI agent. Token configured in config.json."
+    },
+    "bug-hunter": {
+      "transport": "stdio",
+      "command": "/home/wil/mcp-servers/active/bug-hunter/venv/bin/python",
+      "args": [
+        "/home/wil/mcp-servers/active/bug-hunter/server.py"
+      ],
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "_description": "Bug Hunter Agent - Automated error detection and bug fixing with AI diagnosis. 7 AUTONOMOUS TOOLS: scan_for_bugs (multi-source error detection), list_bugs (database queries), diagnose_bug (AI-powered root cause analysis), auto_fix_bug (service restart/container restart/config fix/dependency fix), create_github_issue (escalation), get_bug_stats (metrics), learn_fix_pattern (self-learning). Enables Claude Code to autonomously detect, diagnose, and fix bugs across logs, services, and containers with learning database at /var/lib/bug-hunter/bugs.db. Integrates with GitHub Agent for issue creation and Healing Agent for service-level fixes."
+    }
+  }
+}
