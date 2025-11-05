@@ -1,0 +1,45 @@
+#!/usr/bin/expect -f
+# Expect script to SSH into phantom laptop and copy PDF
+# User: aaliy
+# Password: 1234
+
+set timeout 30
+
+# SSH into phantom - disable pubkey auth to force password
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no -o PreferredAuthentications=password aaliy@100.72.142.62
+
+# Wait for password prompt
+expect {
+    "password:" {
+        send "1234\r"
+    }
+    "Password:" {
+        send "1234\r"
+    }
+    timeout {
+        puts "No password prompt"
+        exit 1
+    }
+}
+
+# Wait for shell prompt (could be $ or ❯ or other fancy prompts)
+expect {
+    -re {[$❯#] $} {
+        # We're in! Now execute command
+    }
+    -re {aaliy@} {
+        # Matched username in prompt
+    }
+    timeout {
+        # Try anyway, we might be at a prompt
+    }
+}
+
+# List the PDF file
+send "ls -lh /home/aaliy/Downloads/instrumentacion-industrial-antonio-creus.pdf 2>&1\r"
+sleep 2
+
+# Exit
+send "exit\r"
+
+expect eof
