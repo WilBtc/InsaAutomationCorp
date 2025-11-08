@@ -1,5 +1,5 @@
 # iac1 Server - Quick Reference
-# Version: 8.1 | Updated: November 1, 2025 04:05 UTC (🧠 RAG PHASE 2 COMPLETE - 24MB CYBERSECURITY KNOWLEDGE)
+# Version: 8.3 | Updated: November 8, 2025 19:50 UTC (✅ 100% MCP SDK ADOPTION - 23/23 SERVERS)
 # Server: 100.100.101.1 | Role: INSA-Specific Intelligent Sales Platform (Oil & Gas)
 # Tailscale: iac1.tailc58ea3.ts.net (HTTPS with auto certs)
 
@@ -311,52 +311,24 @@ Platform Admin (DEPLOYED - Oct 19, 2025):
   Tools: 8 (health check, auto-heal, restart, logs, credentials, etc)
   Services: INSA CRM, DefectDojo, ERPNext, InvenTree, Mautic, n8n, Grafana, IEC 62443
 
-INSA Command Center V3 (HTTPS FIXED - Oct 20, 2025 03:40 UTC): ⭐ 8 AI AGENTS + AUTH
-  Web UI (HTTPS): https://iac1.tailc58ea3.ts.net/command-center/insa-command-center-v3.html ✅ PRODUCTION
-  Login Page: https://iac1.tailc58ea3.ts.net/command-center/login.html ✅ WORKING
-  Backend API (HTTPS): https://iac1.tailc58ea3.ts.net/backend ✅ FIXED (was HTTP mixed content)
-  Auth API (HTTPS): https://iac1.tailc58ea3.ts.net/api ✅ JWT tokens working
-  Status: ✅ PRODUCTION READY - Full HTTPS, authentication, 8 agents, smart routing
+INSA Command Center V4 (AI/ML BITRIX24 AUTOMATION - Nov 8, 2025): ⭐ 6-PAGE INDUSTRIAL AI CRM
+  Web UI (HTTPS): https://iac1.tailc58ea3.ts.net/command-center/insa-command-center-v4.html ✅ PRIMARY
+  Status: ✅ PRODUCTION READY - AI automation layer for Bitrix24 CRM (7,225 lines)
 
-  Authentication:
-    Email: w.aroca@insaing.com
-    Password: Insa2025
-    Database: PostgreSQL (insa_crm.users table)
-  Features (V2 Upgrade):
-    - 2-column layout (agent panel + chat)
-    - 8 AI agent cards with real-time metrics
-    - Smart routing by intent detection
-    - Voice + text input with keyboard shortcuts (Ctrl+R)
-    - ChatGPT-style message bubbles with agent tags
-    - Welcome card with quick command examples
-    - Toast notifications, typing indicators, loading states
-    - Professional animations and transitions
-    - Responsive design, dark theme (cyan/purple gradients)
+  6 Pages: AI Dashboard | Bitrix24 Monitor | RAG Intelligence | Workflows | AI Agents | Analytics
+  Backend: CRM API (8003) + RAG API + n8n (5678) + WebSocket (real-time) + Bitrix24 MCP (53 tools)
+  Data: 7,568 RAG vectors | 17 n8n workflows | 5 AI agents | Real-time Bitrix24 sync
 
-  8 Integrated Agents:
-    1. 📊 Dimensionamiento (90% success, <2s)
-    2. 🎛️ Plataforma Admin (99.8% uptime, 8/8 services)
-    3. 💼 CRM (150+ leads, 33 tools)
-    4. 🔧 Auto-Sanación (98.5% healing, 14 patterns)
-    5. 🛡️ Cumplimiento IEC 62443 (hourly scans)
-    6. 🔬 Investigación RAG (900+ docs)
-    7. 🖥️ Config Host ($0 cost, 24/7)
-    8. 📐 CAD 3D (CadQuery engine)
+  Complete Docs (Git):
+    - Summary: ~/platforms/insa-crm/crm voice/V4_COMPLETE_SUMMARY_NOV8_2025.md (554 lines)
+    - Design: ~/platforms/insa-crm/crm voice/V4_INSA_AI_DESIGN.md (398 lines)
+    - Status: ~/platforms/insa-crm/crm voice/V4_INTEGRATION_STATUS.md (174 lines)
+    - Workflows: ~/platforms/insa-crm/automation/BITRIX24_WORKFLOW_ARCHITECTURE.md
+    - GitHub: commit ba613d9 (Nov 8, 2025)
 
-  Technology Stack:
-    - Frontend: HTML5 + CSS3 + Vanilla JS (42KB single file)
-    - Backend: Flask + faster-whisper + INSA Agents Hub
-    - Agents Hub: ~/insa-crm-platform/crm voice/insa_agents.py (12KB)
-    - Smart Routing: Intent detection → specialized agent
-    - Resource Usage: ~200MB RAM, <10% CPU
-
-  Files & Docs:
-    - UI V3: ~/insa-crm-platform/crm voice/insa-command-center-v3.html ⭐ LATEST (49KB)
-    - Login UI: ~/insa-crm-platform/crm voice/login.html ⭐ NEW (JWT auth)
-    - Archived: ~/insa-crm-platform/crm voice/archive/ (v1, v2 backups)
-    - Hub: ~/insa-crm-platform/crm voice/insa_agents.py (12KB)
-    - Backend: ~/insa-crm-platform/crm voice/crm-backend.py (Flask + faster-whisper)
-    - Auth API: ~/insa-crm-platform/core/api/main.py (FastAPI + JWT)
+INSA Command Center V3 (ARCHIVED - Oct 20, 2025): 8 AI Agents + Voice Interface
+  Location: ~/platforms/insa-crm/crm voice/archive/insa-command-center-v3.html
+  Status: ✅ Archived (replaced by V4)
     - Complete Guide: ~/INSA_COMMAND_CENTER_V2_COMPLETE.md
     - HTTPS Fix Report: ~/COMMAND_CENTER_HTTPS_FIXED_OCT20_2025.md ⭐ NEW
     - Quick Start: ~/insa-crm-platform/crm voice/INSA-CRM-VOICE-QUICK-START.md
@@ -523,42 +495,23 @@ Security (iac1):
   Security Logs: /var/log/{suricata,aide_check,rkhunter_scan,lynis_audit}.log
 ```
 
-## 🤖 MCP SERVERS (12 Active + 9 NEW AUTOMATION TOOLS ⭐)
+## 🤖 MCP SERVERS (23 Active - 100% MCP SDK ⭐)
 ```yaml
 Config: ~/.mcp.json
-Backup: ~/.mcp.json.backup-*
-Total: 12 active MCP servers + 9 new automation tools (Oct 20, 2025)
+Total: 23 MCP servers (100% using official MCP SDK) ✅
+Status: All servers upgraded and verified (Nov 8, 2025)
+Full Details: ~/mcp-servers/MCP_SDK_UPGRADE_COMPLETE_NOV8_2025.md
 
-**NEW - MANDATORY DEPLOYMENT TOOLS (Oct 20, 2025 17:30 UTC):** ⭐
-  auto_deploy_service: REQUIRED for all deployments - auto port assignment
-  get_deployed_services: List all auto-deployed services
-  get_deployment_details: Get specific deployment info
-  check_deployment_health: Monitor deployment health
+**AZURE INFRASTRUCTURE (Nov 8, 2025):** ✅ UPGRADED
+  azure-vm-monitor: MCP SDK 1.21+ | 7 tools | READ-ONLY monitoring (100.107.50.52)
+  azure-alert: MCP SDK 1.21+ | 3 tools | Email alerts (w.aroca@insaing.com)
+  Status: ✅ Both upgraded from JSON-RPC to MCP SDK
+  Docs: ~/mcp-servers/MCP_SDK_UPGRADE_COMPLETE_NOV8_2025.md
 
-**NEW - MANDATORY GIT TOOLS (Oct 20, 2025 18:30 UTC):** ⭐
-  auto_git_commit: REQUIRED for all commits - AI message generation
-  get_git_status: Current git status + recent commits
-  get_commit_history: Commit history from database
-  create_git_branch: Create new branches
-  configure_git_user: One-time git user setup
-
-Recent: Git automation system (Oct 20, 2025 18:30 UTC) ⭐ 30X FASTER
-Previous: Auto-deployment (Oct 20, 17:30), platform-admin (Oct 19)
-Status Reports:
-  - ~/GIT_AUTOMATION_DESIGN.md
-  - ~/AUTO_PORT_ASSIGNMENT_IMPLEMENTATION_COMPLETE.md
-
-azure-vm-monitor:
-  Path: ~/mcp-servers/azure-vm-monitor/
-  Size: 26MB
-  Purpose: Azure VM health checks (every 5 min)
-  Status: ⚠️ NEEDS PROTOCOL UPGRADE (old JSON protocol)
-
-azure-alert:
-  Path: ~/mcp-servers/azure-alert/
-  Size: 16MB
-  Purpose: Email alerts to w.aroca@insaing.com
-  Status: ⚠️ NEEDS PROTOCOL UPGRADE (old JSON protocol)
+**MANDATORY DEPLOYMENT TOOLS:** ⭐
+  auto_deploy_service: REQUIRED for all deployments
+  auto_git_commit: REQUIRED for all commits
+  See: Host Config Agent section below
 
 host-config-agent (UPGRADED - Oct 20, 2025): ⭐ AUTO GIT + DEPLOYMENT
   Path: ~/host-config-agent/mcp/server.js
@@ -1003,3 +956,4 @@ See: `~/host-config-agent/README.md` for all 10 MCP tools
 - Always use the port assiment agent on the host server
 - always make our tools headless for ClaudeCode to use 1st
 - juan casas email is j.casas@insaing.com
+- always check if you can use mcp servers for task 1st for any task
