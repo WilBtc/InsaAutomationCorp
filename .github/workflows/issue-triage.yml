@@ -1,0 +1,145 @@
+name: Automated Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    name: AI-Powered Issue Labeling
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Auto-label by component
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            const title = issue.title || '';
+            const text = (title + ' ' + body).toLowerCase();
+
+            const labels = [];
+
+            // Component labels
+            if (text.includes('github ci') || text.includes('workflow') || text.includes('actions')) {
+              labels.push('component:github-ci-fixer');
+            }
+            if (text.includes('orchestrator') || text.includes('autonomous')) {
+              labels.push('component:orchestrator');
+            }
+            if (text.includes('mcp') || text.includes('server')) {
+              labels.push('component:mcp-servers');
+            }
+            if (text.includes('crm') || text.includes('bitrix')) {
+              labels.push('component:insa-crm');
+            }
+            if (text.includes('azure') || text.includes('monitor')) {
+              labels.push('component:azure-monitor');
+            }
+            if (text.includes('security') || text.includes('vulnerability')) {
+              labels.push('security');
+            }
+            if (text.includes('documentation') || text.includes('docs')) {
+              labels.push('documentation');
+            }
+
+            // Priority labels (from dropdown)
+            if (text.includes('critical')) {
+              labels.push('priority:critical');
+            } else if (text.includes('high')) {
+              labels.push('priority:high');
+            } else if (text.includes('medium')) {
+              labels.push('priority:medium');
+            } else if (text.includes('low')) {
+              labels.push('priority:low');
+            }
+
+            // Type labels
+            if (text.includes('performance') || text.includes('slow')) {
+              labels.push('type:performance');
+            }
+            if (text.includes('dependency') || text.includes('upgrade')) {
+              labels.push('type:dependency');
+            }
+            if (text.includes('config') || text.includes('configuration')) {
+              labels.push('type:config');
+            }
+
+            // Add labels
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: labels
+              });
+            }
+
+      - name: Auto-assign based on component
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(l => l.name);
+
+            let assignee = 'WilBtc';  // Default
+
+            // Component-based assignment (add team members here)
+            // if (labels.includes('component:azure-monitor')) {
+            //   assignee = 'juan-casas';
+            // }
+
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              assignees: [assignee]
+            });
+
+  duplicate-detection:
+    runs-on: ubuntu-latest
+    name: Detect Duplicate Issues
+
+    steps:
+      - name: Check for duplicates
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const title = issue.title.toLowerCase();
+
+            // Get all open issues
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+
+            // Find similar titles
+            const similar = issues.data.filter(i => {
+              if (i.number === issue.number) return false;
+              const similarity = i.title.toLowerCase();
+              return title.includes(similarity) || similarity.includes(title);
+            });
+
+            if (similar.length > 0) {
+              const links = similar.map(i => `#${i.number}`).join(', ');
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `🔍 **Possible Duplicate**: This issue may be related to ${links}`
+              });
+
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: ['possible-duplicate']
+              });
+            }
