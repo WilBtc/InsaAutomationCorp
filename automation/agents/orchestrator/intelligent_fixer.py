@@ -1199,6 +1199,78 @@ class IntelligentAutoFixer:
                 'message': f"AI research error: {e}"
             }
 
+    def execute_research_fix(self, issue: Dict, research: Dict, attempt_num: int = 1) -> Dict:
+        """
+        Execute fix based on AI research results
+        Called by agent_coordinator.py during Phase 2 (AI Research + Advanced Fixing)
+
+        Args:
+            issue: The issue to fix
+            research: AI research results with diagnosis and suggested fixes
+            attempt_num: Which attempt this is (1-3)
+
+        Returns:
+            Dict with success, strategy, and message
+        """
+        try:
+            # Extract suggested fixes from research
+            suggested_fixes = research.get('suggested_fixes', [])
+
+            if not suggested_fixes:
+                return {
+                    'strategy': 'ai_research',
+                    'success': False,
+                    'message': f"No suggested fixes from AI research (confidence: {research.get('confidence', 0):.0%})"
+                }
+
+            # Try the fix corresponding to this attempt number
+            # If attempt_num exceeds available fixes, use the last one
+            fix_index = min(attempt_num - 1, len(suggested_fixes) - 1)
+            fix_suggestion = suggested_fixes[fix_index]
+
+            strategy = fix_suggestion.get('strategy', 'unknown')
+            description = fix_suggestion.get('description', 'No description')
+
+            # Execute the suggested fix based on strategy type
+            if 'restart' in strategy.lower():
+                # Service/container restart
+                result = self.basic_restart(issue)
+                result['strategy'] = f"ai_suggested_{strategy}"
+                return result
+
+            elif 'memory' in strategy.lower() or 'oom' in strategy.lower():
+                # Memory optimization
+                result = self.container_memory_optimization(issue)
+                result['strategy'] = f"ai_suggested_{strategy}"
+                return result
+
+            elif 'dependency' in strategy.lower():
+                # Dependency check
+                result = self.dependency_check(issue)
+                result['strategy'] = f"ai_suggested_{strategy}"
+                return result
+
+            elif 'recovery' in strategy.lower() or 'deep' in strategy.lower():
+                # Deep service recovery
+                result = self.advanced_service_recovery(issue, level=attempt_num)
+                result['strategy'] = f"ai_suggested_{strategy}"
+                return result
+
+            else:
+                # Unknown strategy - return suggestion for manual execution
+                return {
+                    'strategy': f"ai_suggested_{strategy}",
+                    'success': False,
+                    'message': f"AI suggested: {description} (requires manual execution or strategy not implemented)"
+                }
+
+        except Exception as e:
+            return {
+                'strategy': 'ai_research_execution',
+                'success': False,
+                'message': f"Error executing AI research fix: {e}"
+            }
+
     def execute_learned_strategy(self, issue: Dict, strategy: str) -> Dict:
         """Execute a previously learned successful strategy"""
         # Map strategy name to method

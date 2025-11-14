@@ -232,10 +232,17 @@ class BugScanner:
         return errors
 
     def check_failed_services(self) -> List[Dict]:
-        """Check for failed systemd services"""
+        """
+        Check for failed AND inactive systemd services
+
+        FIX (Nov 14, 2025): Added detection of 'inactive' services that should be running
+        Previously only detected 'failed' services, missing services like host-config-agent
+        that are enabled but not running.
+        """
         failures = []
 
         try:
+            # Check for failed services
             result = subprocess.run(
                 ['systemctl', 'list-units', '--state=failed', '--no-pager'],
                 capture_output=True, text=True, timeout=10
@@ -251,6 +258,54 @@ class BugScanner:
                         'type': 'service_failure',
                         'service': service_name
                     })
+
+            # NEW: Check for enabled but inactive services (should be running but aren't)
+            result_enabled = subprocess.run(
+                ['systemctl', 'list-unit-files', '--state=enabled', '--type=service', '--no-pager'],
+                capture_output=True, text=True, timeout=10
+            )
+
+            enabled_services = []
+            for line in result_enabled.stdout.split('\n'):
+                if '.service' in line and 'enabled' in line:
+                    parts = line.split()
+                    if len(parts) >= 1:
+                        enabled_services.append(parts[0])
+
+            # For each enabled service, check if it's actually running
+            for service in enabled_services:
+                try:
+                    status_result = subprocess.run(
+                        ['systemctl', 'is-active', service],
+                        capture_output=True, text=True, timeout=5
+                    )
+
+                    status = status_result.stdout.strip()
+
+                    # If enabled service is inactive (not running), report it
+                    if status == 'inactive':
+                        # Skip one-shot services and timers (they're supposed to be inactive)
+                        type_result = subprocess.run(
+                            ['systemctl', 'show', '-p', 'Type', service],
+                            capture_output=True, text=True, timeout=5
+                        )
+
+                        service_type = type_result.stdout.strip()
+
+                        # Only report if it's a regular service (not oneshot)
+                        if 'oneshot' not in service_type:
+                            failures.append({
+                                'source': 'systemd',
+                                'message': f'Service {service} is enabled but inactive (should be running)',
+                                'timestamp': datetime.now().isoformat(),
+                                'type': 'service_failure',
+                                'service': service,
+                                'subtype': 'inactive_enabled'
+                            })
+                except Exception:
+                    # Skip services we can't check
+                    pass
+
         except Exception as e:
             print(f"⚠️  Could not check services: {e}")
 
@@ -284,11 +339,19 @@ class BugScanner:
         return failures
 
     def check_http_services(self) -> List[Dict]:
-        """Check HTTP service availability for critical services"""
+        """
+        Check HTTP service availability for critical services
+
+        FIX (Nov 14, 2025): Added Tailscale HTTPS endpoint monitoring
+        Previously missing, causing 502 errors to go undetected
+        """
         failures = []
 
         # Critical HTTP services to monitor
         http_services = [
+            # Tailscale HTTPS endpoint (NEW - Nov 14, 2025)
+            {'name': 'Tailscale HTTPS', 'url': 'https://iac1.tailc58ea3.ts.net', 'timeout': 10},
+            # Local HTTP services
             {'name': 'INSA CRM', 'url': 'http://localhost:8003', 'timeout': 5},
             {'name': 'DefectDojo SOC', 'url': 'http://localhost:8082', 'timeout': 5},
             {'name': 'ERPNext CRM', 'url': 'http://localhost:9000', 'timeout': 10},
