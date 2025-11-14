@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -123,12 +123,11 @@ jobs:
           git add VERSION
           git commit -m "chore(release): v${{ steps.next_version.outputs.version }}"
 
-      - name: Create Git tag
+      - name: Push changes and create tag
         run: |
           git tag -a "v${{ steps.next_version.outputs.version }}" -m "Release v${{ steps.next_version.outputs.version }}"
-          git push origin main --tags
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push origin HEAD:main
+          git push origin "v${{ steps.next_version.outputs.version }}"
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
