@@ -1,0 +1,69 @@
+version: 2
+updates:
+  # Python dependencies (pip/requirements.txt)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+      - "python"
+    reviewers:
+      - "WilBtc"
+    assignees:
+      - "WilBtc"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    # Group minor and patch updates together
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Docker dependencies (Dockerfile)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+      - "docker"
+    reviewers:
+      - "WilBtc"
+    assignees:
+      - "WilBtc"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # GitHub Actions dependencies (.github/workflows/*.yml)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+      - "github-actions"
+    reviewers:
+      - "WilBtc"
+    assignees:
+      - "WilBtc"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
