@@ -40,6 +40,10 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install dependencies
+        run: |
+          pip install pyyaml -q
+
       - name: Load branch protection policy
         id: policy
         run: |
