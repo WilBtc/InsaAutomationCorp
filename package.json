@@ -1,0 +1,36 @@
+{
+  "name": "insa-automation-corp",
+  "version": "1.0.0",
+  "description": "INSA Automation Corp - Industrial Automation & Security Platform",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "danger": "danger ci",
+    "danger-local": "danger pr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WilBtc/InsaAutomationCorp.git"
+  },
+  "keywords": [
+    "automation",
+    "industrial",
+    "security",
+    "iec62443",
+    "crm",
+    "mcp"
+  ],
+  "author": "Wil Aroca <w.aroca@insaing.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.1",
+    "n8n-mcp": "^2.22.9"
+  },
+  "devDependencies": {
+    "danger": "^11.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
