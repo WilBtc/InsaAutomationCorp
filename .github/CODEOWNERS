@@ -1,0 +1,42 @@
+# INSA Automation Corp - Code Ownership
+
+# Default owner for everything
+* @WilBtc
+
+# Critical Infrastructure - Require expert review
+/automation/agents/orchestrator/ @WilBtc
+/automation/agents/github-ci-fixer/ @WilBtc
+
+# Security & Compliance
+/mcp-servers/defectdojo-iec62443/ @WilBtc
+SECURITY.md @WilBtc
+.github/workflows/secret-scan.yml @WilBtc
+.github/workflows/codeql-analysis.yml @WilBtc
+
+# Documentation - Allow broader contributions
+*.md @WilBtc
+/docs/ @WilBtc
+
+# Configuration Files - Extra scrutiny
+/.github/ @WilBtc
+docker-compose*.yml @WilBtc
+Dockerfile @WilBtc
+requirements.txt @WilBtc
+.env* @WilBtc
+
+# Database & Migrations
+*.sql @WilBtc
+/platforms/insa-crm/core/database/ @WilBtc
+
+# MCP Servers
+/mcp-servers/ @WilBtc
+
+# Python Code
+*.py @WilBtc
+
+# Automation Scripts
+/automation/ @WilBtc
+
+# Future: Add team members here when onboarded
+# /platforms/insa-crm/ @team-crm
+# /automation/agents/azure-monitor/ @juan-casas
