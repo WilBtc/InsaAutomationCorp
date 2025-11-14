@@ -14,15 +14,12 @@ env/
 ENV/
 .venv/
 
-# Test files (UPDATED Oct 30, 2025 - Allow tests/ directory for test infrastructure)
-test_*.py
-*_test.py
-# tests/  # COMMENTED OUT - We want to commit our test infrastructure
-*test*.py
+# Test files (but keep core/tests/ for the test suite)
 pytest_cache/
 .pytest_cache/
 htmlcov/
 .coverage
+coverage.xml
 
 # IDE
 .vscode/
@@ -31,11 +28,23 @@ htmlcov/
 *.swo
 *~
 
-# Environment (UPDATED Oct 30, 2025 - Allow .env.example)
+# Environment (but keep .env.example as template)
 .env
 .env.local
 .env.*.local
 !.env.example
+
+# Security - Certificates & Keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets/
+.secrets/
+*.secret
 
 # Logs
 *.log
@@ -85,34 +94,5 @@ docker-compose.*.yml
 # MCP Development
 mcp-servers/*/venv/
 mcp-servers/*/node_modules/
-
-# SSL Certificates & Private Keys (Security Audit Fix - Oct 30, 2025)
-*.pem
-*.key
-*.crt
-*.p12
-*.pfx
-ssl/
-certs/
-certificates/
-
-# Secrets & Credentials
-secrets/
-credentials/
-*.credentials
-*.secret
-.secrets
-
-# Database Dumps & Backups
-*.sql.gz
-*.dump
-backups/
-*.backup
-db_backups/
-
-# Additional Security Patterns
-*.keystore
-*.jks
-*.truststore
-auth_tokens/
-private_keys/
+*.json
+bitrix24_emails_by_user.json
