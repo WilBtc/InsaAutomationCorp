@@ -1,0 +1,55 @@
+name: 🔒 Security Vulnerability
+description: Report a security vulnerability (CONFIDENTIAL)
+title: "[Security]: "
+labels: ["security", "critical", "needs-triage"]
+assignees:
+  - WilBtc
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **IMPORTANT**: Do NOT disclose security details publicly!
+        For public repos, email w.aroca@insaing.com instead.
+
+  - type: textarea
+    id: vulnerability
+    attributes:
+      label: Vulnerability Description
+      description: Describe the security issue
+    validations:
+      required: true
+
+  - type: dropdown
+    id: cvss
+    attributes:
+      label: CVSS Severity
+      options:
+        - Critical (9.0-10.0)
+        - High (7.0-8.9)
+        - Medium (4.0-6.9)
+        - Low (0.1-3.9)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential Impact
+      description: What could an attacker do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction Steps
+      description: How to reproduce (for verification)
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Suggested Fix
+      description: If you have suggestions
