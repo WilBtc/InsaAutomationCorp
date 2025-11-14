@@ -1,0 +1,142 @@
+name: Release Management
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - auto
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get current version
+        id: current_version
+        run: |
+          if [ -f VERSION ]; then
+            echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
+          else
+            echo "version=0.0.0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Calculate next version
+        id: next_version
+        run: |
+          CURRENT="${{ steps.current_version.outputs.version }}"
+          TYPE="${{ github.event.inputs.release_type || 'auto' }}"
+
+          IFS='.' read -ra VERS <<< "$CURRENT"
+          MAJOR="${VERS[0]}"
+          MINOR="${VERS[1]}"
+          PATCH="${VERS[2]}"
+
+          if [ "$TYPE" = "major" ]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif [ "$TYPE" = "minor" ]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif [ "$TYPE" = "patch" ]; then
+            PATCH=$((PATCH + 1))
+          else
+            # Auto-detect from commits
+            PATCH=$((PATCH + 1))
+          fi
+
+          NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "Next version: $NEXT_VERSION"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            COMMITS=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          fi
+
+          # Group by type
+          FEATURES=$(echo "$COMMITS" | grep "^- feat" || true)
+          FIXES=$(echo "$COMMITS" | grep "^- fix" || true)
+          DOCS=$(echo "$COMMITS" | grep "^- docs" || true)
+          CHORES=$(echo "$COMMITS" | grep "^- chore" || true)
+
+          CHANGELOG="## What's Changed\n\n"
+
+          if [ -n "$FEATURES" ]; then
+            CHANGELOG="${CHANGELOG}### ✨ Features\n${FEATURES}\n\n"
+          fi
+
+          if [ -n "$FIXES" ]; then
+            CHANGELOG="${CHANGELOG}### 🐛 Bug Fixes\n${FIXES}\n\n"
+          fi
+
+          if [ -n "$DOCS" ]; then
+            CHANGELOG="${CHANGELOG}### 📝 Documentation\n${DOCS}\n\n"
+          fi
+
+          if [ -n "$CHORES" ]; then
+            CHANGELOG="${CHANGELOG}### 🔧 Chores\n${CHORES}\n\n"
+          fi
+
+          CHANGELOG="${CHANGELOG}\n**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${{ steps.next_version.outputs.version }}"
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Update VERSION file
+        run: |
+          echo "${{ steps.next_version.outputs.version }}" > VERSION
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "chore(release): v${{ steps.next_version.outputs.version }}"
+
+      - name: Create Git tag
+        run: |
+          git tag -a "v${{ steps.next_version.outputs.version }}" -m "Release v${{ steps.next_version.outputs.version }}"
+          git push origin main --tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ steps.next_version.outputs.version }}"
+          release_name: "Release v${{ steps.next_version.outputs.version }}"
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
