@@ -1,0 +1,88 @@
+# Branch Protection Policy for GitHub CI Fixer Agent
+# Automatically enforces protection rules on main branch
+# Last Updated: November 14, 2025
+
+# Main branch protection configuration
+main:
+  # Require status checks to pass before merging
+  required_status_checks:
+    # Require branches to be up to date before merging
+    strict: true
+    contexts:
+      - "CodeQL"
+      - "Secret Scanning"
+      - "Commit Lint"
+      - "PR Review Checks"
+
+  # Require pull request reviews before merging
+  required_pull_request_reviews:
+    # Number of approving reviews required
+    required_approving_review_count: 1
+    # Dismiss stale PR reviews when new commits are pushed
+    dismiss_stale_reviews: true
+    # Require review from code owners
+    require_code_owner_reviews: true
+    # Require reviews from pull request author
+    require_last_push_approval: false
+
+  # Restrictions
+  enforce_admins: true
+  required_linear_history: true
+  allow_force_pushes: false
+  allow_deletions: false
+
+  # Branch restrictions (null = no user restrictions)
+  # WilBtc has full access as repository owner
+  restrictions: null
+
+# Develop branch protection (secondary release branch)
+develop:
+  required_status_checks:
+    strict: true
+    contexts:
+      - "CodeQL"
+      - "Secret Scanning"
+      - "Commit Lint"
+
+  required_pull_request_reviews:
+    required_approving_review_count: 1
+    dismiss_stale_reviews: true
+    require_code_owner_reviews: false
+
+  enforce_admins: false
+  required_linear_history: false
+  allow_force_pushes: false
+  allow_deletions: false
+  restrictions: null
+
+# Release branches (v*.*.* pattern)
+release:
+  pattern: "^release/v\\d+\\.\\d+\\.\\d+$"
+  required_status_checks:
+    strict: true
+    contexts:
+      - "CodeQL"
+      - "Secret Scanning"
+      - "Commit Lint"
+      - "Tests"
+
+  required_pull_request_reviews:
+    required_approving_review_count: 1
+    dismiss_stale_reviews: true
+    require_code_owner_reviews: true
+
+  enforce_admins: true
+  required_linear_history: true
+  allow_force_pushes: false
+  allow_deletions: false
+  restrictions: null
+
+# Policy metadata
+metadata:
+  description: "Automated branch protection enforcement via GitHub CI Fixer Agent"
+  version: "1.0.0"
+  created_at: "2025-11-14T00:00:00Z"
+  managed_by: "GitHub CI Fixer Agent (github_ci_fix_agent.py)"
+  enforcement_frequency: "daily"
+  escalation_on_violation: true
+  auto_report_violations: true
