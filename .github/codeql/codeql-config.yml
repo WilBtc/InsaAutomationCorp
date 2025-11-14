@@ -1,0 +1,23 @@
+name: "INSA CodeQL Configuration"
+
+# Paths to scan
+paths:
+  - automation/
+  - platforms/
+  - mcp-servers/
+  - "**/*.py"
+
+# Paths to exclude
+paths-ignore:
+  - "**/*test*.py"
+  - "**/*_test.py"
+  - "**/venv/**"
+  - "**/node_modules/**"
+  - "**/.git/**"
+  - "**/cad_venv/**"
+  - "**/__pycache__/**"
+
+# Query suites to run
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
