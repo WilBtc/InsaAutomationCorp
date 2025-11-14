@@ -1,0 +1,272 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "insa-automation-corp"
+version = "1.0.0"
+description = "INSA Automation Corp - Autonomous DevOps & CRM Platform"
+readme = "README.md"
+authors = [
+    {name = "Wil Aroca", email = "w.aroca@insaing.com"},
+    {name = "Juan Casas", email = "j.casas@insaing.com"}
+]
+license = {text = "Proprietary"}
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: No Input/Output (Daemon)",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: Other/Proprietary License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Monitoring",
+    "Topic :: System :: Systems Administration",
+]
+dependencies = [
+    "requests>=2.31.0",
+    "click>=8.1.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "aiohttp>=3.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.9.0",
+    "isort>=5.12.0",
+    "ruff>=0.0.290",
+    "pylint>=2.17.0",
+    "mypy>=1.5.0",
+    "radon>=6.0.0",
+    "bandit>=1.7.5",
+    "pre-commit>=3.3.0",
+]
+
+[tool.setuptools]
+packages = ["automation", "platforms"]
+
+# ============================================================================
+# Black - Code Formatter
+# ============================================================================
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+  | __pycache__
+  | venv
+)/
+'''
+
+# ============================================================================
+# isort - Import Sorter
+# ============================================================================
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_mode = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+skip_glob = ["*/migrations/*", "venv/*"]
+known_first_party = ["automation", "platforms", "mcp_servers"]
+known_third_party = ["pydantic", "requests", "click", "dotenv"]
+
+# ============================================================================
+# Ruff - Fast Python Linter
+# ============================================================================
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = [
+    "E",    # pycodestyle errors
+    "F",    # Pyflakes
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "A",    # flake8-builtins
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by black)
+    "E203",   # whitespace before ':'
+    "W503",   # line break before binary operator
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    ".eggs",
+    "*.egg-info",
+    "migrations",
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*.py" = ["A002", "A003"]
+
+# ============================================================================
+# Pylint - Deep Code Analysis
+# ============================================================================
+[tool.pylint.messages_control]
+disable = [
+    "C0330",  # Wrong hanging indentation
+    "C0326",  # Bad whitespace
+    "R0913",  # Too many arguments
+    "R0914",  # Too many local variables
+    "W0212",  # Access to protected member
+    "C0111",  # Missing docstring
+    "R0801",  # Duplicate code
+]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint.basic]
+good-names = ["i", "j", "k", "ex", "Run", "_", "x", "y", "z"]
+
+[tool.pylint.design]
+max-attributes = 7
+
+# ============================================================================
+# mypy - Type Checking
+# ============================================================================
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+disallow_untyped_calls = false
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_optional = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+    "venv.*",
+]
+ignore_errors = true
+
+# ============================================================================
+# pytest - Testing Framework
+# ============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "e2e: marks tests as end-to-end tests",
+]
+norecursedirs = [
+    ".git",
+    ".tox",
+    "dist",
+    "build",
+    "*.egg",
+    "venv",
+    ".venv",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+
+# ============================================================================
+# Coverage - Test Coverage Tracking
+# ============================================================================
+[tool.coverage.run]
+source = ["automation", "platforms", "mcp_servers"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/venv/*",
+    "*/__init__.py",
+    "*/setup.py",
+]
+branch = true
+parallel = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+    "@abstractproperty",
+]
+ignore_errors = false
+precision = 2
+show_missing = true
+skip_covered = false
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# ============================================================================
+# Bandit - Security Scanner
+# ============================================================================
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+skips = ["B101", "B601"]  # B101=assert_used, B601=paramiko_calls
+
+# ============================================================================
+# Radon - Code Metrics
+# ============================================================================
+[tool.radon]
+max-complexity = 10
+max-loc = 1000
+max-locals = 15

@@ -1,9 +1,13 @@
 # INSA Automation Corp - Autonomous Industrial Platform
 
+[![Code Quality](https://github.com/WilBtc/InsaAutomationCorp/workflows/Code%20Quality/badge.svg)](https://github.com/WilBtc/InsaAutomationCorp/actions?query=workflow%3A%22Code+Quality%22)
 [![CodeQL](https://github.com/WilBtc/InsaAutomationCorp/workflows/CodeQL%20Security%20Scan/badge.svg)](https://github.com/WilBtc/InsaAutomationCorp/actions?query=workflow%3A%22CodeQL+Security+Scan%22)
 [![Security Scanning](https://img.shields.io/badge/security-scanning-green.svg)](https://github.com/WilBtc/InsaAutomationCorp/security)
+[![Branch Protection](https://img.shields.io/badge/branch-protected-blueviolet.svg)](.github/BRANCH_PROTECTION.md)
 [![IEC 62443](https://img.shields.io/badge/compliance-IEC%2062443-blue.svg)](./SECURITY.md)
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/badge/linter-ruff-pink)](https://github.com/astral-sh/ruff)
 
 A comprehensive autonomous platform for industrial automation, CRM, and DevSecOps with AI-powered agents.
 
@@ -15,6 +19,30 @@ INSA Automation Corp provides an integrated platform for Oil & Gas and industria
 - Autonomous agent orchestration
 - Industrial cybersecurity monitoring
 - Multi-platform MCP server architecture
+
+## Code Quality
+
+This project maintains strict code quality standards enforced through automated CI/CD checks:
+
+| Tool | Purpose | Configuration |
+|------|---------|---|
+| **Ruff** | Fast linting | `pyproject.toml` |
+| **Pylint** | Deep analysis | `pyproject.toml` |
+| **Black** | Code formatting | 100 char line-length |
+| **isort** | Import sorting | Black-compatible profile |
+| **mypy** | Type checking | Python 3.10+ types |
+| **pytest** | Unit/integration tests | ≥70% coverage |
+| **radon** | Complexity metrics | CC < 10 threshold |
+| **Bandit** | Security scanning | Automated CI/CD |
+
+**View Documentation**: [.github/CODE_QUALITY.md](./.github/CODE_QUALITY.md)
+
+**Run Locally**:
+```bash
+pip install -e ".[dev]"
+black . && isort . && ruff check . --fix
+pytest --cov=automation
+```
 
 ---
 
