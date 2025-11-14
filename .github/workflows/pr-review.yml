@@ -1,0 +1,117 @@
+name: Automated PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  danger:
+    runs-on: ubuntu-latest
+    name: AI-Powered PR Review
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Danger
+        run: npm install -g danger
+
+      - name: Run Danger
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: danger ci
+
+  pr-size-check:
+    runs-on: ubuntu-latest
+    name: Check PR Size
+
+    steps:
+      - name: Check PR size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const additions = pr.additions;
+            const deletions = pr.deletions;
+            const total = additions + deletions;
+
+            let message = '';
+            let label = '';
+
+            if (total > 1000) {
+              label = 'size/XL';
+              message = '⚠️ **Large PR Warning**: This PR has ' + total + ' lines changed. Consider splitting into smaller PRs for easier review.';
+            } else if (total > 500) {
+              label = 'size/L';
+              message = '⚠️ **Medium-Large PR**: This PR has ' + total + ' lines changed. Review may take longer.';
+            } else if (total > 200) {
+              label = 'size/M';
+              message = '✅ **Medium PR**: This PR has ' + total + ' lines changed.';
+            } else {
+              label = 'size/S';
+              message = '✅ **Small PR**: This PR has ' + total + ' lines changed. Easy to review!';
+            }
+
+            // Add comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: message
+            });
+
+            // Add label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: [label]
+            });
+
+  checklist-verification:
+    runs-on: ubuntu-latest
+    name: Verify PR Checklist
+
+    steps:
+      - name: Check checklist completion
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+
+            // Count checkboxes
+            const totalCheckboxes = (body.match(/- \[[ x]\]/g) || []).length;
+            const checkedBoxes = (body.match(/- \[x\]/gi) || []).length;
+
+            if (totalCheckboxes === 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: '⚠️ **Missing Checklist**: Please use the PR template and complete all checklist items.'
+              });
+              core.setFailed('PR template not used');
+            } else if (checkedBoxes < totalCheckboxes) {
+              const percentage = Math.round((checkedBoxes / totalCheckboxes) * 100);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: '📋 **Checklist Progress**: ' + checkedBoxes + '/' + totalCheckboxes + ' items completed (' + percentage + '%)'
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: '✅ **All checklist items completed!** Ready for review.'
+              });
+            }
