@@ -1,0 +1,59 @@
+node_modules
+.aider*
+
+# ========================================
+# SECRET PROTECTION - NEVER COMMIT THESE
+# ========================================
+
+# Environment variables and configs
+.env
+.env.*
+.envrc
+*.env
+*.env.*
+.env.local
+.env.production
+.env.development
+.env.test
+
+# Credentials and secrets
+*secret*
+*secrets*
+*credential*
+*credentials*
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+id_rsa*
+id_ecdsa*
+id_ed25519*
+*.ppk
+
+# Configuration files with secrets
+config.json
+config.local.json
+*-config.json
+.mcp.json.local
+secrets.yml
+secrets.yaml
+
+# Cloud provider configs
+.aws/credentials
+.azure/credentials
+gcp-keyfile.json
+service-account.json
+
+# Database dumps (may contain sensitive data)
+*.sql
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.backup
+*.bak
+*~
+.DS_Store
