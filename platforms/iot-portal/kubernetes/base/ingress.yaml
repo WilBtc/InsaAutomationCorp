@@ -1,0 +1,107 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: insa-iot-api-ingress
+  namespace: insa-iot
+  labels:
+    app: insa-iot-api
+  annotations:
+    # Nginx Ingress Controller
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+
+    # CORS (if needed)
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+
+    # TLS/SSL (cert-manager)
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+spec:
+  tls:
+  - hosts:
+    - api.insa-iot.example.com
+    secretName: insa-iot-api-tls
+
+  rules:
+  - host: api.insa-iot.example.com
+    http:
+      paths:
+      # API endpoints
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: insa-iot-api-service
+            port:
+              number: 80
+
+      # Health checks
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: insa-iot-api-service
+            port:
+              number: 80
+
+      - path: /ready
+        pathType: Exact
+        backend:
+          service:
+            name: insa-iot-api-service
+            port:
+              number: 80
+
+      # Auth endpoints
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: insa-iot-api-service
+            port:
+              number: 80
+
+      # Frontend pages
+      - path: /settings
+        pathType: Exact
+        backend:
+          service:
+            name: insa-iot-api-service
+            port:
+              number: 80
+
+      - path: /profile
+        pathType: Exact
+        backend:
+          service:
+            name: insa-iot-api-service
+            port:
+              number: 80
+
+      - path: /notifications
+        pathType: Exact
+        backend:
+          service:
+            name: insa-iot-api-service
+            port:
+              number: 80
+
+      # Static files
+      - path: /static
+        pathType: Prefix
+        backend:
+          service:
+            name: insa-iot-api-service
+            port:
+              number: 80

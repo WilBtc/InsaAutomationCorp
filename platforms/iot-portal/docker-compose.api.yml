@@ -1,0 +1,109 @@
+version: '3.8'
+
+# INSA IoT Platform - API Stack Docker Compose
+# ==============================================
+# Production-ready API deployment with PostgreSQL, Redis, and FastAPI
+# This complements the existing docker-compose.yml
+
+services:
+  # ====================================
+  # FastAPI Backend (New API Stack)
+  # ====================================
+  api:
+    build:
+      context: ./iot-platform/backend
+      dockerfile: Dockerfile
+    container_name: insa-iot-api
+    environment:
+      # Database
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-iot_user}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-iot_platform}
+
+      # Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/1
+
+      # Authentication
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-generate-a-secure-secret-key-change-me}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+
+      # Keycloak (optional)
+      KEYCLOAK_ENABLED: ${KEYCLOAK_ENABLED:-false}
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL:-http://keycloak:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-insa-iot}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-iot-platform}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
+
+      # Application
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      SQL_ECHO: ${SQL_ECHO:-false}
+
+      # Database Pool
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-20}
+
+      # Server
+      HOST: 0.0.0.0
+      PORT: 8001
+
+    ports:
+      - "${API_PORT:-8001}:8001"
+
+    volumes:
+      - ./iot-platform/static:/app/static:ro
+      - ./logs/api:/app/logs
+
+    networks:
+      - insa-iot-network
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    restart: unless-stopped
+
+  # ====================================
+  # Keycloak (Optional - for OAuth/OIDC)
+  # ====================================
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: insa-iot-keycloak
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/insa_iot
+      KC_DB_USERNAME: iiot_user
+      KC_DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME:-localhost}
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY: edge
+    command:
+      - start-dev
+    ports:
+      - "${KEYCLOAK_PORT:-8080}:8080"
+    networks:
+      - insa-iot-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - with-keycloak
+    restart: unless-stopped
+
+# ====================================
+# NETWORKS (using existing network)
+# ====================================
+networks:
+  insa-iot-network:
+    external: true
