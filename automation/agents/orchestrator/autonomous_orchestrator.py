@@ -106,7 +106,7 @@ class GitHubIntegration:
             return False
 
 class EmailNotifier:
-    """Email notification system for escalations"""
+    """Email notification system for escalations - Updated Nov 15, 2025 for centralized alerts"""
 
     def __init__(self, to_email: str = "w.aroca@insaing.com", smtp_host: str = "localhost", smtp_port: int = 25):
         self.to_email = to_email
@@ -114,10 +114,58 @@ class EmailNotifier:
         self.smtp_host = smtp_host
         self.smtp_port = smtp_port
 
+        # Try to use centralized alert system
+        try:
+            import sys
+            sys.path.insert(0, '/home/wil/automation/agents/shared')
+            from centralized_alert_queue import send_alert
+            self.send_alert = send_alert
+            self.use_centralized = True
+            print("✅ Using centralized alert system")
+        except ImportError as e:
+            self.use_centralized = False
+            print(f"⚠️  Centralized alerts not available, using direct email: {e}")
+
     def send_escalation_email(self, task_id: int, issue_type: str, issue_message: str,
                              github_issue_number: int, github_url: str, fix_attempted: bool) -> bool:
         """Send email notification when issue is escalated to GitHub"""
         try:
+            # Use centralized alert system if available
+            if self.use_centralized:
+                subject = f"Autonomous Orchestrator Alert: Task #{task_id} Escalated"
+                message = f"""Autonomous Task Orchestrator Alert - Human Intervention Required
+
+Task ID: #{task_id}
+Type: {issue_type}
+Auto-fix Attempted: {'Yes ❌ (Failed)' if fix_attempted else 'No (Not fixable automatically)'}
+GitHub Issue: #{github_issue_number}
+
+Error Message:
+{issue_message[:500]}
+
+Action Required:
+This issue requires manual investigation and resolution.
+
+GitHub Issue: {github_url}
+
+---
+Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
+Database: /var/lib/autonomous-orchestrator/tasks.db
+Server: iac1 (100.100.101.1)
+"""
+
+                self.send_alert(
+                    category="service",
+                    priority="HIGH",
+                    subject=subject,
+                    message=message,
+                    source="autonomous-orchestrator"
+                )
+
+                print(f"✅ Escalation alert queued for Task #{task_id}")
+                return True
+
+            # Fallback to direct email (legacy)
             # Create message
             msg = MIMEMultipart('alternative')
             msg['Subject'] = f"🚨 Autonomous Orchestrator Alert: Task #{task_id} Escalated"
@@ -219,6 +267,14 @@ class BugScanner:
                 if result.stdout:
                     lines = result.stdout.strip().split('\n')
                     for line in lines:
+                        # CRITICAL FIX (Nov 18, 2025): Filter out benign Docker DNS errors
+                        # These DNS resolver errors are transient and don't require AI escalation
+                        # Root cause of 771/913 escalations causing OOM (42GB Claude subprocess)
+                        if '[resolver] failed to query external DNS server' in line:
+                            continue
+                        if 'dockerd' in line and 'DNS server' in line:
+                            continue
+
                         if any(pattern.lower() in line.lower() for pattern in self.error_patterns):
                             errors.append({
                                 'source': log_file,
@@ -284,6 +340,21 @@ class BugScanner:
 
                     # If enabled service is inactive (not running), report it
                     if status == 'inactive':
+                        # IGNORE LIST: Services that are SUPPOSED to be inactive (Nov 15, 2025)
+                        # These are one-time services, non-daemons, or optional services
+                        ignore_services = [
+                            'dmesg.service',           # One-time boot service
+                            'open-vm-tools.service',   # VMware tools (not running on bare metal)
+                            'mcp-tailscale.service',   # Optional MCP server
+                            'mcp-docker-local.service',# Optional MCP server
+                            'mcp-local.service',       # Optional MCP server
+                            'tailscale-devops-mcp.service', # Optional MCP server
+                        ]
+
+                        if service in ignore_services:
+                            # Skip - this service is intentionally inactive
+                            continue
+
                         # Skip one-shot services and timers (they're supposed to be inactive)
                         type_result = subprocess.run(
                             ['systemctl', 'show', '-p', 'Type', service],
@@ -335,6 +406,150 @@ class BugScanner:
                         })
         except Exception as e:
             print(f"⚠️  Could not check containers: {e}")
+
+        return failures
+
+    def check_crash_loops(self) -> List[Dict]:
+        """
+        Check for containers in crash-loop state (restarting repeatedly)
+
+        ADDED: November 17, 2025
+        PURPOSE: Detect crash-looping containers (like anh-grafana, code-server)
+        DETECTION: Containers with "Restarting" status
+        """
+        failures = []
+
+        try:
+            # Method 1: Check for "Restarting" status
+            result = subprocess.run(
+                ['docker', 'ps', '-a', '--filter', 'status=restarting',
+                 '--format', '{{.Names}}:{{.Status}}'],
+                capture_output=True, text=True, timeout=10
+            )
+
+            for line in result.stdout.strip().split('\n'):
+                if line and ':' in line:
+                    container, status = line.split(':', 1)
+                    failures.append({
+                        'source': 'docker',
+                        'message': f'🔄 CRASH LOOP: Container {container} is restarting repeatedly: {status}',
+                        'timestamp': datetime.now().isoformat(),
+                        'type': 'container_crash_loop',
+                        'container': container,
+                        'severity': 'HIGH',
+                        'action': 'investigate_logs_and_config'
+                    })
+                    print(f"   🔄 CRASH LOOP DETECTED: {container} - {status}")
+
+        except Exception as e:
+            print(f"⚠️  Could not check for crash loops: {e}")
+
+        return failures
+
+    def check_excessive_restarts(self) -> List[Dict]:
+        """
+        Check for containers with high restart counts
+
+        ADDED: November 17, 2025
+        PURPOSE: Catch containers that restart frequently but may not be in "Restarting" state
+        THRESHOLD: >5 restarts = warning, >10 restarts = critical
+        """
+        failures = []
+
+        try:
+            # Get all running containers
+            containers_result = subprocess.run(
+                ['docker', 'ps', '--format', '{{.Names}}'],
+                capture_output=True, text=True, timeout=10
+            )
+
+            for container in containers_result.stdout.strip().split('\n'):
+                if not container:
+                    continue
+
+                try:
+                    # Get restart count for this container
+                    restart_result = subprocess.run(
+                        ['docker', 'inspect', container, '--format', '{{.RestartCount}}'],
+                        capture_output=True, text=True, timeout=5
+                    )
+
+                    restart_count = restart_result.stdout.strip()
+
+                    try:
+                        count = int(restart_count)
+                    except ValueError:
+                        continue
+
+                    # Alert if restart count is high
+                    if count > 10:
+                        failures.append({
+                            'source': 'docker',
+                            'message': f'⚠️  CRITICAL: Container {container} has restarted {count} times',
+                            'timestamp': datetime.now().isoformat(),
+                            'type': 'excessive_restarts',
+                            'container': container,
+                            'restart_count': count,
+                            'severity': 'CRITICAL',
+                            'action': 'investigate_root_cause'
+                        })
+                        print(f"   ⚠️  CRITICAL RESTARTS: {container} - {count} restarts")
+
+                    elif count > 5:
+                        failures.append({
+                            'source': 'docker',
+                            'message': f'⚠️  WARNING: Container {container} has restarted {count} times',
+                            'timestamp': datetime.now().isoformat(),
+                            'type': 'excessive_restarts',
+                            'container': container,
+                            'restart_count': count,
+                            'severity': 'MEDIUM',
+                            'action': 'monitor_closely'
+                        })
+                        print(f"   ⚠️  FREQUENT RESTARTS: {container} - {count} restarts")
+
+                except Exception:
+                    # Skip containers we can't inspect
+                    continue
+
+        except Exception as e:
+            print(f"⚠️  Could not check restart counts: {e}")
+
+        return failures
+
+    def check_unhealthy_containers(self) -> List[Dict]:
+        """
+        Check for containers with failing health checks
+
+        ADDED: November 17, 2025
+        PURPOSE: Detect containers that are running but unhealthy (like anh-backend, insa-iot-api)
+        DETECTION: Docker health check status = unhealthy
+        """
+        failures = []
+
+        try:
+            result = subprocess.run(
+                ['docker', 'ps', '--filter', 'health=unhealthy',
+                 '--format', '{{.Names}}:{{.Status}}'],
+                capture_output=True, text=True, timeout=10
+            )
+
+            for line in result.stdout.strip().split('\n'):
+                if line and ':' in line:
+                    container, status = line.split(':', 1)
+                    failures.append({
+                        'source': 'docker',
+                        'message': f'💔 UNHEALTHY: Container {container} failing health checks: {status}',
+                        'timestamp': datetime.now().isoformat(),
+                        'type': 'container_unhealthy',
+                        'container': container,
+                        'severity': 'MEDIUM',
+                        'action': 'check_health_endpoint'
+                    })
+                    print(f"   💔 UNHEALTHY CONTAINER: {container} - {status}")
+
+        except Exception as e:
+            print(f"⚠️  Could not check unhealthy containers: {e}")
 
         return failures
 
@@ -796,6 +1011,15 @@ class BugScanner:
 
         print("🔍 Checking containers...")
         all_issues.extend(self.check_failed_containers())
+
+        print("🔄 Checking for crash loops...")
+        all_issues.extend(self.check_crash_loops())
+
+        print("🔄 Checking restart counts...")
+        all_issues.extend(self.check_excessive_restarts())
+
+        print("💔 Checking unhealthy containers...")
+        all_issues.extend(self.check_unhealthy_containers())
 
         print("🔍 Checking HTTP services...")
         all_issues.extend(self.check_http_services())
