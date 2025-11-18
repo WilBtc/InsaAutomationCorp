@@ -28,59 +28,64 @@ jobs:
 
             const labels = [];
 
-            // Component labels
+            // Component labels (only existing labels)
             if (text.includes('github ci') || text.includes('workflow') || text.includes('actions')) {
               labels.push('component:github-ci-fixer');
             }
             if (text.includes('orchestrator') || text.includes('autonomous')) {
               labels.push('component:orchestrator');
             }
-            if (text.includes('mcp') || text.includes('server')) {
-              labels.push('component:mcp-servers');
-            }
             if (text.includes('crm') || text.includes('bitrix')) {
-              labels.push('component:insa-crm');
-            }
-            if (text.includes('azure') || text.includes('monitor')) {
-              labels.push('component:azure-monitor');
-            }
-            if (text.includes('security') || text.includes('vulnerability')) {
-              labels.push('security');
+              labels.push('insa-crm');
             }
             if (text.includes('documentation') || text.includes('docs')) {
               labels.push('documentation');
             }
-
-            // Priority labels (from dropdown)
-            if (text.includes('critical')) {
-              labels.push('priority:critical');
-            } else if (text.includes('high')) {
-              labels.push('priority:high');
-            } else if (text.includes('medium')) {
-              labels.push('priority:medium');
-            } else if (text.includes('low')) {
-              labels.push('priority:low');
+            if (text.includes('ai') || text.includes('agent') || text.includes('rag')) {
+              labels.push('ai');
+            }
+            if (text.includes('automation')) {
+              labels.push('automation');
             }
 
-            // Type labels
-            if (text.includes('performance') || text.includes('slow')) {
-              labels.push('type:performance');
+            // Priority labels (using existing labels)
+            if (text.includes('critical')) {
+              labels.push('critical');
+            } else if (text.includes('high')) {
+              labels.push('high-priority');
+            }
+
+            // Type labels (using existing labels)
+            if (text.includes('bug') || text.includes('error') || text.includes('fail')) {
+              labels.push('bug');
+            }
+            if (text.includes('enhancement') || text.includes('feature')) {
+              labels.push('enhancement');
             }
             if (text.includes('dependency') || text.includes('upgrade')) {
-              labels.push('type:dependency');
-            }
-            if (text.includes('config') || text.includes('configuration')) {
-              labels.push('type:config');
+              labels.push('dependencies');
             }
 
-            // Add labels
+            // Add labels only if they don't already exist on the issue
             if (labels.length > 0) {
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                labels: labels
-              });
+              try {
+                // Get existing labels
+                const existingLabels = issue.labels.map(l => l.name);
+                // Filter out labels that already exist
+                const newLabels = labels.filter(l => !existingLabels.includes(l));
+
+                if (newLabels.length > 0) {
+                  await github.rest.issues.addLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    labels: newLabels
+                  });
+                }
+              } catch (error) {
+                console.log('Error adding labels:', error.message);
+                // Continue even if labeling fails
+              }
             }
 
       - name: Auto-assign based on component
@@ -113,37 +118,47 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const issue = context.payload.issue;
-            const title = issue.title.toLowerCase();
+            try {
+              const issue = context.payload.issue;
+              const title = issue.title.toLowerCase();
 
-            // Get all open issues
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              per_page: 100
-            });
-
-            // Find similar titles
-            const similar = issues.data.filter(i => {
-              if (i.number === issue.number) return false;
-              const similarity = i.title.toLowerCase();
-              return title.includes(similarity) || similarity.includes(title);
-            });
-
-            if (similar.length > 0) {
-              const links = similar.map(i => `#${i.number}`).join(', ');
-              await github.rest.issues.createComment({
+              // Get all open issues
+              const issues = await github.rest.issues.listForRepo({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: issue.number,
-                body: `🔍 **Possible Duplicate**: This issue may be related to ${links}`
+                state: 'open',
+                per_page: 100
               });
 
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                labels: ['possible-duplicate']
+              // Find similar titles
+              const similar = issues.data.filter(i => {
+                if (i.number === issue.number) return false;
+                const similarity = i.title.toLowerCase();
+                return title.includes(similarity) || similarity.includes(title);
               });
+
+              if (similar.length > 0) {
+                const links = similar.map(i => `#${i.number}`).join(', ');
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `🔍 **Possible Duplicate**: This issue may be related to ${links}`
+                });
+
+                // Only add label if it exists
+                try {
+                  await github.rest.issues.addLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    labels: ['duplicate']
+                  });
+                } catch (labelError) {
+                  console.log('Label "duplicate" may not exist:', labelError.message);
+                }
+              }
+            } catch (error) {
+              console.log('Error checking for duplicates:', error.message);
+              // Continue even if duplicate detection fails
             }
