@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: insa-iot
-  labels:
-    app.kubernetes.io/name: insa-iot
-    app.kubernetes.io/part-of: iot-platform
-    environment: production
