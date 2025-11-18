@@ -5,6 +5,10 @@ on:
     - cron: '0 0 * * *'  # Daily at midnight UTC
   workflow_dispatch:  # Manual trigger
 
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
   stale:
     runs-on: ubuntu-latest
