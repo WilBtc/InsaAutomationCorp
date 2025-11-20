@@ -1,0 +1,387 @@
+# ============================================================================
+# Alkhorayef ESP IoT Platform - Git Ignore Rules
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Environment & Secrets
+# ----------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+*.key
+*.pem
+*.crt
+secrets/
+credentials/
+
+# ----------------------------------------------------------------------------
+# Python
+# ----------------------------------------------------------------------------
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ----------------------------------------------------------------------------
+# IDEs & Editors
+# ----------------------------------------------------------------------------
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ----------------------------------------------------------------------------
+# Operating System
+# ----------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ----------------------------------------------------------------------------
+# Application Specific
+# ----------------------------------------------------------------------------
+# Logs
+logs/
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Data files
+data/
+*.csv
+*.tsv
+*.dat
+*.db
+*.sqlite
+*.parquet
+
+# ML Models
+ml-models/
+*.pkl
+*.joblib
+*.h5
+*.hdf5
+*.onnx
+*.pt
+*.pth
+*.bin
+models/*.bin
+models/*.pt
+models/downloads/
+
+# Hugging Face cache
+.cache/
+.huggingface/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Kubernetes
+*.kubeconfig
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# ----------------------------------------------------------------------------
+# Monitoring & Metrics
+# ----------------------------------------------------------------------------
+# Prometheus
+prometheus-data/
+alertmanager-data/
+
+# Grafana
+grafana-data/
+*.db
+
+# ----------------------------------------------------------------------------
+# Backup Files
+# ----------------------------------------------------------------------------
+backups/
+*.backup
+*.bak
+*.dump
+*.sql.gz
+*.tar.gz
+*.zip
+
+# ----------------------------------------------------------------------------
+# Project Specific
+# ----------------------------------------------------------------------------
+# Static generated files
+static/generated/
+static/uploads/
+
+# Test outputs
+test-results/
+test-reports/
+
+# Build artifacts
+build/
+dist/
+out/
+
+# Node modules (if using any JS tooling)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Generated documentation
+docs/generated/
+docs/_build/
+
+# Profiling data
+*.prof
+*.lprof
+.profiling/
+
+# Benchmarking results
+benchmark-results/
+
+# Local configuration overrides
+local.config.json
+local.settings.json
+
+# SSL Certificates (should use secrets management)
+*.crt
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Database migrations (keep committed, but ignore local test migrations)
+# alembic/versions/*.py  # Uncomment if you want to ignore migrations
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml

@@ -1,0 +1,106 @@
+# ============================================================================
+# Alkhorayef ESP IoT Platform - Development Dependencies
+# ============================================================================
+# Additional tools for development, testing, and code quality
+# Install with: pip install -r requirements-dev.txt
+# ============================================================================
+
+# Include base requirements
+-r requirements.txt
+
+# Testing Framework
+# ----------------------------------------------------------------------------
+pytest==7.4.4
+pytest-asyncio==0.23.3              # Async test support
+pytest-cov==4.1.0                   # Coverage measurement
+pytest-mock==3.12.0                 # Mocking support
+pytest-xdist==3.5.0                 # Parallel test execution
+pytest-timeout==2.2.0               # Test timeout
+pytest-benchmark==4.0.0             # Performance benchmarking
+httpx==0.26.0                       # Test HTTP client
+
+# Code Quality & Linting
+# ----------------------------------------------------------------------------
+black==24.1.1                       # Code formatter
+isort==5.13.2                       # Import sorting
+flake8==7.0.0                       # Style guide enforcement
+mypy==1.8.0                         # Static type checking
+pylint==3.0.3                       # Additional linting
+bandit==1.7.6                       # Security linting
+ruff==0.1.14                        # Fast Python linter
+
+# Code Quality Extensions
+# ----------------------------------------------------------------------------
+flake8-docstrings==1.7.0            # Docstring style checking
+flake8-bugbear==23.12.2             # Additional bug detection
+flake8-comprehensions==3.14.0       # Better comprehension checking
+flake8-simplify==0.21.0             # Code simplification suggestions
+pep8-naming==0.13.3                 # PEP 8 naming conventions
+
+# Type Checking Support
+# ----------------------------------------------------------------------------
+types-redis==4.6.0.20240106         # Redis type stubs
+types-requests==2.31.0.20240125     # Requests type stubs
+
+# Documentation
+# ----------------------------------------------------------------------------
+mkdocs==1.5.3                       # Documentation generator
+mkdocs-material==9.5.3              # Material theme
+mkdocstrings[python]==0.24.0        # API documentation from docstrings
+
+# Security & Vulnerability Scanning
+# ----------------------------------------------------------------------------
+pip-audit==2.6.3                    # Security vulnerability scanner
+safety==3.0.1                       # Dependency security checker
+
+# Database Tools
+# ----------------------------------------------------------------------------
+alembic==1.13.1                     # Database migrations (also in main)
+sqlalchemy[asyncio]==2.0.25         # Enhanced SQLAlchemy with async
+
+# Debugging & Profiling
+# ----------------------------------------------------------------------------
+ipython==8.20.0                     # Enhanced Python shell
+ipdb==0.13.13                       # IPython debugger
+py-spy==0.3.14                      # Sampling profiler
+line-profiler==4.1.2                # Line-by-line profiler
+memory-profiler==0.61.0             # Memory profiler
+
+# Development Utilities
+# ----------------------------------------------------------------------------
+python-dotenv==1.0.0                # Load .env files (also in main)
+watchdog==3.0.0                     # File system event monitoring
+pre-commit==3.6.0                   # Git hooks framework
+commitizen==3.13.0                  # Conventional commits
+bumpversion==0.6.0                  # Version bumping
+
+# API Testing & Development
+# ----------------------------------------------------------------------------
+httpie==3.2.2                       # Command-line HTTP client
+faker==22.0.0                       # Generate fake data for testing
+factory-boy==3.3.0                  # Test fixtures
+freezegun==1.4.0                    # Mock datetime for tests
+
+# Notebook Support (Optional)
+# ----------------------------------------------------------------------------
+jupyter==1.0.0                      # Jupyter notebook
+jupyterlab==4.0.10                  # JupyterLab interface
+notebook==7.0.7                     # Jupyter notebook server
+
+# Load Testing
+# ----------------------------------------------------------------------------
+locust==2.20.0                      # Load testing framework
+
+# Monitoring & Debugging (Development)
+# ----------------------------------------------------------------------------
+flask-debugtoolbar==0.14.1          # Debug toolbar (if using Flask)
+werkzeug==3.0.1                     # WSGI utilities
+
+# Code Complexity Analysis
+# ----------------------------------------------------------------------------
+radon==6.0.1                        # Code complexity metrics
+mccabe==0.7.0                       # Cyclomatic complexity checker
+
+# Git Tools
+# ----------------------------------------------------------------------------
+gitpython==3.1.40                   # Git interface

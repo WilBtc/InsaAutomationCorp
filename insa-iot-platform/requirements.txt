@@ -1,0 +1,102 @@
+# ============================================================================
+# Alkhorayef ESP IoT Platform - Production Dependencies
+# ============================================================================
+# Pin all versions for reproducibility and security
+# Last updated: 2025-11-20
+# ============================================================================
+
+# Web Framework
+# ----------------------------------------------------------------------------
+fastapi==0.109.0                    # High-performance async web framework
+uvicorn[standard]==0.27.0           # ASGI server with auto-reload and SSL
+python-multipart==0.0.6             # Form/file upload support
+websockets==12.0                    # WebSocket support for real-time data
+gunicorn==21.2.0                    # Production WSGI/ASGI server with worker management
+
+# Database Drivers
+# ----------------------------------------------------------------------------
+asyncpg==0.29.0                     # Async PostgreSQL driver (high performance)
+psycopg2-binary==2.9.9              # Sync PostgreSQL driver (TimescaleDB compatibility)
+sqlalchemy==2.0.25                  # ORM and query builder
+alembic==1.13.1                     # Database migrations
+
+# Caching & Message Queue
+# ----------------------------------------------------------------------------
+redis==5.0.1                        # Redis client with async support
+hiredis==2.2.3                      # C parser for Redis (performance boost)
+aio-pika==9.3.1                     # Async RabbitMQ client
+pika==1.3.2                         # Sync RabbitMQ client (fallback)
+
+# Time Series & Data Processing
+# ----------------------------------------------------------------------------
+pandas==2.1.4                       # Data manipulation and analysis
+numpy==1.26.2                       # Numerical computing
+scipy==1.11.4                       # Scientific computing
+scikit-learn==1.3.2                 # Machine learning algorithms
+prophet==1.1.5                      # Time series forecasting
+statsmodels==0.14.1                 # Statistical models
+
+# Machine Learning & AI
+# ----------------------------------------------------------------------------
+torch==2.1.2                        # Deep learning framework
+transformers==4.36.2                # Hugging Face transformers
+sentence-transformers==2.2.2        # Sentence embeddings for RAG
+
+# Knowledge Graph
+# ----------------------------------------------------------------------------
+neo4j==5.15.0                       # Neo4j driver for graph database
+networkx==3.2.1                     # Graph algorithms and analysis
+graphiti-core==0.1.0                # Knowledge graph RAG system
+
+# Configuration & Validation
+# ----------------------------------------------------------------------------
+pydantic==2.5.3                     # Data validation and settings management
+pydantic-settings==2.1.0            # Settings from environment variables
+python-dotenv==1.0.0                # Load .env files
+
+# Security & Authentication
+# ----------------------------------------------------------------------------
+python-jose[cryptography]==3.3.0    # JWT token handling
+passlib[bcrypt]==1.7.4              # Password hashing
+cryptography==42.0.0                # Cryptographic recipes and primitives
+
+# HTTP Clients & Utilities
+# ----------------------------------------------------------------------------
+httpx==0.26.0                       # Async HTTP client
+aiofiles==23.2.1                    # Async file I/O
+requests==2.31.0                    # Sync HTTP client (fallback)
+
+# Monitoring & Observability
+# ----------------------------------------------------------------------------
+prometheus-client==0.19.0           # Prometheus metrics exporter
+opentelemetry-api==1.22.0           # OpenTelemetry tracing API
+opentelemetry-sdk==1.22.0           # OpenTelemetry SDK
+opentelemetry-instrumentation-fastapi==0.43b0  # FastAPI auto-instrumentation
+structlog==24.1.0                   # Structured logging
+
+# Development & Testing
+# ----------------------------------------------------------------------------
+pytest==7.4.4                       # Testing framework
+pytest-asyncio==0.23.3              # Async test support
+pytest-cov==4.1.0                   # Code coverage reports
+pytest-mock==3.12.0                 # Mock support for tests
+httpx==0.26.0                       # Test client for FastAPI
+
+# Code Quality
+# ----------------------------------------------------------------------------
+black==24.1.1                       # Code formatter
+flake8==7.0.0                       # Linting and style guide
+mypy==1.8.0                         # Static type checking
+isort==5.13.2                       # Import sorting
+pylint==3.0.3                       # Additional linting
+
+# Documentation
+# ----------------------------------------------------------------------------
+mkdocs==1.5.3                       # Documentation generator
+mkdocs-material==9.5.3              # Material theme for MkDocs
+
+# Production Utilities
+# ----------------------------------------------------------------------------
+python-json-logger==2.0.7           # JSON structured logging
+tenacity==8.2.3                     # Retry logic with exponential backoff
+schedule==1.2.0                     # Job scheduling

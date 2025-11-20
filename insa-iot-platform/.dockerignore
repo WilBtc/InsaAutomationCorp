@@ -1,0 +1,119 @@
+# ============================================================================
+# Alkhorayef ESP IoT Platform - Docker Ignore
+# ============================================================================
+# Exclude files from Docker build context for smaller, faster builds
+# ============================================================================
+
+# Environment files (use --env-file at runtime)
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.dmypy.json
+.tox/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation (build in separate stage if needed)
+docs/
+*.md
+!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Testing
+tests/
+test_*.py
+*_test.py
+pytest.ini
+
+# Logs and databases (mount as volumes)
+logs/
+*.log
+data/
+*.db
+*.sqlite
+
+# ML Models (mount as volume or download at runtime)
+ml-models/
+*.pkl
+*.joblib
+*.h5
+*.pth
+*.pt
+*.bin
+models/*.bin
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# Node modules (if any)
+node_modules/
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
+
+# Docker files (don't include Docker in Docker)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Kubernetes
+*.yaml
+*.yml
+k8s/
+helm/
+
+# Static generated files (regenerate in container)
+static/generated/
+
+# Backup files
+backups/
+*.dump
+*.sql.gz
+*.tar.gz
+
+# Large files
+grafana-data/
+prometheus-data/
