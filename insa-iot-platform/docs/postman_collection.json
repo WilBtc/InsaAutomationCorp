@@ -1,0 +1,372 @@
+{
+  "info": {
+    "name": "Alkhorayef ESP IoT Platform API",
+    "description": "Intelligent ESP pump monitoring and diagnostics platform for oil and gas production optimization.\n\n## Features\n- Real-time telemetry data ingestion\n- AI-powered diagnostic analysis\n- Historical data queries\n- Production-ready health checks\n\n## Base URLs\n- Development: http://localhost:8000\n- Staging: https://staging-api.insaautomation.com\n- Production: https://api.insaautomation.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "well_id",
+      "value": "WELL-001",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health Checks",
+      "item": [
+        {
+          "name": "General Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "General health check endpoint that combines liveness and readiness checks."
+          },
+          "response": []
+        },
+        {
+          "name": "Liveness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/live",
+              "host": ["{{base_url}}"],
+              "path": ["health", "live"]
+            },
+            "description": "Kubernetes liveness probe endpoint. Returns 200 if the application process is alive."
+          },
+          "response": []
+        },
+        {
+          "name": "Readiness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/ready",
+              "host": ["{{base_url}}"],
+              "path": ["health", "ready"]
+            },
+            "description": "Kubernetes readiness probe endpoint. Returns 200 if the application is ready to serve traffic."
+          },
+          "response": []
+        },
+        {
+          "name": "Startup Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/startup",
+              "host": ["{{base_url}}"],
+              "path": ["health", "startup"]
+            },
+            "description": "Kubernetes startup probe endpoint. Returns 200 when the application has completed initialization."
+          },
+          "response": []
+        }
+      ],
+      "description": "Kubernetes-style health check endpoints for monitoring application status."
+    },
+    {
+      "name": "Telemetry",
+      "item": [
+        {
+          "name": "Ingest Single Reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"well_id\": \"{{well_id}}\",\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"flow_rate\": 2500.5,\n  \"pip\": 250.0,\n  \"motor_current\": 45.2,\n  \"motor_temp\": 85.5,\n  \"vibration\": 3.2,\n  \"vsd_frequency\": 60.0,\n  \"flow_variance\": 15.0,\n  \"torque\": 120.5,\n  \"gor\": 150.0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/telemetry/ingest",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "telemetry", "ingest"]
+            },
+            "description": "Ingest a single ESP telemetry reading. The reading is stored in TimescaleDB and cached in Redis."
+          },
+          "response": []
+        },
+        {
+          "name": "Ingest Batch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"readings\": [\n    {\n      \"well_id\": \"{{well_id}}\",\n      \"timestamp\": \"{{$isoTimestamp}}\",\n      \"flow_rate\": 2500.5,\n      \"pip\": 250.0,\n      \"motor_current\": 45.2,\n      \"motor_temp\": 85.5,\n      \"vibration\": 3.2,\n      \"vsd_frequency\": 60.0,\n      \"flow_variance\": 15.0,\n      \"torque\": 120.5,\n      \"gor\": 150.0\n    },\n    {\n      \"well_id\": \"{{well_id}}\",\n      \"timestamp\": \"{{$isoTimestamp}}\",\n      \"flow_rate\": 2510.2,\n      \"pip\": 251.5,\n      \"motor_current\": 45.5,\n      \"motor_temp\": 86.0,\n      \"vibration\": 3.3,\n      \"vsd_frequency\": 60.0,\n      \"flow_variance\": 14.5,\n      \"torque\": 121.0,\n      \"gor\": 151.0\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/telemetry/batch",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "telemetry", "batch"]
+            },
+            "description": "Ingest multiple ESP telemetry readings in a single request. Optimized for high-throughput scenarios."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Latest Reading",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/telemetry/wells/{{well_id}}/latest",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "telemetry", "wells", "{{well_id}}", "latest"]
+            },
+            "description": "Get the most recent telemetry reading for a specific well. Results are cached in Redis for fast retrieval."
+          },
+          "response": []
+        },
+        {
+          "name": "Get History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/telemetry/wells/{{well_id}}/history?hours=24",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "telemetry", "wells", "{{well_id}}", "history"],
+              "query": [
+                {
+                  "key": "hours",
+                  "value": "24",
+                  "description": "Number of hours of history (max 168)"
+                }
+              ]
+            },
+            "description": "Get historical telemetry readings for a specific well. Query up to 7 days (168 hours) of data."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Well Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/telemetry/wells/{{well_id}}/summary",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "telemetry", "wells", "{{well_id}}", "summary"]
+            },
+            "description": "Get aggregated summary statistics for a well over the last 24 hours."
+          },
+          "response": []
+        }
+      ],
+      "description": "ESP telemetry data ingestion and retrieval operations."
+    },
+    {
+      "name": "Diagnostics",
+      "item": [
+        {
+          "name": "Analyze Telemetry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"well_id\": \"{{well_id}}\",\n  \"telemetry\": {\n    \"timestamp\": \"{{$isoTimestamp}}\",\n    \"flow_rate\": 2500.5,\n    \"pip\": 250.0,\n    \"motor_current\": 45.2,\n    \"motor_temp\": 95.5,\n    \"vibration\": 3.2,\n    \"vsd_frequency\": 60.0,\n    \"flow_variance\": 15.0,\n    \"torque\": 120.5,\n    \"gor\": 150.0\n  },\n  \"store_result\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/diagnostics/analyze",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "diagnostics", "analyze"]
+            },
+            "description": "Analyze ESP telemetry data and generate diagnostic result using AI decision tree."
+          },
+          "response": []
+        },
+        {
+          "name": "Analyze Latest",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/diagnostics/wells/{{well_id}}/analyze-latest?store_result=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "diagnostics", "wells", "{{well_id}}", "analyze-latest"],
+              "query": [
+                {
+                  "key": "store_result",
+                  "value": "true",
+                  "description": "Whether to store the diagnostic result"
+                }
+              ]
+            },
+            "description": "Analyze the most recent telemetry reading for a well. Convenience endpoint that fetches latest data and runs diagnostics."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Diagnostic History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/diagnostics/wells/{{well_id}}/history?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "diagnostics", "wells", "{{well_id}}", "history"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Maximum number of results (max 100)"
+                }
+              ]
+            },
+            "description": "Get historical diagnostic results for a specific well."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Critical Diagnostics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/diagnostics/critical?limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "diagnostics", "critical"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Maximum number of results (max 100)"
+                }
+              ]
+            },
+            "description": "Get recent critical diagnostic results across all wells."
+          },
+          "response": []
+        }
+      ],
+      "description": "AI-powered diagnostic analysis and result retrieval operations."
+    },
+    {
+      "name": "Documentation",
+      "item": [
+        {
+          "name": "Get OpenAPI Spec",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/openapi.yaml",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "openapi.yaml"]
+            },
+            "description": "Get the OpenAPI 3.0 specification file."
+          },
+          "response": []
+        },
+        {
+          "name": "Open Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/docs",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "docs"]
+            },
+            "description": "Open Swagger UI for interactive API documentation."
+          },
+          "response": []
+        },
+        {
+          "name": "Open ReDoc",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/redoc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "redoc"]
+            },
+            "description": "Open ReDoc for alternative API documentation view."
+          },
+          "response": []
+        }
+      ],
+      "description": "API documentation endpoints."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-generate ISO timestamp for telemetry readings",
+          "pm.variables.set('current_timestamp', new Date().toISOString());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script - runs after every request",
+          "",
+          "// Check response time",
+          "pm.test('Response time is acceptable', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "// Check content type",
+          "pm.test('Content-Type is application/json', function () {",
+          "    pm.response.to.have.header('Content-Type');",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "});"
+        ]
+      }
+    }
+  ]
+}
