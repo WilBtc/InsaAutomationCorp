@@ -20,6 +20,8 @@ from app.api import (
     register_response_handlers
 )
 from app.api.routes.auth import auth_bp
+from app.api.routes.sse import sse_bp
+from app.api.routes.ml import ml_bp
 from app.api.middleware.monitoring import setup_monitoring_middleware
 
 
@@ -121,8 +123,10 @@ def create_app(config_override: Optional[dict] = None) -> Flask:
     app.register_blueprint(telemetry_bp)
     app.register_blueprint(diagnostics_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(sse_bp)
+    app.register_blueprint(ml_bp)
     app.register_blueprint(docs_bp)
-    logger.info("API routes registered")
+    logger.info("API routes registered (including SSE and ML)")
 
     # Register error handlers
     register_error_handlers(app)
@@ -146,7 +150,12 @@ def create_app(config_override: Optional[dict] = None) -> Flask:
                 "health": "/health",
                 "authentication": "/api/v1/auth",
                 "telemetry": "/api/v1/telemetry",
-                "diagnostics": "/api/v1/diagnostics"
+                "diagnostics": "/api/v1/diagnostics",
+                "ml_analytics": "/api/v1/ml",
+                "realtime": {
+                    "websocket": "ws://HOST:PORT/socket.io",
+                    "sse": "/api/v1/sse/stream/<well_id>"
+                }
             },
             "documentation": {
                 "landing": "/api/v1/docs/landing",

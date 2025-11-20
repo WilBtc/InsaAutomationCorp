@@ -112,6 +112,71 @@ class LoggingConfig:
 
 
 @dataclass
+class RateLimitConfig:
+    """Rate limiting configuration."""
+
+    # Enable/disable rate limiting
+    enabled: bool = field(default_factory=lambda: os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true")
+
+    # Default limits per role (requests per minute)
+    admin_per_minute: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_ADMIN_PER_MINUTE", "1000")))
+    admin_per_hour: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_ADMIN_PER_HOUR", "50000")))
+    admin_per_day: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_ADMIN_PER_DAY", "1000000")))
+
+    operator_per_minute: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_OPERATOR_PER_MINUTE", "500")))
+    operator_per_hour: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_OPERATOR_PER_HOUR", "25000")))
+    operator_per_day: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_OPERATOR_PER_DAY", "500000")))
+
+    viewer_per_minute: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_VIEWER_PER_MINUTE", "100")))
+    viewer_per_hour: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_VIEWER_PER_HOUR", "5000")))
+    viewer_per_day: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_VIEWER_PER_DAY", "100000")))
+
+    anonymous_per_minute: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_ANONYMOUS_PER_MINUTE", "10")))
+    anonymous_per_hour: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_ANONYMOUS_PER_HOUR", "100")))
+    anonymous_per_day: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_ANONYMOUS_PER_DAY", "1000")))
+
+    # Global rate limit (across all users)
+    global_per_minute: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_GLOBAL_PER_MINUTE", "10000")))
+
+    # Burst handling
+    burst_multiplier: float = field(default_factory=lambda: float(os.getenv("RATE_LIMIT_BURST_MULTIPLIER", "2.0")))
+    burst_duration_seconds: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_BURST_DURATION", "10")))
+
+    # Whitelisted IPs (comma-separated)
+    whitelisted_ips: List[str] = field(
+        default_factory=lambda: [ip.strip() for ip in os.getenv("RATE_LIMIT_WHITELIST_IPS", "").split(",") if ip.strip()]
+    )
+
+    # Endpoint-specific overrides
+    telemetry_batch_per_minute: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_TELEMETRY_BATCH_PER_MINUTE", "50")))
+    ml_train_per_hour: int = field(default_factory=lambda: int(os.getenv("RATE_LIMIT_ML_TRAIN_PER_HOUR", "10")))
+
+    def __post_init__(self) -> None:
+        """Validate rate limit configuration."""
+        # Validate burst multiplier
+        if self.burst_multiplier < 1.0:
+            raise ConfigurationError(
+                message="Burst multiplier must be >= 1.0",
+                config_key="RATE_LIMIT_BURST_MULTIPLIER"
+            )
+
+        # Validate limits are positive
+        limits = [
+            self.admin_per_minute, self.admin_per_hour, self.admin_per_day,
+            self.operator_per_minute, self.operator_per_hour, self.operator_per_day,
+            self.viewer_per_minute, self.viewer_per_hour, self.viewer_per_day,
+            self.anonymous_per_minute, self.anonymous_per_hour, self.anonymous_per_day,
+            self.global_per_minute
+        ]
+
+        if any(limit < 1 for limit in limits):
+            raise ConfigurationError(
+                message="All rate limits must be positive integers",
+                config_key="RATE_LIMIT_*"
+            )
+
+
+@dataclass
 class SecurityConfig:
     """Security configuration."""
 
@@ -139,7 +204,7 @@ class SecurityConfig:
         default_factory=lambda: os.getenv("CORS_ORIGINS", "*").split(",")
     )
 
-    # Rate Limiting
+    # Legacy rate limiting (deprecated - use RateLimitConfig)
     rate_limit_requests: int = field(
         default_factory=lambda: int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
     )
@@ -210,6 +275,7 @@ class Config:
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     security: SecurityConfig = field(default_factory=SecurityConfig)
     telemetry: TelemetryConfig = field(default_factory=TelemetryConfig)
+    rate_limit: RateLimitConfig = field(default_factory=RateLimitConfig)
 
     def __post_init__(self) -> None:
         """Validate main configuration."""

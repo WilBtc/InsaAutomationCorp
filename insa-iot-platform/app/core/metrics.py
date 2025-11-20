@@ -252,6 +252,82 @@ timescaledb_query_cache_hit_rate = Gauge(
 
 
 # ============================================================================
+# Real-Time Streaming Metrics
+# ============================================================================
+
+websocket_connections = Gauge(
+    "websocket_connections",
+    "Number of active WebSocket connections",
+    ["status"],
+    registry=REGISTRY
+)
+
+websocket_messages = Counter(
+    "websocket_messages_total",
+    "Total number of WebSocket messages sent",
+    ["message_type", "well_id"],
+    registry=REGISTRY
+)
+
+websocket_errors = Counter(
+    "websocket_errors_total",
+    "Total number of WebSocket errors",
+    ["error_type"],
+    registry=REGISTRY
+)
+
+websocket_subscriptions = Gauge(
+    "websocket_subscriptions",
+    "Number of active WebSocket subscriptions",
+    ["well_id"],
+    registry=REGISTRY
+)
+
+sse_connections = Gauge(
+    "sse_connections",
+    "Number of active SSE connections",
+    ["well_id"],
+    registry=REGISTRY
+)
+
+sse_messages = Counter(
+    "sse_messages_total",
+    "Total number of SSE messages sent",
+    ["message_type", "well_id"],
+    registry=REGISTRY
+)
+
+sse_errors = Counter(
+    "sse_errors_total",
+    "Total number of SSE errors",
+    ["error_type"],
+    registry=REGISTRY
+)
+
+realtime_publishes = Counter(
+    "realtime_publishes_total",
+    "Total number of real-time publishes",
+    ["publish_type", "well_id"],
+    registry=REGISTRY
+)
+
+realtime_publish_errors = Counter(
+    "realtime_publish_errors_total",
+    "Total number of real-time publish errors",
+    ["publish_type", "error_type"],
+    registry=REGISTRY
+)
+
+realtime_publish_duration = Histogram(
+    "realtime_publish_duration_seconds",
+    "Real-time publish duration in seconds",
+    ["publish_type"],
+    buckets=(0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0),
+    registry=REGISTRY
+)
+
+
+# ============================================================================
 # System Resource Metrics
 # ============================================================================
 

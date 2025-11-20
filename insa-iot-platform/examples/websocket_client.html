@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alkhorayef ESP IoT Platform - WebSocket Client</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .connection-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status.connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.disconnected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status.connecting {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .subscriptions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .subscription-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .telemetry-display {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .telemetry-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .telemetry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .well-id {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .telemetry-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+
+        .data-label {
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .data-value {
+            color: #1f2937;
+        }
+
+        .alert {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .log-section {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .log-entry.info {
+            color: #60a5fa;
+        }
+
+        .log-entry.success {
+            color: #34d399;
+        }
+
+        .log-entry.error {
+            color: #f87171;
+        }
+
+        .log-entry.warning {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Alkhorayef ESP IoT Platform - Real-Time WebSocket Client</h1>
+            <p>Connect to real-time telemetry streams from ESP wells using WebSocket technology</p>
+        </div>
+
+        <div class="content">
+            <!-- Connection Section -->
+            <div class="connection-section">
+                <h2>
+                    Connection
+                    <span id="connectionStatus" class="status disconnected">Disconnected</span>
+                </h2>
+
+                <div class="form-group">
+                    <label for="serverUrl">Server URL</label>
+                    <input type="text" id="serverUrl" value="http://localhost:8000" placeholder="http://localhost:8000">
+                </div>
+
+                <div class="form-group">
+                    <label for="jwtToken">JWT Token</label>
+                    <input type="password" id="jwtToken" placeholder="Enter your JWT token">
+                </div>
+
+                <div class="button-group">
+                    <button id="connectBtn" class="btn-primary" onclick="connect()">Connect</button>
+                    <button id="disconnectBtn" class="btn-danger" onclick="disconnect()" disabled>Disconnect</button>
+                    <button class="btn-secondary" onclick="getStats()">Get Stats</button>
+                </div>
+            </div>
+
+            <!-- Subscriptions Section -->
+            <div class="subscriptions">
+                <h2>Well Subscriptions</h2>
+                <div class="form-group">
+                    <label for="wellId">Well ID</label>
+                    <input type="text" id="wellId" placeholder="e.g., WELL-001">
+                </div>
+                <div class="button-group">
+                    <button class="btn-success" onclick="subscribe()">Subscribe</button>
+                    <button class="btn-danger" onclick="unsubscribe()">Unsubscribe</button>
+                </div>
+                <div id="subscriptionList" style="margin-top: 15px;"></div>
+            </div>
+
+            <!-- Telemetry Display -->
+            <div class="telemetry-display">
+                <h2>Live Telemetry Updates</h2>
+                <div id="telemetryContainer"></div>
+            </div>
+
+            <!-- Connection Log -->
+            <div class="log-section">
+                <h3 style="margin-bottom: 10px;">Connection Log</h3>
+                <div id="logContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let subscriptions = new Set();
+        let telemetryData = {};
+
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.insertBefore(entry, logContainer.firstChild);
+
+            // Keep only last 100 entries
+            while (logContainer.children.length > 100) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+
+        function updateConnectionStatus(status) {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+
+        function connect() {
+            const serverUrl = document.getElementById('serverUrl').value;
+            const token = document.getElementById('jwtToken').value;
+
+            if (!token) {
+                addLog('Please enter a JWT token', 'error');
+                alert('Please enter a JWT token');
+                return;
+            }
+
+            addLog('Connecting to server...', 'info');
+            updateConnectionStatus('connecting');
+
+            socket = io(serverUrl, {
+                auth: {
+                    token: token
+                },
+                transports: ['websocket', 'polling']
+            });
+
+            socket.on('connect', () => {
+                addLog('Connected to server successfully!', 'success');
+                updateConnectionStatus('connected');
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = false;
+            });
+
+            socket.on('connected', (data) => {
+                addLog(`Welcome message received: ${data.message}`, 'success');
+                addLog(`User: ${data.username} (${data.user_id})`, 'info');
+            });
+
+            socket.on('disconnect', () => {
+                addLog('Disconnected from server', 'warning');
+                updateConnectionStatus('disconnected');
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+            });
+
+            socket.on('pong', (data) => {
+                addLog('Heartbeat received', 'info');
+            });
+
+            socket.on('subscribed', (data) => {
+                subscriptions.add(data.well_id);
+                updateSubscriptionList();
+                addLog(`Subscribed to ${data.well_id}`, 'success');
+            });
+
+            socket.on('unsubscribed', (data) => {
+                subscriptions.delete(data.well_id);
+                updateSubscriptionList();
+                addLog(`Unsubscribed from ${data.well_id}`, 'info');
+            });
+
+            socket.on('telemetry_update', (data) => {
+                displayTelemetry(data);
+                addLog(`Telemetry update for ${data.well_id}`, 'info');
+            });
+
+            socket.on('alert', (data) => {
+                displayAlert(data);
+                addLog(`ALERT for ${data.well_id}: ${data.alert.type}`, 'warning');
+            });
+
+            socket.on('stats', (data) => {
+                addLog('Statistics received', 'info');
+                console.log('Stats:', data);
+            });
+
+            socket.on('error', (data) => {
+                addLog(`Error: ${data.message}`, 'error');
+            });
+
+            socket.on('connect_error', (error) => {
+                addLog(`Connection error: ${error.message}`, 'error');
+                updateConnectionStatus('disconnected');
+            });
+
+            // Start heartbeat
+            setInterval(() => {
+                if (socket && socket.connected) {
+                    socket.emit('ping');
+                }
+            }, 25000);
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                subscriptions.clear();
+                updateSubscriptionList();
+                addLog('Disconnected by user', 'info');
+            }
+        }
+
+        function subscribe() {
+            const wellId = document.getElementById('wellId').value;
+            if (!wellId) {
+                alert('Please enter a well ID');
+                return;
+            }
+
+            if (!socket || !socket.connected) {
+                alert('Please connect first');
+                return;
+            }
+
+            socket.emit('subscribe', { well_id: wellId });
+        }
+
+        function unsubscribe() {
+            const wellId = document.getElementById('wellId').value;
+            if (!wellId) {
+                alert('Please enter a well ID');
+                return;
+            }
+
+            if (!socket || !socket.connected) {
+                alert('Please connect first');
+                return;
+            }
+
+            socket.emit('unsubscribe', { well_id: wellId });
+        }
+
+        function getStats() {
+            if (!socket || !socket.connected) {
+                alert('Please connect first');
+                return;
+            }
+
+            socket.emit('get_stats');
+        }
+
+        function updateSubscriptionList() {
+            const listEl = document.getElementById('subscriptionList');
+            listEl.innerHTML = '';
+
+            if (subscriptions.size === 0) {
+                listEl.innerHTML = '<p style="color: #6b7280;">No active subscriptions</p>';
+                return;
+            }
+
+            subscriptions.forEach(wellId => {
+                const item = document.createElement('div');
+                item.className = 'subscription-item';
+                item.innerHTML = `
+                    <span>${wellId}</span>
+                    <button class="btn-danger" style="padding: 5px 10px;" onclick="unsubscribeById('${wellId}')">
+                        Remove
+                    </button>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        function unsubscribeById(wellId) {
+            if (socket && socket.connected) {
+                socket.emit('unsubscribe', { well_id: wellId });
+            }
+        }
+
+        function displayTelemetry(data) {
+            telemetryData[data.well_id] = data;
+
+            const container = document.getElementById('telemetryContainer');
+            const card = document.createElement('div');
+            card.className = 'telemetry-card';
+            card.innerHTML = `
+                <div class="telemetry-header">
+                    <span class="well-id">${data.well_id}</span>
+                    <span class="timestamp">${new Date(data.timestamp).toLocaleString()}</span>
+                </div>
+                <div class="telemetry-data">
+                    <div class="data-item">
+                        <span class="data-label">Flow Rate:</span>
+                        <span class="data-value">${data.data.flow_rate?.toFixed(2) || 'N/A'} bbl/day</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">PIP:</span>
+                        <span class="data-value">${data.data.pip?.toFixed(2) || 'N/A'} psi</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Motor Current:</span>
+                        <span class="data-value">${data.data.motor_current?.toFixed(2) || 'N/A'} A</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Motor Temp:</span>
+                        <span class="data-value">${data.data.motor_temp?.toFixed(2) || 'N/A'} °C</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Vibration:</span>
+                        <span class="data-value">${data.data.vibration?.toFixed(2) || 'N/A'} mm/s</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">VSD Frequency:</span>
+                        <span class="data-value">${data.data.vsd_frequency?.toFixed(2) || 'N/A'} Hz</span>
+                    </div>
+                </div>
+            `;
+
+            container.insertBefore(card, container.firstChild);
+
+            // Keep only last 20 entries
+            while (container.children.length > 20) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        function displayAlert(data) {
+            const container = document.getElementById('telemetryContainer');
+            const card = document.createElement('div');
+            card.className = 'telemetry-card alert';
+            card.innerHTML = `
+                <div class="telemetry-header">
+                    <span class="well-id">⚠️ ALERT: ${data.well_id}</span>
+                    <span class="timestamp">${new Date(data.timestamp).toLocaleString()}</span>
+                </div>
+                <div style="margin-top: 10px;">
+                    <strong>Type:</strong> ${data.alert.type}<br>
+                    <strong>Severity:</strong> ${data.alert.severity}<br>
+                    <strong>Message:</strong> ${data.alert.message}
+                </div>
+            `;
+
+            container.insertBefore(card, container.firstChild);
+        }
+
+        // Add welcome log on page load
+        addLog('WebSocket client ready. Enter your credentials to connect.', 'info');
+    </script>
+</body>
+</html>

@@ -40,6 +40,43 @@ class PlatformException(Exception):
         }
 
 
+class RateLimitExceeded(PlatformException):
+    """Raised when rate limit is exceeded."""
+
+    def __init__(
+        self,
+        message: str = "Rate limit exceeded",
+        limit: Optional[int] = None,
+        retry_after: Optional[int] = None,
+        reset_at: Optional[int] = None,
+        **kwargs
+    ) -> None:
+        """
+        Initialize rate limit exception.
+
+        Args:
+            message: Error message
+            limit: Rate limit that was exceeded
+            retry_after: Seconds until rate limit resets
+            reset_at: Unix timestamp when limit resets
+            **kwargs: Additional arguments for PlatformException
+        """
+        super().__init__(message, error_code="RATE_LIMIT_EXCEEDED", **kwargs)
+        self.limit = limit
+        self.retry_after = retry_after
+        self.reset_at = reset_at
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert exception to dictionary format."""
+        result = super().to_dict()
+        result.update({
+            "limit": self.limit,
+            "retry_after": self.retry_after,
+            "reset_at": self.reset_at
+        })
+        return result
+
+
 class ValidationError(PlatformException):
     """Raised when input validation fails."""
 
@@ -285,6 +322,56 @@ class ConfigurationError(PlatformException):
         super().__init__(
             message=message,
             error_code="CONFIGURATION_ERROR",
+            details=details,
+            **kwargs
+        )
+
+
+class ConflictError(PlatformException):
+    """Raised when a resource conflict occurs (e.g., duplicate resource)."""
+
+    def __init__(
+        self,
+        message: str = "Resource conflict",
+        **kwargs
+    ) -> None:
+        """
+        Initialize conflict error.
+
+        Args:
+            message: Error message
+            **kwargs: Additional error details
+        """
+        super().__init__(
+            message=message,
+            error_code="CONFLICT",
+            **kwargs
+        )
+
+
+class QuotaExceededError(PlatformException):
+    """Raised when tenant quota is exceeded."""
+
+    def __init__(
+        self,
+        message: str = "Quota exceeded",
+        quota_type: Optional[str] = None,
+        **kwargs
+    ) -> None:
+        """
+        Initialize quota exceeded error.
+
+        Args:
+            message: Error message
+            quota_type: Type of quota exceeded (hourly, daily, storage, etc.)
+            **kwargs: Additional error details
+        """
+        details = kwargs.pop("details", {})
+        if quota_type:
+            details["quota_type"] = quota_type
+        super().__init__(
+            message=message,
+            error_code="QUOTA_EXCEEDED",
             details=details,
             **kwargs
         )

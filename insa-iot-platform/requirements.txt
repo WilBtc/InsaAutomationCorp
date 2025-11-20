@@ -8,11 +8,15 @@
 # Web Framework
 # ----------------------------------------------------------------------------
 flask==3.0.0                        # Flask web framework for API
+flask-socketio==5.3.4               # WebSocket support for Flask
+python-socketio==5.9.0              # Python WebSocket client/server library
 fastapi==0.109.0                    # High-performance async web framework
 uvicorn[standard]==0.27.0           # ASGI server with auto-reload and SSL
 python-multipart==0.0.6             # Form/file upload support
 websockets==12.0                    # WebSocket support for real-time data
 gunicorn==21.2.0                    # Production WSGI/ASGI server with worker management
+gevent==23.9.1                      # Async networking library for SocketIO
+gevent-websocket==0.10.1            # WebSocket support for gevent
 
 # Database Drivers
 # ----------------------------------------------------------------------------
@@ -42,6 +46,7 @@ statsmodels==0.14.1                 # Statistical models
 torch==2.1.2                        # Deep learning framework
 transformers==4.36.2                # Hugging Face transformers
 sentence-transformers==2.2.2        # Sentence embeddings for RAG
+joblib==1.3.2                       # Model serialization and persistence
 
 # Knowledge Graph
 # ----------------------------------------------------------------------------

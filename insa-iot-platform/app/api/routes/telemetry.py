@@ -19,11 +19,13 @@ from app.core import (
 )
 from app.db import ESPTelemetry, TelemetryBatch
 from app.services import TelemetryService
+from app.services.realtime_publisher import get_realtime_publisher
 
 
 logger = get_logger(__name__)
 telemetry_bp = Blueprint("telemetry", __name__, url_prefix="/api/v1/telemetry")
 telemetry_service = TelemetryService()
+realtime_publisher = get_realtime_publisher()
 
 
 @telemetry_bp.route("/ingest", methods=["POST"])
@@ -89,6 +91,31 @@ def ingest_telemetry() -> Response:
 
         # Ingest telemetry
         telemetry_id = telemetry_service.ingest_telemetry(telemetry)
+
+        # Publish real-time update
+        try:
+            realtime_publisher.publish_telemetry_update(
+                well_id=telemetry.well_id,
+                telemetry_data={
+                    "telemetry_id": telemetry_id,
+                    "timestamp": telemetry.timestamp.isoformat(),
+                    "flow_rate": telemetry.flow_rate,
+                    "pip": telemetry.pip,
+                    "motor_current": telemetry.motor_current,
+                    "motor_temp": telemetry.motor_temp,
+                    "vibration": telemetry.vibration,
+                    "vsd_frequency": telemetry.vsd_frequency,
+                    "flow_variance": telemetry.flow_variance,
+                    "torque": telemetry.torque,
+                    "gor": telemetry.gor
+                }
+            )
+        except Exception as e:
+            # Log but don't fail the request
+            logger.warning(
+                f"Failed to publish real-time update: {e}",
+                extra={"extra_fields": {"well_id": telemetry.well_id}}
+            )
 
         # Log audit trail
         log_audit(
@@ -193,6 +220,42 @@ def ingest_batch() -> Response:
         # Create batch and ingest
         batch = TelemetryBatch(readings=readings)
         result = telemetry_service.ingest_batch(batch)
+
+        # Publish real-time updates for batch
+        try:
+            # Group readings by well_id and publish
+            well_updates = {}
+            for reading in readings:
+                well_id = reading.well_id
+                if well_id not in well_updates:
+                    well_updates[well_id] = []
+
+                well_updates[well_id].append({
+                    "well_id": well_id,
+                    "data": {
+                        "timestamp": reading.timestamp.isoformat(),
+                        "flow_rate": reading.flow_rate,
+                        "pip": reading.pip,
+                        "motor_current": reading.motor_current,
+                        "motor_temp": reading.motor_temp,
+                        "vibration": reading.vibration,
+                        "vsd_frequency": reading.vsd_frequency,
+                        "flow_variance": reading.flow_variance,
+                        "torque": reading.torque,
+                        "gor": reading.gor
+                    }
+                })
+
+            # Publish batch updates
+            realtime_publisher.publish_batch_updates(
+                [item for well_data in well_updates.values() for item in well_data]
+            )
+        except Exception as e:
+            # Log but don't fail the request
+            logger.warning(
+                f"Failed to publish real-time batch updates: {e}",
+                extra={"extra_fields": {"batch_size": len(readings)}}
+            )
 
         # Log audit trail
         log_audit(
