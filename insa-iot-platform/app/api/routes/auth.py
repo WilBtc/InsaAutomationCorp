@@ -90,10 +90,11 @@ def login() -> Response:
         # Get database connection
         db_pool = get_db_pool()
 
-        # Find user
+        # Find user with tenant information
         result = db_pool.execute_query(
             """
-            SELECT id, username, password_hash, role, created_at, last_login
+            SELECT id, username, password_hash, role, created_at, last_login,
+                   tenant_id, is_super_admin, is_active
             FROM users
             WHERE username = %s
             """,
@@ -112,7 +113,18 @@ def login() -> Response:
             }), 401
 
         user = result[0]
-        user_id, db_username, password_hash, role, created_at, last_login = user
+        user_id, db_username, password_hash, role, created_at, last_login, tenant_id, is_super_admin, is_active = user
+
+        # Check if user is active
+        if not is_active:
+            logger.warning(
+                f"Login attempt for inactive user: {username}",
+                extra={"extra_fields": {"username": username}}
+            )
+            return jsonify({
+                "error": "account_inactive",
+                "message": "Account is inactive"
+            }), 401
 
         # Verify password
         if not verify_password(password, password_hash):
@@ -125,19 +137,23 @@ def login() -> Response:
                 "message": "Invalid username or password"
             }), 401
 
-        # Generate tokens
+        # Generate tokens with tenant information
         access_token = generate_token(
             user_id=user_id,
             username=db_username,
             role=role,
-            token_type=TokenType.ACCESS
+            token_type=TokenType.ACCESS,
+            tenant_id=tenant_id,
+            is_super_admin=is_super_admin
         )
 
         refresh_token = generate_token(
             user_id=user_id,
             username=db_username,
             role=role,
-            token_type=TokenType.REFRESH
+            token_type=TokenType.REFRESH,
+            tenant_id=tenant_id,
+            is_super_admin=is_super_admin
         )
 
         # Update last login timestamp

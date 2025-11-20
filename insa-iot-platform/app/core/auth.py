@@ -77,16 +77,20 @@ def generate_token(
     user_id: int,
     username: str,
     role: str,
-    token_type: TokenType = TokenType.ACCESS
+    token_type: TokenType = TokenType.ACCESS,
+    tenant_id: Optional[int] = None,
+    is_super_admin: bool = False
 ) -> str:
     """
-    Generate a JWT token.
+    Generate a JWT token with tenant support.
 
     Args:
         user_id: User ID
         username: Username
         role: User role
         token_type: Type of token (access or refresh)
+        tenant_id: Tenant ID (optional for super-admins)
+        is_super_admin: Whether user is super-admin
 
     Returns:
         JWT token string
@@ -125,6 +129,13 @@ def generate_token(
             "nbf": now,  # Not before
         }
 
+        # Add tenant information
+        if tenant_id:
+            payload["tenant_id"] = tenant_id
+
+        if is_super_admin:
+            payload["is_super_admin"] = True
+
         # Get secret key
         secret_key = os.getenv("JWT_SECRET_KEY")
         if not secret_key:
@@ -150,6 +161,8 @@ def generate_token(
                     "user_id": user_id,
                     "username": username,
                     "role": role,
+                    "tenant_id": tenant_id,
+                    "is_super_admin": is_super_admin,
                     "token_type": token_type.value,
                     "expires_at": expire.isoformat()
                 }
@@ -252,7 +265,7 @@ def get_current_user() -> Dict[str, Any]:
     Get current authenticated user from request context.
 
     Returns:
-        User information dictionary
+        User information dictionary with tenant info
 
     Raises:
         AuthenticationError: If user is not authenticated
@@ -264,6 +277,70 @@ def get_current_user() -> Dict[str, Any]:
         )
 
     return g.current_user
+
+
+def get_user_with_tenant(db_pool, user_id: int) -> Dict[str, Any]:
+    """
+    Get user with tenant information from database.
+
+    Args:
+        db_pool: Database connection pool
+        user_id: User ID
+
+    Returns:
+        User dictionary with tenant info
+
+    Raises:
+        NotFoundError: If user not found
+    """
+    from .exceptions import NotFoundError
+
+    result = db_pool.execute_query(
+        """
+        SELECT
+            u.id,
+            u.username,
+            u.role,
+            u.tenant_id,
+            u.is_super_admin,
+            u.is_active,
+            u.created_at,
+            u.last_login,
+            u.metadata,
+            t.name AS tenant_name,
+            t.slug AS tenant_slug,
+            t.status AS tenant_status
+        FROM users u
+        LEFT JOIN tenants t ON t.id = u.tenant_id
+        WHERE u.id = %s
+        """,
+        (user_id,),
+        fetch=True
+    )
+
+    if not result:
+        raise NotFoundError(
+            message="User not found",
+            details={"user_id": user_id}
+        )
+
+    row = result[0]
+    return {
+        "id": row[0],
+        "username": row[1],
+        "role": row[2],
+        "tenant_id": row[3],
+        "is_super_admin": row[4],
+        "is_active": row[5],
+        "created_at": row[6].isoformat() if row[6] else None,
+        "last_login": row[7].isoformat() if row[7] else None,
+        "metadata": row[8],
+        "tenant": {
+            "name": row[9],
+            "slug": row[10],
+            "status": row[11]
+        } if row[3] else None
+    }
 
 
 def require_auth(role: Optional[str] = None):
@@ -328,6 +405,8 @@ def require_auth(role: Optional[str] = None):
                     "user_id": payload.get("user_id"),
                     "username": payload.get("username"),
                     "role": payload.get("role"),
+                    "tenant_id": payload.get("tenant_id"),
+                    "is_super_admin": payload.get("is_super_admin", False),
                 }
 
                 # Check role if specified

@@ -8,10 +8,14 @@ from .health import health_bp
 from .telemetry import telemetry_bp
 from .diagnostics import diagnostics_bp
 from .docs import docs_bp
+from .auth import auth_bp
+from .tenants import tenants_bp
 
 __all__ = [
     "health_bp",
     "telemetry_bp",
     "diagnostics_bp",
     "docs_bp",
+    "auth_bp",
+    "tenants_bp",
 ]
