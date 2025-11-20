@@ -1,0 +1,65 @@
+# ============================================================================
+# Prometheus Configuration for Alkhorayef ESP IoT Platform
+# ============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'alkhorayef-esp'
+    environment: 'production'
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+
+# Load alerting rules
+rule_files:
+  - '/etc/prometheus/rules.yml'
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # Alkhorayef ESP IoT Platform
+  - job_name: 'alkhorayef-esp-platform'
+    scrape_interval: 10s
+    metrics_path: '/health/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:8000']
+        labels:
+          service: 'alkhorayef-esp-platform'
+          component: 'api'
+    # Uncomment when running on Linux without host.docker.internal
+    # static_configs:
+    #   - targets: ['172.17.0.1:8000']
+
+  # Node Exporter (Host system metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node_exporter:9100']
+        labels:
+          service: 'node-exporter'
+          component: 'system'
+
+  # AlertManager self-monitoring
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+        labels:
+          service: 'alertmanager'
+
+  # Grafana self-monitoring
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+        labels:
+          service: 'grafana'

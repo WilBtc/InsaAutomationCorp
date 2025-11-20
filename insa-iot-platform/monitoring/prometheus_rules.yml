@@ -1,0 +1,260 @@
+# ============================================================================
+# Prometheus Alerting Rules for Alkhorayef ESP IoT Platform
+# ============================================================================
+# These rules define alerts for critical system conditions
+
+groups:
+  - name: alkhorayef_esp_platform_alerts
+    interval: 30s
+    rules:
+
+      # ========================================================================
+      # HTTP Request Alerts
+      # ========================================================================
+
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      - alert: SlowResponseTime
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, endpoint)
+          ) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "Slow response time on {{ $labels.endpoint }}"
+          description: "95th percentile response time is {{ $value }}s (threshold: 1s)"
+
+      - alert: HighRequestRate
+        expr: |
+          sum(rate(http_requests_total[5m])) > 1000
+        for: 5m
+        labels:
+          severity: info
+          component: api
+        annotations:
+          summary: "High request rate"
+          description: "Request rate is {{ $value }} req/s"
+
+      # ========================================================================
+      # Database Alerts
+      # ========================================================================
+
+      - alert: DatabaseConnectionFailure
+        expr: rate(db_connection_errors_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Database connection failures detected"
+          description: "{{ $value }} connection errors per second"
+
+      - alert: HighDatabaseQueryDuration
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(db_query_duration_seconds_bucket[5m])) by (le, operation)
+          ) > 5.0
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "95th percentile query duration for {{ $labels.operation }} is {{ $value }}s"
+
+      - alert: HighActiveDatabaseConnections
+        expr: db_connections_active > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High number of active database connections"
+          description: "{{ $value }} active connections (consider connection pooling review)"
+
+      - alert: DatabaseQueryErrors
+        expr: rate(db_query_errors_total[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Database query errors detected"
+          description: "{{ $value }} query errors per second for {{ $labels.operation }}"
+
+      # ========================================================================
+      # System Resource Alerts
+      # ========================================================================
+
+      - alert: HighMemoryUsage
+        expr: system_memory_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}% (threshold: 80%)"
+
+      - alert: CriticalMemoryUsage
+        expr: system_memory_usage_percent > 90
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Critical memory usage"
+          description: "Memory usage is {{ $value }}% (threshold: 90%)"
+
+      - alert: LowDiskSpace
+        expr: system_disk_usage_percent{mount_point="/"} > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "Low disk space on {{ $labels.mount_point }}"
+          description: "Disk usage is {{ $value }}% (threshold: 85%)"
+
+      - alert: CriticalDiskSpace
+        expr: system_disk_usage_percent{mount_point="/"} > 95
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Critical disk space on {{ $labels.mount_point }}"
+          description: "Disk usage is {{ $value }}% (threshold: 95%)"
+
+      - alert: HighCPUUsage
+        expr: system_cpu_usage_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% (threshold: 80%)"
+
+      # ========================================================================
+      # Telemetry Ingestion Alerts
+      # ========================================================================
+
+      - alert: NoDataIngestion
+        expr: rate(telemetry_ingestion_total[1h]) == 0
+        for: 1h
+        labels:
+          severity: warning
+          component: telemetry
+        annotations:
+          summary: "No telemetry data ingestion"
+          description: "No telemetry data has been ingested in the last hour"
+
+      - alert: HighTelemetryValidationErrors
+        expr: |
+          (
+            sum(rate(telemetry_validation_errors_total[5m]))
+            /
+            sum(rate(telemetry_ingestion_total[5m]))
+          ) > 0.10
+        for: 5m
+        labels:
+          severity: warning
+          component: telemetry
+        annotations:
+          summary: "High telemetry validation error rate"
+          description: "Validation error rate is {{ $value | humanizePercentage }} (threshold: 10%)"
+
+      # ========================================================================
+      # Backup System Alerts
+      # ========================================================================
+
+      - alert: BackupFailure
+        expr: |
+          increase(backup_operations_total{status="failed"}[1h]) > 0
+        for: 5m
+        labels:
+          severity: critical
+          component: backup
+        annotations:
+          summary: "Backup failure detected"
+          description: "{{ $value }} backup failures in the last hour for {{ $labels.backup_type }}"
+
+      - alert: BackupNotRunning
+        expr: |
+          time() - backup_last_success_timestamp > 86400
+        for: 1h
+        labels:
+          severity: warning
+          component: backup
+        annotations:
+          summary: "Backup has not run recently"
+          description: "Last successful backup for {{ $labels.backup_type }} was {{ $value | humanizeDuration }} ago"
+
+      # ========================================================================
+      # TimescaleDB Alerts
+      # ========================================================================
+
+      - alert: HighChunkCount
+        expr: timescaledb_hypertable_chunks_total > 1000
+        for: 30m
+        labels:
+          severity: info
+          component: timescaledb
+        annotations:
+          summary: "High chunk count in {{ $labels.hypertable }}"
+          description: "{{ $value }} chunks (consider reviewing retention policy)"
+
+      - alert: LowCompressionRatio
+        expr: timescaledb_compression_ratio < 2
+        for: 1h
+        labels:
+          severity: info
+          component: timescaledb
+        annotations:
+          summary: "Low compression ratio for {{ $labels.hypertable }}"
+          description: "Compression ratio is {{ $value }}:1 (expected >2:1)"
+
+      # ========================================================================
+      # Diagnostic Analysis Alerts
+      # ========================================================================
+
+      - alert: HighAnomalyRate
+        expr: |
+          rate(diagnostics_anomalies_detected_total[1h]) > 10
+        for: 30m
+        labels:
+          severity: warning
+          component: diagnostics
+        annotations:
+          summary: "High anomaly detection rate"
+          description: "{{ $value }} anomalies detected per second for {{ $labels.well_id }}"
+
+      - alert: SlowDiagnosticAnalysis
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(diagnostics_analysis_duration_seconds_bucket[5m])) by (le)
+          ) > 60
+        for: 10m
+        labels:
+          severity: warning
+          component: diagnostics
+        annotations:
+          summary: "Slow diagnostic analysis"
+          description: "95th percentile analysis time is {{ $value }}s (threshold: 60s)"

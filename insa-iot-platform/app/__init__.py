@@ -9,6 +9,7 @@ from typing import Optional
 from flask import Flask, jsonify
 
 from app.core import get_config, setup_logging, get_logger
+from app.core.metrics import initialize_metrics
 from app.db import get_db_pool, SQL_CREATE_TABLES
 from app.api import (
     health_bp,
@@ -19,6 +20,7 @@ from app.api import (
     register_response_handlers
 )
 from app.api.routes.auth import auth_bp
+from app.api.middleware.monitoring import setup_monitoring_middleware
 
 
 def create_app(config_override: Optional[dict] = None) -> Flask:
@@ -67,6 +69,10 @@ def create_app(config_override: Optional[dict] = None) -> Flask:
             }
         }
     )
+
+    # Initialize metrics
+    initialize_metrics()
+    logger.info("Metrics initialized")
 
     # Initialize database (lazy - only creates pool object, doesn't connect)
     with app.app_context():
@@ -122,6 +128,10 @@ def create_app(config_override: Optional[dict] = None) -> Flask:
     register_error_handlers(app)
     register_response_handlers(app)
     logger.info("Error handlers registered")
+
+    # Setup monitoring middleware
+    setup_monitoring_middleware(app)
+    logger.info("Monitoring middleware configured")
 
     # Root endpoint
     @app.route("/")

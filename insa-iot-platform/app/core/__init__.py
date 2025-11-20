@@ -52,6 +52,16 @@ from .auth import (
     create_default_admin_user
 )
 
+from .metrics import (
+    initialize_metrics,
+    collect_system_metrics,
+    collect_database_metrics,
+    generate_metrics,
+    get_metrics_content_type,
+    track_time,
+    track_counter,
+)
+
 __all__ = [
     # Configuration
     "Config",
@@ -92,4 +102,12 @@ __all__ = [
     "UserRole",
     "TokenType",
     "create_default_admin_user",
+    # Metrics
+    "initialize_metrics",
+    "collect_system_metrics",
+    "collect_database_metrics",
+    "generate_metrics",
+    "get_metrics_content_type",
+    "track_time",
+    "track_counter",
 ]

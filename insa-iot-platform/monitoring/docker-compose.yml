@@ -1,0 +1,148 @@
+# ============================================================================
+# Monitoring Stack for Alkhorayef ESP IoT Platform
+# ============================================================================
+# This docker-compose file sets up the complete monitoring infrastructure:
+# - Prometheus for metrics collection
+# - Grafana for visualization
+# - AlertManager for alert routing
+# ============================================================================
+
+version: '3.8'
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  alertmanager_data:
+    driver: local
+
+services:
+  # ==========================================================================
+  # Prometheus - Metrics Collection and Storage
+  # ==========================================================================
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: alkhorayef-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus_rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - monitoring
+    labels:
+      com.alkhorayef.service: "prometheus"
+      com.alkhorayef.description: "Metrics collection and storage"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # Grafana - Metrics Visualization
+  # ==========================================================================
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: alkhorayef-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_INSTALL_PLUGINS=
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/alkhorayef.json
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana_provisioning:/etc/grafana/provisioning
+      - ./grafana_dashboard.json:/etc/grafana/provisioning/dashboards/alkhorayef.json:ro
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+    labels:
+      com.alkhorayef.service: "grafana"
+      com.alkhorayef.description: "Metrics visualization and dashboards"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # AlertManager - Alert Routing and Management
+  # ==========================================================================
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: alkhorayef-alertmanager
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/config.yml:ro
+      - alertmanager_data:/alertmanager
+    networks:
+      - monitoring
+    labels:
+      com.alkhorayef.service: "alertmanager"
+      com.alkhorayef.description: "Alert routing and notification"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # Node Exporter - Host Metrics (Optional)
+  # ==========================================================================
+  node_exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: alkhorayef-node-exporter
+    restart: unless-stopped
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - monitoring
+    labels:
+      com.alkhorayef.service: "node-exporter"
+      com.alkhorayef.description: "Host system metrics exporter"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

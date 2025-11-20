@@ -72,6 +72,7 @@ requests==2.31.0                    # Sync HTTP client (fallback)
 # Monitoring & Observability
 # ----------------------------------------------------------------------------
 prometheus-client==0.19.0           # Prometheus metrics exporter
+psutil==5.9.8                       # System and process monitoring
 opentelemetry-api==1.22.0           # OpenTelemetry tracing API
 opentelemetry-sdk==1.22.0           # OpenTelemetry SDK
 opentelemetry-instrumentation-fastapi==0.43b0  # FastAPI auto-instrumentation

@@ -7,3 +7,7 @@ docs/AUTHENTICATION.md:curl-auth-header:564
 docs/AUTHENTICATION.md:curl-auth-header:568
 docs/AUTHENTICATION.md:generic-api-key:51
 docs/AUTHENTICATION.md:generic-api-key:52
+# Grafana default password in monitoring documentation and config
+monitoring/start-monitoring.sh:generic-api-key:66
+docs/MONITORING.md:generic-api-key:169
+monitoring/docker-compose.yml:generic-api-key:69
