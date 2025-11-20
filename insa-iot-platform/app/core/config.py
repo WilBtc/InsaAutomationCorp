@@ -9,8 +9,12 @@ import os
 from typing import Optional, List
 from dataclasses import dataclass, field
 from pathlib import Path
+from dotenv import load_dotenv
 
 from .exceptions import ConfigurationError
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 @dataclass

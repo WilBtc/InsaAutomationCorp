@@ -175,8 +175,10 @@ def cleanup_resources() -> None:
     logger.info("Application cleanup complete")
 
 
-# Create default app instance for development
-app = create_app()
+# Note: Do NOT create app instance at module level to avoid import-time initialization
+# Create app instance on demand using create_app() when needed
+# For WSGI servers: use app = create_app() in your WSGI file
+# For direct execution: see __main__ block below
 
 
 if __name__ == "__main__":

@@ -34,7 +34,14 @@ class DiagnosticService:
 
     def __init__(self) -> None:
         """Initialize diagnostic service."""
-        self.db_pool = get_db_pool()
+        self._db_pool = None
+
+    @property
+    def db_pool(self):
+        """Lazy-load database connection pool on first access."""
+        if self._db_pool is None:
+            self._db_pool = get_db_pool()
+        return self._db_pool
 
     def store_diagnostic_result(
         self,
