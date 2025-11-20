@@ -14,9 +14,11 @@ from app.api import (
     health_bp,
     telemetry_bp,
     diagnostics_bp,
+    docs_bp,
     register_error_handlers,
     register_response_handlers
 )
+from app.api.routes.auth import auth_bp
 
 
 def create_app(config_override: Optional[dict] = None) -> Flask:
@@ -79,6 +81,25 @@ def create_app(config_override: Optional[dict] = None) -> Flask:
                 # Create tables if they don't exist
                 db_pool.execute_query(SQL_CREATE_TABLES, fetch=False)
                 logger.info("Database tables verified/created")
+
+                # Run authentication tables migration
+                try:
+                    with open("migrations/003_create_users_table.sql", "r") as f:
+                        migration_sql = f.read()
+                        db_pool.execute_query(migration_sql, fetch=False)
+                        logger.info("Authentication tables migration applied")
+
+                    # Create default admin user if no users exist
+                    from app.core.auth import create_default_admin_user
+                    success, message = create_default_admin_user(db_pool)
+                    if success:
+                        logger.info(message)
+                    else:
+                        logger.error(message)
+                except FileNotFoundError:
+                    logger.warning("Authentication migration file not found, skipping")
+                except Exception as e:
+                    logger.error(f"Failed to apply authentication migration: {e}")
             else:
                 logger.info("Skipping database table initialization (SKIP_DB_INIT=true)")
 
@@ -93,6 +114,8 @@ def create_app(config_override: Optional[dict] = None) -> Flask:
     app.register_blueprint(health_bp)
     app.register_blueprint(telemetry_bp)
     app.register_blueprint(diagnostics_bp)
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(docs_bp)
     logger.info("API routes registered")
 
     # Register error handlers
@@ -111,41 +134,19 @@ def create_app(config_override: Optional[dict] = None) -> Flask:
             "api_version": "v1",
             "endpoints": {
                 "health": "/health",
+                "authentication": "/api/v1/auth",
                 "telemetry": "/api/v1/telemetry",
                 "diagnostics": "/api/v1/diagnostics"
             },
-            "documentation": "/api/v1/docs"  # Future: OpenAPI/Swagger docs
-        })
-
-    # API documentation placeholder
-    @app.route("/api/v1/docs")
-    def api_docs():
-        """API documentation endpoint (placeholder for OpenAPI/Swagger)."""
-        return jsonify({
-            "message": "API documentation coming soon",
-            "openapi_version": "3.0.0",
-            "endpoints": {
-                "health_checks": {
-                    "GET /health": "General health check",
-                    "GET /health/live": "Liveness probe",
-                    "GET /health/ready": "Readiness probe",
-                    "GET /health/startup": "Startup probe"
-                },
-                "telemetry": {
-                    "POST /api/v1/telemetry/ingest": "Ingest single telemetry reading",
-                    "POST /api/v1/telemetry/batch": "Ingest batch of telemetry readings",
-                    "GET /api/v1/telemetry/wells/<well_id>/latest": "Get latest telemetry",
-                    "GET /api/v1/telemetry/wells/<well_id>/history": "Get telemetry history",
-                    "GET /api/v1/telemetry/wells/<well_id>/summary": "Get well summary"
-                },
-                "diagnostics": {
-                    "POST /api/v1/diagnostics/analyze": "Analyze telemetry data",
-                    "POST /api/v1/diagnostics/wells/<well_id>/analyze-latest": "Analyze latest telemetry",
-                    "GET /api/v1/diagnostics/wells/<well_id>/history": "Get diagnostic history",
-                    "GET /api/v1/diagnostics/critical": "Get critical diagnostics"
-                }
+            "documentation": {
+                "landing": "/api/v1/docs/landing",
+                "swagger_ui": "/api/v1/docs",
+                "redoc": "/api/v1/redoc",
+                "openapi_spec": "/api/v1/openapi.yaml",
+                "examples": "docs/API_EXAMPLES.md"
             }
         })
+
 
     logger.info(
         f"{config.app_name} initialization complete",

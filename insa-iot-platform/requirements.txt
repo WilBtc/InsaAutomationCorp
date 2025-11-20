@@ -7,6 +7,7 @@
 
 # Web Framework
 # ----------------------------------------------------------------------------
+flask==3.0.0                        # Flask web framework for API
 fastapi==0.109.0                    # High-performance async web framework
 uvicorn[standard]==0.27.0           # ASGI server with auto-reload and SSL
 python-multipart==0.0.6             # Form/file upload support
@@ -56,8 +57,10 @@ python-dotenv==1.0.0                # Load .env files
 
 # Security & Authentication
 # ----------------------------------------------------------------------------
-python-jose[cryptography]==3.3.0    # JWT token handling
+pyjwt==2.8.0                        # JWT token encoding/decoding
+python-jose[cryptography]==3.3.0    # JWT token handling (alternative)
 passlib[bcrypt]==1.7.4              # Password hashing
+bcrypt==4.1.2                       # Bcrypt hashing algorithm
 cryptography==42.0.0                # Cryptographic recipes and primitives
 
 # HTTP Clients & Utilities

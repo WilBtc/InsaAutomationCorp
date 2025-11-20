@@ -40,6 +40,18 @@ from .exceptions import (
     ConfigurationError
 )
 
+from .auth import (
+    hash_password,
+    verify_password,
+    generate_token,
+    decode_token,
+    get_current_user,
+    require_auth,
+    UserRole,
+    TokenType,
+    create_default_admin_user
+)
+
 __all__ = [
     # Configuration
     "Config",
@@ -70,4 +82,14 @@ __all__ = [
     "ServiceUnavailableError",
     "RateLimitError",
     "ConfigurationError",
+    # Authentication
+    "hash_password",
+    "verify_password",
+    "generate_token",
+    "decode_token",
+    "get_current_user",
+    "require_auth",
+    "UserRole",
+    "TokenType",
+    "create_default_admin_user",
 ]

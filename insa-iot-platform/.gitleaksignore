@@ -1,0 +1,9 @@
+# Gitleaks ignore file for known false positives
+# These are example/placeholder values in documentation, not real secrets
+
+# Documentation example tokens
+docs/AUTHENTICATION.md:curl-auth-header:69
+docs/AUTHENTICATION.md:curl-auth-header:564
+docs/AUTHENTICATION.md:curl-auth-header:568
+docs/AUTHENTICATION.md:generic-api-key:51
+docs/AUTHENTICATION.md:generic-api-key:52

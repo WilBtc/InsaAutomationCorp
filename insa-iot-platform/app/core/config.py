@@ -115,14 +115,31 @@ class LoggingConfig:
 class SecurityConfig:
     """Security configuration."""
 
-    secret_key: str = field(default_factory=lambda: os.getenv("SECRET_KEY", ""))
+    # JWT Configuration
+    jwt_secret_key: str = field(default_factory=lambda: os.getenv("JWT_SECRET_KEY", ""))
     jwt_algorithm: str = field(default_factory=lambda: os.getenv("JWT_ALGORITHM", "HS256"))
+    jwt_access_token_expire_minutes: int = field(
+        default_factory=lambda: int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
+    )
+    jwt_refresh_token_expire_days: int = field(
+        default_factory=lambda: int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7"))
+    )
+
+    # Legacy SECRET_KEY support (fallback to JWT_SECRET_KEY)
+    secret_key: str = field(default_factory=lambda: os.getenv("SECRET_KEY", os.getenv("JWT_SECRET_KEY", "")))
+
+    # Access token expiration (legacy, use jwt_access_token_expire_minutes)
     access_token_expire_minutes: int = field(
-        default_factory=lambda: int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+        default_factory=lambda: int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES",
+                                               os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "1440")))
     )
+
+    # CORS Configuration
     allowed_origins: List[str] = field(
-        default_factory=lambda: os.getenv("ALLOWED_ORIGINS", "*").split(",")
+        default_factory=lambda: os.getenv("CORS_ORIGINS", "*").split(",")
     )
+
+    # Rate Limiting
     rate_limit_requests: int = field(
         default_factory=lambda: int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
     )
@@ -132,15 +149,21 @@ class SecurityConfig:
 
     def __post_init__(self) -> None:
         """Validate security configuration."""
-        if not self.secret_key:
+        # Use JWT_SECRET_KEY as primary, SECRET_KEY as fallback
+        if not self.jwt_secret_key and not self.secret_key:
             raise ConfigurationError(
-                message="SECRET_KEY is required for production use",
-                config_key="SECRET_KEY"
+                message="JWT_SECRET_KEY is required for production use",
+                config_key="JWT_SECRET_KEY"
             )
-        if len(self.secret_key) < 32:
+
+        # Ensure jwt_secret_key is set
+        if not self.jwt_secret_key:
+            self.jwt_secret_key = self.secret_key
+
+        if len(self.jwt_secret_key) < 32:
             raise ConfigurationError(
-                message="SECRET_KEY must be at least 32 characters long",
-                config_key="SECRET_KEY"
+                message="JWT_SECRET_KEY must be at least 32 characters long",
+                config_key="JWT_SECRET_KEY"
             )
 
 
