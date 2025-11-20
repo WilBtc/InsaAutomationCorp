@@ -66,15 +66,21 @@ def create_app(config_override: Optional[dict] = None) -> Flask:
         }
     )
 
-    # Initialize database
+    # Initialize database (lazy - only creates pool object, doesn't connect)
     with app.app_context():
         try:
             db_pool = get_db_pool()
-            logger.info("Database connection pool initialized")
+            logger.info("Database connection pool object created (lazy initialization)")
 
-            # Create tables if they don't exist
-            db_pool.execute_query(SQL_CREATE_TABLES, fetch=False)
-            logger.info("Database tables verified/created")
+            # Only create tables if SKIP_DB_INIT environment variable is not set
+            # This allows the app to start without database connection for testing
+            import os
+            if not os.getenv("SKIP_DB_INIT"):
+                # Create tables if they don't exist
+                db_pool.execute_query(SQL_CREATE_TABLES, fetch=False)
+                logger.info("Database tables verified/created")
+            else:
+                logger.info("Skipping database table initialization (SKIP_DB_INIT=true)")
 
         except Exception as e:
             logger.critical(
