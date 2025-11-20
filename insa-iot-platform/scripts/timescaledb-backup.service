@@ -1,0 +1,42 @@
+[Unit]
+Description=TimescaleDB Automated Backup Service
+Documentation=file:///home/wil/insa-iot-platform/docs/BACKUP_AUTOMATION.md
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=wil
+Group=wil
+WorkingDirectory=/home/wil/insa-iot-platform
+
+# Environment variables
+Environment="BACKUP_LOCAL_PATH=/home/wil/insa-iot-platform/backups"
+Environment="BACKUP_RETENTION_DAYS=30"
+Environment="BACKUP_COMPRESSION_LEVEL=6"
+
+# Load additional environment from .env file
+EnvironmentFile=-/home/wil/insa-iot-platform/.env
+
+# Execute backup script
+ExecStart=/home/wil/insa-iot-platform/scripts/backup_timescaledb.sh
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=timescaledb-backup
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/wil/insa-iot-platform/backups
+
+# Resource limits
+TimeoutStartSec=30min
+CPUQuota=50%
+MemoryMax=2G
+
+[Install]
+WantedBy=multi-user.target
