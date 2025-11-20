@@ -126,11 +126,9 @@ class DatabasePool:
         Raises:
             DatabaseError: If unable to get connection from pool
         """
+        # Lazy initialization - connect on first use
         if self._pool is None:
-            raise DatabaseError(
-                message="Database pool not initialized",
-                operation="GET_CONNECTION"
-            )
+            self.initialize()
 
         conn = None
         try:
@@ -332,13 +330,18 @@ def get_db_pool() -> DatabasePool:
     """
     Get or create global database pool instance.
 
+    Note: Connection pool initialization is lazy - it will connect
+    on first use, not on creation. Call initialize() explicitly
+    if you need to connect immediately.
+
     Returns:
         DatabasePool instance
     """
     global _db_pool
     if _db_pool is None:
         _db_pool = DatabasePool()
-        _db_pool.initialize()
+        # Lazy initialization - don't call initialize() here
+        # Pool will connect on first actual database operation
     return _db_pool
 
 
