@@ -1,0 +1,196 @@
+# INSA IoT Platform API - Helm Chart Values
+# ==========================================
+
+# Namespace
+namespace: insa-iot
+
+# ====================================
+# Image Configuration
+# ====================================
+image:
+  repository: insa-iot/api
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+
+# ====================================
+# Deployment Configuration
+# ====================================
+replicaCount: 3
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# ====================================
+# Service Account
+# ====================================
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# ====================================
+# Pod Security
+# ====================================
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  allowPrivilegeEscalation: false
+
+# ====================================
+# Service Configuration
+# ====================================
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+  annotations: {}
+
+# ====================================
+# Ingress Configuration
+# ====================================
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+  hosts:
+    - host: api.insa-iot.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: insa-iot-api-tls
+      hosts:
+        - api.insa-iot.example.com
+
+# ====================================
+# Resources
+# ====================================
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+# ====================================
+# Autoscaling
+# ====================================
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# ====================================
+# Health Checks
+# ====================================
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 40
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: http
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# ====================================
+# Application Configuration
+# ====================================
+config:
+  environment: production
+  logLevel: info
+  sqlEcho: false
+  corsOrigins: "*"
+  dbPoolSize: 10
+  dbMaxOverflow: 20
+  jwtAlgorithm: HS256
+  accessTokenExpireMinutes: 30
+  keycloakEnabled: false
+
+# ====================================
+# Secrets (Override in production!)
+# ====================================
+secrets:
+  # Database
+  postgresUser: "iot_user"
+  postgresPassword: "CHANGE-ME-IN-PRODUCTION"
+  postgresDb: "iot_platform"
+  databaseUrl: "postgresql+asyncpg://iot_user:CHANGE-ME@postgres-service:5432/iot_platform"
+
+  # Redis
+  redisPassword: "CHANGE-ME-IN-PRODUCTION"
+  redisUrl: "redis://:CHANGE-ME@redis-service:6379/1"
+
+  # JWT
+  jwtSecretKey: "CHANGE-ME-GENERATE-SECURE-32-CHAR-KEY"
+
+  # Keycloak (optional)
+  keycloakClientSecret: ""
+
+# ====================================
+# Node Selection
+# ====================================
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - insa-iot-api
+          topologyKey: kubernetes.io/hostname
+
+# ====================================
+# Monitoring
+# ====================================
+monitoring:
+  enabled: true
+  prometheus:
+    scrape: true
+    port: 8000
+    path: /metrics
+
+# ====================================
+# Persistence
+# ====================================
+persistence:
+  logs:
+    enabled: false
+    size: 10Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce

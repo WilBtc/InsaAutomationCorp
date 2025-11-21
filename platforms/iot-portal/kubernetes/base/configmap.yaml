@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: insa-iot-api-config
+  namespace: insa-iot
+  labels:
+    app: insa-iot-api
+data:
+  # Application
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "info"
+  SQL_ECHO: "false"
+
+  # CORS
+  CORS_ORIGINS: "*"
+
+  # Database Pool
+  DB_POOL_SIZE: "10"
+  DB_MAX_OVERFLOW: "20"
+
+  # JWT
+  JWT_ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+
+  # Server
+  HOST: "0.0.0.0"
+  PORT: "8000"
+
+  # Keycloak (disabled by default)
+  KEYCLOAK_ENABLED: "false"
