@@ -1,0 +1,9 @@
+# Gitleaks ignore file - False positives and documentation examples
+# These are NOT real secrets, just example tokens in documentation
+
+# Example JWT tokens in session summary (documentation only)
+insa-iot-platform/WEEK2_SESSION_SUMMARY_NOV20_2025.md:generic-api-key:155
+insa-iot-platform/WEEK2_SESSION_SUMMARY_NOV20_2025.md:generic-api-key:156
+
+# Example curl command with placeholder token in ML documentation
+insa-iot-platform/docs/ML_ANALYTICS.md:curl-auth-header:432

@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with TimescaleDB for time-series data
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: alkhorayef-timescaledb
+    environment:
+      POSTGRES_DB: esp_telemetry
+      POSTGRES_USER: alkhorayef
+      POSTGRES_PASSWORD: AlkhorayefESP2025!
+      TS_TUNE_MAX_CONNECTIONS: 100
+      TS_TUNE_MAX_BG_WORKERS: 8
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5440:5432"
+    networks:
+      - alkhorayef-net
+    restart: unless-stopped
+
+  # Redis for caching and pub/sub
+  redis:
+    image: redis:7-alpine
+    container_name: alkhorayef-redis
+    command: redis-server --requirepass RedisAlkhorayef2025!
+    ports:
+      - "6389:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - alkhorayef-net
+    restart: unless-stopped
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: alkhorayef-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: GrafanaAlkhorayef2025!
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+      GF_SERVER_ROOT_URL: https://iac1.tail-scale.ts.net/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    depends_on:
+      - timescaledb
+    networks:
+      - alkhorayef-net
+    restart: unless-stopped
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: alkhorayef-nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled:ro
+      - ./static:/usr/share/nginx/html:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    ports:
+      - "8095:80"
+      - "8444:443"
+    depends_on:
+      - grafana
+    networks:
+      - alkhorayef-net
+    restart: unless-stopped
+
+networks:
+  alkhorayef-net:
+    driver: bridge
+
+volumes:
+  timescale_data:
+  redis_data:
+  grafana_data:

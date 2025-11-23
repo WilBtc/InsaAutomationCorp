@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INSA IoT Platform - Industrial Intelligence & Automation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #3b82f6;
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Dashboard Section */
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            color: #3b82f6;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-description {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .project-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .project-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .project-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .project-header {
+            margin-bottom: 1rem;
+        }
+
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-industry {
+            color: #3b82f6;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .project-description {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .project-stat {
+            text-align: center;
+        }
+
+        .project-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .project-stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Project Detail View */
+        .project-detail {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            transition: gap 0.3s ease;
+        }
+
+        .back-button:hover {
+            gap: 1rem;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .detail-info h2 {
+            font-size: 2rem;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-info p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-box {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .metric-box h4 {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-box .value {
+            color: #3b82f6;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* Features Section */
+        .features-section {
+            margin-top: 2rem;
+        }
+
+        .features-section h3 {
+            color: #f1f5f9;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-item {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+        }
+
+        .feature-content h4 {
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-content p {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span>⚡</span>
+                <span>INSA IoT Platform</span>
+            </div>
+            <div class="nav-links">
+                <a class="nav-link active" onclick="showSection('dashboard')">Dashboard</a>
+                <a class="nav-link" onclick="showSection('projects')">Projects</a>
+                <a class="nav-link" onclick="showSection('analytics')">Analytics</a>
+                <a class="nav-link" onclick="showSection('settings')">Settings</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <div class="page-header">
+                <h1 class="page-title">Platform Overview</h1>
+                <p class="page-subtitle">Real-time monitoring and analytics for all industrial IoT projects</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Projects</div>
+                    <div class="stat-value">2</div>
+                    <div class="stat-description">Active deployments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Data Points/min</div>
+                    <div class="stat-value">15.2K</div>
+                    <div class="stat-description">Real-time telemetry</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">System Uptime</div>
+                    <div class="stat-value">99.9%</div>
+                    <div class="stat-description">Last 30 days</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">AI Predictions</div>
+                    <div class="stat-value">247</div>
+                    <div class="stat-description">Today</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="section">
+            <div class="page-header">
+                <h1 class="page-title">Active Projects</h1>
+                <p class="page-subtitle">Industrial IoT deployments across multiple sectors</p>
+            </div>
+
+            <div class="projects-grid">
+                <div class="project-card" onclick="showProjectDetail('alkhorayef')">
+                    <div class="project-icon">🛢️</div>
+                    <div class="project-header">
+                        <div class="project-industry">Oil & Gas</div>
+                        <h3 class="project-title">Alkhorayef ESP Systems</h3>
+                    </div>
+                    <p class="project-description">
+                        AI-powered ESP (Electric Submersible Pump) diagnostics and monitoring system with RAG-based intelligent analysis for optimal well performance.
+                    </p>
+                    <div class="project-stats">
+                        <div class="project-stat">
+                            <div class="project-stat-value">24</div>
+                            <div class="project-stat-label">Active Wells</div>
+                        </div>
+                        <div class="project-stat">
+                            <div class="project-stat-value">147</div>
+                            <div class="project-stat-label">Diagnostics Today</div>
+                        </div>
+                    </div>
+                    <div class="status-badge">
+                        <span class="status-dot"></span>
+                        System Online
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-icon">🏭</div>
+                    <div class="project-header">
+                        <div class="project-industry">Manufacturing</div>
+                        <h3 class="project-title">Vidrio Andino</h3>
+                    </div>
+                    <p class="project-description">
+                        Comprehensive glass manufacturing monitoring platform with real-time production metrics, quality control, and energy optimization.
+                    </p>
+                    <div class="project-stats">
+                        <div class="project-stat">
+                            <div class="project-stat-value">12</div>
+                            <div class="project-stat-label">Production Lines</div>
+                        </div>
+                        <div class="project-stat">
+                            <div class="project-stat-value">98%</div>
+                            <div class="project-stat-label">OEE Score</div>
+                        </div>
+                    </div>
+                    <div class="status-badge" style="background: rgba(234, 179, 8, 0.1); border-color: rgba(234, 179, 8, 0.2); color: #eab308;">
+                        <span class="status-dot" style="background: #eab308;"></span>
+                        In Development
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alkhorayef Project Detail -->
+        <section id="alkhorayef-detail" class="section">
+            <a class="back-button" onclick="showSection('projects')">
+                <span>←</span>
+                <span>Back to Projects</span>
+            </a>
+
+            <div class="project-detail">
+                <div class="detail-header">
+                    <div class="detail-info">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🛢️</div>
+                        <h2>Alkhorayef ESP Systems</h2>
+                        <p>AI-Powered Electric Submersible Pump Diagnostics</p>
+                        <div class="status-badge" style="margin-top: 1rem;">
+                            <span class="status-dot"></span>
+                            System Online - All Wells Monitored
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <h4>Active Wells</h4>
+                        <div class="value">24</div>
+                    </div>
+                    <div class="metric-box">
+                        <h4>Diagnostics Today</h4>
+                        <div class="value">147</div>
+                    </div>
+                    <div class="metric-box">
+                        <h4>Avg Response Time</h4>
+                        <div class="value">1.2s</div>
+                    </div>
+                    <div class="metric-box">
+                        <h4>AI Accuracy</h4>
+                        <div class="value">94%</div>
+                    </div>
+                </div>
+
+                <div class="features-section">
+                    <h3>Platform Capabilities</h3>
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <div class="feature-icon">📊</div>
+                            <div class="feature-content">
+                                <h4>Real-Time Telemetry</h4>
+                                <p>Monitor flow rate, PIP, motor current, temperature, vibration, and VSD frequency</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">🤖</div>
+                            <div class="feature-content">
+                                <h4>AI Diagnostics</h4>
+                                <p>RAG-based intelligent analysis for pump health and performance optimization</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">📈</div>
+                            <div class="feature-content">
+                                <h4>Grafana Dashboards</h4>
+                                <p>Interactive visualizations with custom alerts and historical analysis</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">⚡</div>
+                            <div class="feature-content">
+                                <h4>Predictive Maintenance</h4>
+                                <p>ML-powered predictions for downtime prevention and cost optimization</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="section">
+            <div class="page-header">
+                <h1 class="page-title">Platform Analytics</h1>
+                <p class="page-subtitle">System-wide performance metrics and insights</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Data Storage</div>
+                    <div class="stat-value">2.4TB</div>
+                    <div class="stat-description">TimescaleDB</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">API Requests</div>
+                    <div class="stat-value">1.2M</div>
+                    <div class="stat-description">Last 24 hours</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Cache Hit Rate</div>
+                    <div class="stat-value">96.8%</div>
+                    <div class="stat-description">Redis performance</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Connections</div>
+                    <div class="stat-value">342</div>
+                    <div class="stat-description">Real-time sessions</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="section">
+            <div class="page-header">
+                <h1 class="page-title">Platform Settings</h1>
+                <p class="page-subtitle">Configure system parameters and preferences</p>
+            </div>
+
+            <div class="project-detail">
+                <h3 style="color: #f1f5f9; margin-bottom: 1.5rem;">System Configuration</h3>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🔐</div>
+                        <div class="feature-content">
+                            <h4>Security</h4>
+                            <p>Tailscale VPN, SSL/TLS encryption</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🗄️</div>
+                        <div class="feature-content">
+                            <h4>Database</h4>
+                            <p>TimescaleDB with 30-day retention</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">⚙️</div>
+                        <div class="feature-content">
+                            <h4>Message Queue</h4>
+                            <p>RabbitMQ for async processing</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-content">
+                            <h4>Visualization</h4>
+                            <p>Grafana dashboards & alerts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Add active class to clicked nav link
+            event.target.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showProjectDetail(projectId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(projectId + '-detail').classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Log platform load
+        console.log('INSA IoT Platform loaded:', new Date().toLocaleString());
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+  - name: PostgreSQL-Timescale
+    type: postgres
+    access: proxy
+    url: timescaledb:5432
+    database: esp_telemetry
+    user: alkhorayef
+    secureJsonData:
+      password: AlkhorayefESP2025!
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1500
+      timescaledb: true
+    editable: true
+    isDefault: true

@@ -1,0 +1,19 @@
+{
+  "well_id": "TEST-001",
+  "flow_stable": false,
+  "production_below_target": true,
+  "pip_low": false,
+  "flow_level": "medium",
+  "telemetry": {
+    "well_id": "TEST-001",
+    "flow_rate": 1500.0,
+    "pip": 850.0,
+    "motor_current": 45.0,
+    "motor_temp": 85.0,
+    "vibration": 0.8,
+    "vsd_frequency": 55.0,
+    "flow_variance": 18.5,
+    "torque": 120.0,
+    "gor": 600.0
+  }
+}

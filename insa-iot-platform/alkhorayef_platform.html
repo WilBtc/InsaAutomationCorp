@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alkhorayef ESP AI RAG System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h2 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #2a5298;
+            padding-bottom: 0.5rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .status-indicator.offline {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            color: #1e3c72;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #2a5298;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: #1e3c72;
+        }
+
+        .well-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .well-item {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #10b981;
+        }
+
+        .well-item.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .well-item.alert {
+            border-left-color: #ef4444;
+        }
+
+        .well-item h3 {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .well-item p {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e3c72;
+        }
+
+        .api-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .api-link {
+            padding: 0.75rem;
+            background: #f3f4f6;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #1e3c72;
+            transition: background 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .api-link:hover {
+            background: #e5e7eb;
+        }
+
+        .api-link span {
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 Alkhorayef ESP AI RAG System</h1>
+        <p>Intelligent ESP Pump Diagnostics with Graphiti Knowledge Graph</p>
+    </div>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <!-- System Status Card -->
+            <div class="card">
+                <h2>System Status</h2>
+                <div class="metric">
+                    <span class="metric-label">
+                        <span class="status-indicator online"></span>API Server
+                    </span>
+                    <span class="metric-value" id="api-status">Loading...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">
+                        <span class="status-indicator online"></span>Database
+                    </span>
+                    <span class="metric-value" id="db-status">Loading...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">
+                        <span class="status-indicator online"></span>Redis Cache
+                    </span>
+                    <span class="metric-value" id="redis-status">Loading...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Wells Monitored</span>
+                    <span class="metric-value" id="total-wells">0</span>
+                </div>
+            </div>
+
+            <!-- Telemetry Metrics Card -->
+            <div class="card">
+                <h2>Telemetry Metrics (24h)</h2>
+                <div class="metric">
+                    <span class="metric-label">Total Readings</span>
+                    <span class="metric-value" id="total-readings">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Average Flow Rate</span>
+                    <span class="metric-value" id="avg-flow">0 bbl/d</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Active Diagnoses</span>
+                    <span class="metric-value" id="total-diagnoses">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">AI Confidence</span>
+                    <span class="metric-value" id="avg-confidence">0%</span>
+                </div>
+            </div>
+
+            <!-- AI Diagnostics Card -->
+            <div class="card">
+                <h2>AI Diagnostic Engine</h2>
+                <div class="metric">
+                    <span class="metric-label">Total Diagnoses</span>
+                    <span class="metric-value" id="ai-total">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Accuracy Rate</span>
+                    <span class="metric-value" id="ai-accuracy">0%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Resolution Time</span>
+                    <span class="metric-value" id="ai-resolution">0h</span>
+                </div>
+                <a href="/metrics" class="btn">View Detailed Metrics</a>
+            </div>
+        </div>
+
+        <!-- Well Status Grid -->
+        <div class="card">
+            <h2>Well Status Overview</h2>
+            <div class="well-status" id="well-grid">
+                <div class="well-item">
+                    <h3>Well-001</h3>
+                    <p>Normal</p>
+                </div>
+                <div class="well-item warning">
+                    <h3>Well-002</h3>
+                    <p>Warning</p>
+                </div>
+                <div class="well-item">
+                    <h3>Well-003</h3>
+                    <p>Normal</p>
+                </div>
+                <div class="well-item alert">
+                    <h3>Well-004</h3>
+                    <p>Alert</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Endpoints Card -->
+        <div class="card">
+            <h2>API Endpoints</h2>
+            <div class="api-links">
+                <a href="/health" class="api-link">
+                    Health Check
+                    <span>GET /health</span>
+                </a>
+                <a href="/metrics" class="api-link">
+                    System Metrics
+                    <span>GET /metrics</span>
+                </a>
+                <a href="/docs" class="api-link">
+                    API Documentation
+                    <span>GET /docs</span>
+                </a>
+                <a href="/api/v1/diagnostics/decision_tree" class="api-link">
+                    Run Diagnostics
+                    <span>POST /api/v1/diagnostics/decision_tree</span>
+                </a>
+                <a href="/api/v1/diagnostics/nlp_query" class="api-link">
+                    Natural Language Query
+                    <span>POST /api/v1/diagnostics/nlp_query</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <h2>Quick Actions</h2>
+            <button class="btn" onclick="location.href='http://localhost:3000'">Open Grafana Dashboard</button>
+            <button class="btn" onclick="location.href='http://localhost:15672'">RabbitMQ Management</button>
+            <button class="btn" onclick="location.href='/docs'">API Documentation</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 INSA Ingeniería - Alkhorayef ESP AI RAG System | Powered by FastAPI, TimescaleDB, and Graphiti</p>
+    </div>
+
+    <script>
+        // Fetch system metrics on page load
+        async function fetchMetrics() {
+            try {
+                const response = await fetch('/metrics');
+                const data = await response.json();
+
+                // Update telemetry metrics
+                document.getElementById('total-wells').textContent = data.telemetry.total_wells || 0;
+                document.getElementById('total-readings').textContent = (data.telemetry.total_readings || 0).toLocaleString();
+                document.getElementById('avg-flow').textContent = (data.telemetry.avg_flow_rate || 0).toFixed(1) + ' bbl/d';
+
+                // Update diagnostic metrics
+                document.getElementById('total-diagnoses').textContent = data.diagnostics.total_diagnoses || 0;
+                document.getElementById('avg-confidence').textContent = ((data.diagnostics.avg_confidence || 0) * 100).toFixed(1) + '%';
+
+                // Update AI metrics
+                document.getElementById('ai-total').textContent = data.system.total_diagnoses || 0;
+                document.getElementById('ai-accuracy').textContent = ((data.system.accuracy || 0) * 100).toFixed(1) + '%';
+                document.getElementById('ai-resolution').textContent = data.system.avg_resolution_time || '0h';
+
+            } catch (error) {
+                console.error('Error fetching metrics:', error);
+            }
+        }
+
+        // Fetch health status
+        async function fetchHealth() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+
+                if (data.status === 'healthy') {
+                    document.getElementById('api-status').textContent = 'Online';
+                    document.getElementById('db-status').textContent = 'Connected';
+                    document.getElementById('redis-status').textContent = 'Connected';
+                } else {
+                    document.getElementById('api-status').textContent = 'Degraded';
+                }
+            } catch (error) {
+                document.getElementById('api-status').textContent = 'Offline';
+                document.getElementById('db-status').textContent = 'Disconnected';
+                document.getElementById('redis-status').textContent = 'Disconnected';
+            }
+        }
+
+        // Initialize dashboard
+        fetchHealth();
+        fetchMetrics();
+
+        // Refresh metrics every 30 seconds
+        setInterval(fetchMetrics, 30000);
+        setInterval(fetchHealth, 10000);
+    </script>
+</body>
+</html>
