@@ -8,36 +8,79 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .lang-switcher {
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
+        /* Language Toggle Switch */
+        .language-toggle {
+            position: relative;
+            width: 100px;
+            height: 42px;
+            background: linear-gradient(135deg, #3b82f6 50%, #ef4444 50%);
+            border-radius: 21px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 3px rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
         
-        .lang-switcher:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
+        .language-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), inset 0 1px 3px rgba(255, 255, 255, 0.2);
         }
         
-        .lang-switcher i {
-            font-size: 16px;
+        .toggle-track {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            z-index: 1;
         }
         
+        .lang-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            width: 46px;
+            height: 36px;
+            background: white;
+            border-radius: 18px;
+            left: 3px;
+            top: 3px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+        
+        /* Active states */
+        .language-toggle[data-lang="en"] .lang-en {
+            color: #1e40af;
+            font-weight: 900;
+        }
+        
+        .language-toggle[data-lang="es"] .toggle-slider {
+            left: 51px;
+        }
+        
+        .language-toggle[data-lang="es"] .lang-es {
+            color: #991b1b;
+            font-weight: 900;
+        }
+        
+        /* Mobile responsive */
         @media (max-width: 768px) {
-            .lang-switcher {
+            .language-toggle {
                 margin-top: 1rem;
-                width: 100%;
-                justify-content: center;
             }
         }
         
@@ -131,9 +174,13 @@
                     <a href="#industries" data-i18n="nav.industries">Industries</a>
                     <a href="#about" data-i18n="nav.about">About</a>
                     <a href="#contact" class="btn-primary" data-i18n="nav.contact">Get Started</a>
-                    <button class="lang-switcher" onclick="toggleLanguage()">
-                        <i class="fas fa-globe"></i> ES
-                    </button>
+                    <div class="language-toggle" onclick="toggleLanguage()" role="button" tabindex="0" aria-label="Switch language between English and Spanish" onkeypress="if(event.key==='Enter'||event.key===' ')toggleLanguage()" data-lang="en">
+                        <div class="toggle-track">
+                            <span class="lang-label lang-en">EN</span>
+                            <span class="lang-label lang-es">ES</span>
+                        </div>
+                        <div class="toggle-slider"></div>
+                    </div>
                 </nav>
                 <button class="mobile-menu-toggle" aria-label="Toggle menu">
                     <span></span>

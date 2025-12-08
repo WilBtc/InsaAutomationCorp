@@ -428,11 +428,9 @@ function setLanguage(lang) {
 }
 
 function updateLanguageSwitcher() {
-    const btn = document.querySelector('.lang-switcher');
-    if (btn) {
-        btn.innerHTML = currentLang === 'en' 
-            ? '<i class="fas fa-globe"></i> ES' 
-            : '<i class="fas fa-globe"></i> EN';
+    const toggle = document.querySelector('.language-toggle');
+    if (toggle) {
+        toggle.setAttribute('data-lang', currentLang);
     }
 }
 
