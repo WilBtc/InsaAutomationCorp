@@ -295,4 +295,128 @@ gh api /repos/WilBtc/InsaAutomationCorp/secret-scanning/alerts/1
 
 **Remember:** Secrets in git history are **PERMANENT** unless actively removed. Prevention is 100x easier than cleanup.
 
-Last Updated: November 14, 2025
+---
+
+## 🤖 For AI Agents & Automation
+
+### GitHub Access for Agents
+
+AI agents (Claude Code, automation scripts, CI/CD) should use GitHub CLI for authentication:
+
+```bash
+# Check if authenticated
+if ! gh auth status &> /dev/null; then
+    echo "ERROR: GitHub CLI not authenticated"
+    echo "Run: gh auth login"
+    exit 1
+fi
+
+# Use gh commands
+gh api /repos/WilBtc/InsaAutomationCorp/secret-scanning/alerts
+```
+
+**See**: `.github/AGENT_GITHUB_ACCESS_GUIDE.md` for complete agent documentation
+
+### Automated Security Monitoring
+
+**Tools Deployed**:
+- `security-incident-handler.sh` - Main CLI tool for security alerts
+- `automated-security-monitor.sh` - Runs every 6 hours via cron
+- `rotate-credentials.sh` - Interactive credential rotation
+
+**Check for alerts**:
+```bash
+cd ~/InsaAutomationCorp
+./security-incident-handler.sh list
+```
+
+**Monitor logs**:
+```bash
+tail -f ~/security-incidents/monitor.log
+```
+
+---
+
+## 📊 Real Incident: December 8, 2025
+
+### What Happened
+- **Alert #1**: Grafana Service Account Token exposed in `.mcp.json`
+- **Alert #2**: SMTP credentials and admin passwords in Git history (July 2024)
+
+### What We Did
+1. ✅ Used BFG Repo-Cleaner to remove secrets from all Git history
+2. ✅ Force pushed cleaned history to GitHub (662 commits modified, 1,823 refs updated)
+3. ✅ Resolved GitHub security alerts
+4. ✅ Deployed automated monitoring system
+5. ✅ Created incident response tools
+
+### Lessons Learned
+1. **Don't commit config files with secrets** - Use environment variables or move outside repo
+2. **Monitor alerts regularly** - Automated checks every 6 hours now active
+3. **Respond quickly** - Tools now in place for immediate response
+4. **Git history is permanent** - Requires force push to clean
+
+### Time to Resolution
+- **Before**: Months (alerts unnoticed)
+- **After**: Minutes (automated detection + CLI tools)
+
+**Full Report**: `~/SECURITY_ISSUES_FIXED_DEC8_2025.md`
+
+---
+
+## 🆘 If You Discover a Secret in Git
+
+**STOP and follow these steps immediately:**
+
+1. **Assess** - Is it in current files or just Git history?
+   ```bash
+   # Check current files
+   ./security-incident-handler.sh scan
+
+   # Check GitHub alerts
+   ./security-incident-handler.sh list
+   ```
+
+2. **Rotate** - Change the credential immediately
+   ```bash
+   ./rotate-credentials.sh <type>
+   # Types: smtp, github-token, api-key
+   ```
+
+3. **Clean History** - Remove from Git using BFG
+   ```bash
+   # Download BFG
+   wget https://repo1.maven.org/maven2/com/madgag/bfg/1.14.0/bfg-1.14.0.jar
+
+   # Create backup
+   git clone --mirror https://github.com/WilBtc/InsaAutomationCorp.git ../backup.git
+
+   # Remove secret
+   echo "SECRET_TO_REMOVE" > /tmp/secrets.txt
+   java -jar bfg-1.14.0.jar --replace-text /tmp/secrets.txt .git
+
+   # Clean up
+   git reflog expire --expire=now --all
+   git gc --prune=now --aggressive
+
+   # Force push (rewrites history!)
+   git push --force origin main
+
+   # Secure cleanup
+   shred -vfz -n 10 /tmp/secrets.txt
+   ```
+
+4. **Resolve Alert** - Mark GitHub alert as fixed
+   ```bash
+   ./security-incident-handler.sh resolve <alert_number> --reason revoked
+   ```
+
+5. **Document** - Record what happened and how you fixed it
+
+**Quick Reference**: `SECURITY_CLI_QUICK_REFERENCE.md`
+
+---
+
+**Remember:** Secrets in git history are **PERMANENT** unless actively removed. Prevention is 100x easier than cleanup.
+
+Last Updated: December 8, 2025 (Post-Incident Update)
