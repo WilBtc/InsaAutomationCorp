@@ -8,20 +8,19 @@ const translations = {
         "nav.contact": "Get Started",
 
         // Hero Section
-        "hero.badge.industrial": "Industrial",
-        "hero.badge.defense": "Defense",
-        "hero.badge.infrastructure": "Critical Infrastructure",
-        "hero.title": "Complete Industrial & Defense Solutions,<br><span class=\"gradient-text\">From Engineering to Cybersecurity</span>",
-        "hero.description": "INSA Group unites INSA Automation Corp (US) and INSA Ingeniería SAS (Colombia/Ecuador) as your integrated partner for turnkey industrial and defense solutions. With 15+ years of combined expertise, we deliver everything from engineering design and fabrication to advanced OT/IT cybersecurity for critical infrastructure and defense clients across the Americas.",
-        "hero.cta.consultation": "Schedule Consultation",
-        "hero.cta.services": "Explore Capabilities",
+        "hero.badge.build": "WE BUILD",
+        "hero.badge.secure": "WE SECURE",
+        "hero.title": "We Build It. We Secure It.<br><span class="gradient-text">Complete Industrial & Defense Solutions</span>",
+        "hero.description": "The only company that designs, builds, AND secures your industrial systems. INSA Group combines 15 years of engineering excellence with cutting-edge cybersecurity - delivering turnkey solutions you can trust.",
+        "hero.cta.build": "Build with INSA",
+        "hero.cta.secure": "Secure with INSA",
         "hero.stats.experience": "Years Combined Experience",
         "hero.stats.projects": "Projects Delivered",
         "hero.stats.countries": "Countries Served",
 
         // Services Section
-        "services.title": "Comprehensive Integrated Solutions",
-        "services.subtitle": "Complete turnkey capabilities from design through cybersecurity - serving industrial and defense sectors",
+        "services.title": "Complete Build & Secure Capabilities",
+        "services.subtitle": "One team that designs, builds, AND secures your industrial systems - from engineering to cybersecurity",
 
         // Service 1 - OT/IT Cybersecurity
         "service.1.title": "OT/IT Cybersecurity & Network Security",
@@ -75,9 +74,9 @@ const translations = {
         "approach.badge.defense": "Defense in Depth",
         "approach.badge.monitoring": "Continuous Monitoring",
         "approach.badge.integration": "Integrated Solutions",
-        "approach.tag": "Our Approach",
-        "approach.title": "Turnkey Solutions from Design to Defense",
-        "approach.lead": "Our integrated methodology combines engineering excellence with advanced cybersecurity to deliver complete solutions that protect and optimize your critical operations.",
+        "approach.tag": "The Build \"approach.tag": "Our Approach", Secure Advantage",
+        "approach.title": "Why Choose Between a Builder or a Security Firm? Get Both.",
+        "approach.lead": "The risk of having separate vendors for building and securing your systems is real. INSA Group eliminates that gap - we build security into every design phase, ensuring your industrial systems are protected from day one.",
         "approach.highlight1.title": "Single Point of Contact",
         "approach.highlight1.desc": "One unified team managing your entire project from engineering design through cybersecurity implementation.",
         "approach.highlight2.title": "Security by Design",
@@ -90,8 +89,8 @@ const translations = {
         "approach.cta.secondary": "Learn More",
 
         // Industries Section
-        "industries.title": "Industries We Serve",
-        "industries.subtitle": "Integrated solutions for critical infrastructure, industrial operations, and defense sectors",
+        "industries.title": "Industries We Build & Secure For",
+        "industries.subtitle": "Complete build and secure solutions for critical infrastructure, industrial operations, and defense sectors",
         "industry.defense": "Defense & Security",
         "industry.defense.desc": "Defense contractors, military installations, security systems, and dual-use technologies. Active participant at Expodefensa.",
         "industry.oil": "Oil & Gas",
@@ -110,9 +109,9 @@ const translations = {
         "industry.critical.desc": "Essential services requiring highest security standards, redundancy, and integrated protection",
 
         // About Section
-        "about.tag": "The INSA Group",
-        "about.title": "Your Integrated Partner for Industrial & Defense Solutions",
-        "about.subtitle": "One unified team, complete turnkey capabilities, proven results",
+        "about.tag": "The Build \"about.tag": "The INSA Group", Secure Advantage",
+        "about.title": "One Team That Builds AND Secures Your Industrial Systems",
+        "about.subtitle": "Why choose between a builder or a security firm? Get both.",
         "about.desc": "INSA Group brings together the complementary strengths of <strong>INSA Automation Corp</strong> (US - SDVOSB certified) and <strong>INSA Ingeniería SAS</strong> (Colombia/Ecuador - ISO 9000 certified) to deliver integrated solutions that span the complete lifecycle: from initial engineering design and fabrication through system integration, commissioning, and advanced OT/IT cybersecurity protection.",
         "about.approach": "With 15+ years of combined industrial experience, strategic partnerships with Siemens, Allen-Bradley, and Emerson, and proven delivery across both commercial industrial and defense sectors, we provide true turnkey solutions backed by deep technical expertise and local presence across the Americas.",
         "about.stats.expertise": "Years Combined Expertise",
@@ -152,8 +151,8 @@ const translations = {
         "global.contact.email": "Contact INSA Group",
 
         // Contact Section
-        "contact.title": "Get Started with INSA Group",
-        "contact.subtitle": "Complete industrial and defense solutions",
+        "contact.title": "Build & Secure with INSA Group",
+        "contact.subtitle": "One team that builds, secures, and delivers complete industrial \"contact.subtitle": "Complete industrial and defense solutions", defense solutions",
         "contact.desc": "Whether you need cybersecurity protection, industrial automation, defense systems integration, or complete turnkey solutions, our unified team is ready to deliver excellence.",
         "contact.info.location": "US Headquarters",
         "contact.info.phone": "Phone",
@@ -184,7 +183,7 @@ const translations = {
         "contact.service.option.other": "Other / General Inquiry",
 
         // Footer
-        "footer.tagline": "Complete Industrial & Defense Solutions - From Engineering to Cybersecurity",
+        "footer.tagline": "We Build It. We Secure It. - Complete Industrial & Defense Solutions",
         "footer.sdvosb": "SDVOSB Certified",
         "footer.iso": "ISO 9000 Certified",
         "footer.solutions": "Solutions",
@@ -211,20 +210,19 @@ const translations = {
         "nav.contact": "Empezar",
 
         // Hero Section
-        "hero.badge.industrial": "Industrial",
-        "hero.badge.defense": "Defensa",
-        "hero.badge.infrastructure": "Infraestructura Crítica",
-        "hero.title": "Soluciones Completas Industriales y de Defensa,<br><span class=\"gradient-text\">Desde Ingeniería hasta Ciberseguridad</span>",
-        "hero.description": "INSA Group une INSA Automation Corp (EE.UU.) e INSA Ingeniería SAS (Colombia/Ecuador) como su socio integrado para soluciones industriales y de defensa llave en mano. Con más de 15 años de experiencia combinada, entregamos desde diseño y fabricación de ingeniería hasta ciberseguridad avanzada OT/IT para clientes de infraestructura crítica y defensa en las Américas.",
-        "hero.cta.consultation": "Agendar Consulta",
-        "hero.cta.services": "Explorar Capacidades",
+        "hero.badge.build": "WE BUILD",
+        "hero.badge.secure": "ASEGURAMOS",
+        "hero.title": "Construimos. Aseguramos.<br><span class=\"gradient-text\">Soluciones Completas Industriales y de Defensa</span>",
+        "hero.description": "La única empresa que diseña, construye Y asegura sus sistemas industriales. INSA Group combina 15 años de excelencia en ingeniería con ciberseguridad de vanguardia - entregando soluciones llave en mano en las que puede confiar.",
+        "hero.cta.build": "Construir con INSA",
+        "hero.cta.secure": "Asegurar con INSA",
         "hero.stats.experience": "Años de Experiencia Combinada",
         "hero.stats.projects": "Proyectos Entregados",
         "hero.stats.countries": "Países Atendidos",
 
         // Services Section
-        "services.title": "Soluciones Integradas Completas",
-        "services.subtitle": "Capacidades completas llave en mano desde diseño hasta ciberseguridad - sirviendo sectores industriales y de defensa",
+        "services.title": "Capacidades Completas de Construcción y Seguridad",
+        "services.subtitle": "Un equipo que diseña, construye Y asegura sus sistemas industriales - desde ingeniería hasta ciberseguridad",
 
         // Service 1 - OT/IT Cybersecurity
         "service.1.title": "Ciberseguridad OT/IT y Seguridad de Redes",
@@ -278,9 +276,9 @@ const translations = {
         "approach.badge.defense": "Defensa en Profundidad",
         "approach.badge.monitoring": "Monitoreo Continuo",
         "approach.badge.integration": "Soluciones Integradas",
-        "approach.tag": "Nuestro Enfoque",
-        "approach.title": "Soluciones Llave en Mano desde Diseño hasta Defensa",
-        "approach.lead": "Nuestra metodología integrada combina excelencia en ingeniería con ciberseguridad avanzada para entregar soluciones completas que protegen y optimizan sus operaciones críticas.",
+        "approach.tag": "La Ventaja de Construir y Asegurar",
+        "approach.title": "¿Por Qué Elegir Entre un Constructor o una Empresa de Seguridad? Obtenga Ambos.",
+        "approach.lead": "El riesgo de tener proveedores separados para construir y asegurar sus sistemas es real. INSA Group elimina esa brecha - construimos seguridad en cada fase de diseño, asegurando que sus sistemas industriales estén protegidos desde el primer día.",
         "approach.highlight1.title": "Punto Único de Contacto",
         "approach.highlight1.desc": "Un equipo unificado gestionando su proyecto completo desde diseño de ingeniería hasta implementación de ciberseguridad.",
         "approach.highlight2.title": "Seguridad por Diseño",
@@ -293,8 +291,8 @@ const translations = {
         "approach.cta.secondary": "Conocer Más",
 
         // Industries Section
-        "industries.title": "Industrias que Servimos",
-        "industries.subtitle": "Soluciones integradas para infraestructura crítica, operaciones industriales y sectores de defensa",
+        "industries.title": "Industrias para las que Construimos y Aseguramos",
+        "industries.subtitle": "Soluciones completas de construcción y seguridad para infraestructura crítica, operaciones industriales y sectores de defensa",
         "industry.defense": "Defensa y Seguridad",
         "industry.defense.desc": "Contratistas de defensa, instalaciones militares, sistemas de seguridad y tecnologías de uso dual. Participante activo en Expodefensa.",
         "industry.oil": "Petróleo y Gas",
@@ -313,9 +311,9 @@ const translations = {
         "industry.critical.desc": "Servicios esenciales que requieren los más altos estándares de seguridad, redundancia y protección integrada",
 
         // About Section
-        "about.tag": "El Grupo INSA",
-        "about.title": "Su Socio Integrado para Soluciones Industriales y de Defensa",
-        "about.subtitle": "Un equipo unificado, capacidades completas llave en mano, resultados probados",
+        "about.tag": "La Ventaja de Construir y Asegurar",
+        "about.title": "Un Equipo Que Construye Y Asegura Sus Sistemas Industriales",
+        "about.subtitle": "¿Por qué elegir entre un constructor o una empresa de seguridad? Obtenga ambos.",
         "about.desc": "INSA Group reúne las fortalezas complementarias de <strong>INSA Automation Corp</strong> (EE.UU. - certificado SDVOSB) e <strong>INSA Ingeniería SAS</strong> (Colombia/Ecuador - certificado ISO 9000) para entregar soluciones integradas que abarcan el ciclo completo: desde diseño de ingeniería inicial y fabricación hasta integración de sistemas, puesta en marcha y protección avanzada de ciberseguridad OT/IT.",
         "about.approach": "Con más de 15 años de experiencia industrial combinada, asociaciones estratégicas con Siemens, Allen-Bradley y Emerson, y entrega probada en sectores industriales comerciales y de defensa, proporcionamos verdaderas soluciones llave en mano respaldadas por profunda experiencia técnica y presencia local en las Américas.",
         "about.stats.expertise": "Años de Experiencia Combinada",
@@ -355,8 +353,8 @@ const translations = {
         "global.contact.email": "Contactar Grupo INSA",
 
         // Contact Section
-        "contact.title": "Comience con INSA Group",
-        "contact.subtitle": "Soluciones completas industriales y de defensa",
+        "contact.title": "Construir y Asegurar con INSA Group",
+        "contact.subtitle": "Un equipo que construye, asegura y entrega soluciones industriales y de defensa completas",
         "contact.desc": "Ya sea que necesite protección de ciberseguridad, automatización industrial, integración de sistemas de defensa o soluciones completas llave en mano, nuestro equipo unificado está listo para entregar excelencia.",
         "contact.info.location": "Sede EE.UU.",
         "contact.info.phone": "Teléfono",
@@ -387,7 +385,7 @@ const translations = {
         "contact.service.option.other": "Otro / Consulta General",
 
         // Footer
-        "footer.tagline": "Soluciones Completas Industriales y de Defensa - Desde Ingeniería hasta Ciberseguridad",
+        "footer.tagline": "Construimos. Aseguramos. - Soluciones Completas Industriales y de Defensa",
         "footer.sdvosb": "Certificado SDVOSB",
         "footer.iso": "Certificado ISO 9000",
         "footer.solutions": "Soluciones",

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INSA Group - Complete Industrial & Defense Solutions | Integrated OT/IT Security & Engineering</title>
-    <meta name="description" content="INSA Group delivers integrated industrial and defense solutions - from engineering design to cybersecurity. Serving critical infrastructure and defense sectors across Americas with 15+ years expertise.">
+    <title>INSA Group - We Build It. We Secure It. | Complete Industrial & Defense Solutions</title>
+    <meta name="description" content="The only company that builds AND secures your industrial systems. INSA Group combines 15 years of engineering excellence with cutting-edge cybersecurity - delivering turnkey solutions you can trust.">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -68,6 +68,53 @@
             color: #10b981;
             margin-top: 8px;
         }
+        
+        /* BUILD & SECURE Visual Enhancements */
+        .build-badge {
+            background: rgba(59, 130, 246, 0.1) !important;
+            border: 1px solid rgba(59, 130, 246, 0.4) !important;
+            color: #3b82f6 !important;
+        }
+        
+        .secure-badge {
+            background: rgba(239, 68, 68, 0.1) !important;
+            border: 1px solid rgba(239, 68, 68, 0.4) !important;
+            color: #ef4444 !important;
+        }
+        
+        .integrate-badge {
+            background: rgba(139, 92, 246, 0.1) !important;
+            border: 1px solid rgba(139, 92, 246, 0.4) !important;
+            color: #8b5cf6 !important;
+        }
+        
+        .industry-build-secure {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .industry-capability {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .capability-icon {
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+        
+        .capability-icon.build { color: #3b82f6; }
+        .capability-icon.secure { color: #ef4444; }
+        
+        .capability-label {
+            font-weight: 700;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -103,15 +150,14 @@
             <div class="hero-content">
                 <div class="hero-text">
                     <div class="sector-badges">
-                        <span class="sector-badge" data-i18n="hero.badge.industrial">Industrial</span>
-                        <span class="sector-badge" data-i18n="hero.badge.defense">Defense</span>
-                        <span class="sector-badge" data-i18n="hero.badge.infrastructure">Critical Infrastructure</span>
+                        <span class="sector-badge" data-i18n="hero.badge.build"><i class="fas fa-wrench"></i> WE BUILD</span>
+                        <span class="sector-badge" data-i18n="hero.badge.secure"><i class="fas fa-shield-halved"></i> WE SECURE</span>
                     </div>
-                    <h1 class="hero-title" data-i18n="hero.title">Complete Industrial & Defense Solutions,<br><span class="gradient-text">From Engineering to Cybersecurity</span></h1>
-                    <p class="hero-description" data-i18n="hero.description">INSA Group unites INSA Automation Corp (US) and INSA Ingeniería SAS (Colombia/Ecuador) as your integrated partner for turnkey industrial and defense solutions. With 15+ years of combined expertise, we deliver everything from engineering design and fabrication to advanced OT/IT cybersecurity for critical infrastructure and defense clients across the Americas.</p>
+                    <h1 class="hero-title" data-i18n="hero.title">We Build It. We Secure It.<br><span class="gradient-text">Complete Industrial & Defense Solutions</span></h1>
+                    <p class="hero-description" data-i18n="hero.description">The only company that designs, builds, AND secures your industrial systems. INSA Group combines 15 years of engineering excellence with cutting-edge cybersecurity - delivering turnkey solutions you can trust.</p>
                     <div class="hero-cta">
-                        <a href="#contact" class="btn btn-large btn-primary" data-i18n="hero.cta.consultation">Schedule Consultation</a>
-                        <a href="#services" class="btn btn-large btn-outline" data-i18n="hero.cta.services">Explore Capabilities</a>
+                        <a href="#contact" class="btn btn-large btn-primary" data-i18n="hero.cta.build">Build with INSA</a>
+                        <a href="#services" class="btn btn-large btn-outline" data-i18n="hero.cta.secure">Secure with INSA</a>
                     </div>
                     <div class="hero-stats">
                         <div class="stat-item">
@@ -154,8 +200,8 @@
     <section id="services" class="services-section">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title" data-i18n="services.title">Comprehensive Integrated Solutions</h2>
-                <p class="section-subtitle" data-i18n="services.subtitle">Complete turnkey capabilities from design through cybersecurity - serving industrial and defense sectors</p>
+                <h2 class="section-title" data-i18n="services.title">Complete Build & Secure Capabilities</h2>
+                <p class="section-subtitle" data-i18n="services.subtitle">One team that designs, builds, AND secures your industrial systems - from engineering to cybersecurity</p>
             </div>
 
             <div class="services-grid">
@@ -290,9 +336,9 @@
                     </div>
                 </div>
                 <div class="platform-text">
-                    <div class="section-tag" data-i18n="approach.tag">Our Approach</div>
-                    <h2 data-i18n="approach.title">Turnkey Solutions from Design to Defense</h2>
-                    <p class="lead" data-i18n="approach.lead">Our integrated methodology combines engineering excellence with advanced cybersecurity to deliver complete solutions that protect and optimize your critical operations.</p>
+                    <div class="section-tag" data-i18n="approach.tag">The Build & Secure Advantage</div>
+                    <h2 data-i18n="approach.title">Why Choose Between a Builder or a Security Firm? Get Both.</h2>
+                    <p class="lead" data-i18n="approach.lead">The risk of having separate vendors for building and securing your systems is real. INSA Group eliminates that gap - we build security into every design phase, ensuring your industrial systems are protected from day one.</p>
 
                     <div class="platform-highlights">
                         <div class="highlight-item">
@@ -349,8 +395,8 @@
     <section id="industries" class="industries-section">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title" data-i18n="industries.title">Industries We Serve</h2>
-                <p class="section-subtitle" data-i18n="industries.subtitle">Integrated solutions for critical infrastructure, industrial operations, and defense sectors</p>
+                <h2 class="section-title" data-i18n="industries.title">Industries We Build & Secure For</h2>
+                <p class="section-subtitle" data-i18n="industries.subtitle">Complete build and secure solutions for critical infrastructure, industrial operations, and defense sectors</p>
             </div>
 
             <div class="industries-grid">
@@ -427,9 +473,9 @@
         <div class="container">
             <div class="about-content">
                 <div class="about-text">
-                    <div class="section-tag" data-i18n="about.tag">The INSA Group</div>
-                    <h2 data-i18n="about.title">Your Integrated Partner for Industrial & Defense Solutions</h2>
-                    <p class="lead" data-i18n="about.subtitle">One unified team, complete turnkey capabilities, proven results</p>
+                    <div class="section-tag" data-i18n="about.tag">The Build & Secure Advantage</div>
+                    <h2 data-i18n="about.title">One Team That Builds AND Secures Your Industrial Systems</h2>
+                    <p class="lead" data-i18n="about.subtitle">Why choose between a builder or a security firm? Get both.</p>
                     <p data-i18n="about.desc">INSA Group brings together the complementary strengths of <strong>INSA Automation Corp</strong> (US - SDVOSB certified) and <strong>INSA Ingeniería SAS</strong> (Colombia/Ecuador - ISO 9000 certified) to deliver integrated solutions that span the complete lifecycle: from initial engineering design and fabrication through system integration, commissioning, and advanced OT/IT cybersecurity protection.</p>
                     <p data-i18n="about.approach">With 15+ years of combined industrial experience, strategic partnerships with Siemens, Allen-Bradley, and Emerson, and proven delivery across both commercial industrial and defense sectors, we provide true turnkey solutions backed by deep technical expertise and local presence across the Americas.</p>
 
@@ -556,8 +602,8 @@
         <div class="container">
             <div class="contact-wrapper">
                 <div class="contact-info">
-                    <h2 data-i18n="contact.title">Get Started with INSA Group</h2>
-                    <p class="lead" data-i18n="contact.subtitle">Complete industrial and defense solutions</p>
+                    <h2 data-i18n="contact.title">Build & Secure with INSA Group</h2>
+                    <p class="lead" data-i18n="contact.subtitle">One team that builds, secures, and delivers complete industrial & defense solutions</p>
                     <p data-i18n="contact.desc">Whether you need cybersecurity protection, industrial automation, defense systems integration, or complete turnkey solutions, our unified team is ready to deliver excellence.</p>
 
                     <div class="info-items">
@@ -669,7 +715,7 @@
             <div class="footer-content">
                 <div class="footer-brand">
                     <h3>INSA Group</h3>
-                    <p data-i18n="footer.tagline">Complete Industrial & Defense Solutions - From Engineering to Cybersecurity</p>
+                    <p data-i18n="footer.tagline">We Build It. We Secure It. - Complete Industrial & Defense Solutions</p>
                     <div class="footer-badges">
                         <span class="footer-badge" data-i18n="footer.sdvosb">SDVOSB Certified</span>
                         <span class="footer-badge" data-i18n="footer.iso">ISO 9000 Certified</span>
