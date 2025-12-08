@@ -7,6 +7,40 @@
     <meta name="description" content="Leading provider of industrial cybersecurity, OT/IT security assessments, threat detection, and compliance solutions for critical infrastructure. SDVOSB-certified with over 15 years of expertise.">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .lang-switcher {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .lang-switcher:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .lang-switcher i {
+            font-size: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .lang-switcher {
+                margin-top: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -18,10 +52,13 @@
                     <span class="badge">SDVOSB Certified</span>
                 </div>
                 <nav class="main-nav">
-                    <a href="#services">Cybersecurity Services</a>
-                    <a href="#industries">Industries</a>
-                    <a href="#about">About</a>
-                    <a href="#contact" class="btn-primary">Get Started</a>
+                    <a href="#services" data-i18n="nav.services">Cybersecurity Services</a>
+                    <a href="#industries" data-i18n="nav.industries">Industries</a>
+                    <a href="#about" data-i18n="nav.about">About</a>
+                    <a href="#contact" class="btn-primary" data-i18n="nav.contact">Get Started</a>
+                    <button class="lang-switcher" onclick="toggleLanguage()">
+                        <i class="fas fa-globe"></i> ES
+                    </button>
                 </nav>
                 <button class="mobile-menu-toggle" aria-label="Toggle menu">
                     <span></span>
@@ -37,25 +74,25 @@
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <div class="hero-tag">Industrial Cybersecurity Experts</div>
-                    <h1 class="hero-title">Protecting Critical Infrastructure,<br><span class="gradient-text">Securing Industrial Operations</span></h1>
-                    <p class="hero-description">INSA Automation Corp specializes in industrial cybersecurity for OT/IT environments, providing comprehensive security assessments, threat detection, network segmentation, and compliance solutions for mission-critical industrial control systems.</p>
+                    <div class="hero-tag" data-i18n="hero.tag">Industrial Cybersecurity Experts</div>
+                    <h1 class="hero-title" data-i18n="hero.title">Protecting Critical Infrastructure,<br><span class="gradient-text">Securing Industrial Operations</span></h1>
+                    <p class="hero-description" data-i18n="hero.description">INSA Automation Corp specializes in industrial cybersecurity for OT/IT environments, providing comprehensive security assessments, threat detection, network segmentation, and compliance solutions for mission-critical industrial control systems.</p>
                     <div class="hero-cta">
-                        <a href="#contact" class="btn btn-large btn-primary">Schedule Consultation</a>
-                        <a href="#services" class="btn btn-large btn-outline">Explore Services</a>
+                        <a href="#contact" class="btn btn-large btn-primary" data-i18n="hero.cta.consultation">Schedule Consultation</a>
+                        <a href="#services" class="btn btn-large btn-outline" data-i18n="hero.cta.services">Explore Services</a>
                     </div>
                     <div class="hero-stats">
                         <div class="stat-item">
                             <div class="stat-value">15+</div>
-                            <div class="stat-label">Years Experience</div>
+                            <div class="stat-label" data-i18n="hero.stats.experience">Years Experience</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-value">100%</div>
-                            <div class="stat-label">Client Satisfaction</div>
+                            <div class="stat-label" data-i18n="hero.stats.satisfaction">Client Satisfaction</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-value">3</div>
-                            <div class="stat-label">Countries Served</div>
+                            <div class="stat-label" data-i18n="hero.stats.countries">Countries Served</div>
                         </div>
                     </div>
                 </div>
@@ -85,8 +122,8 @@
     <section id="services" class="services-section">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Industrial Cybersecurity Services</h2>
-                <p class="section-subtitle">Comprehensive OT/IT security solutions for critical infrastructure protection</p>
+                <h2 class="section-title" data-i18n="services.title">Comprehensive Industrial Cybersecurity Services</h2>
+                <p class="section-subtitle" data-i18n="services.subtitle">Specialized protection for OT/IT environments, critical infrastructure, and industrial control systems.</p>
             </div>
 
             <div class="services-grid">
@@ -96,13 +133,10 @@
                     <div class="service-icon">
                         <i class="fas fa-shield-halved"></i>
                     </div>
-                    <h3>OT/IT Security Assessments</h3>
-                    <p>Comprehensive security assessments for industrial control systems and operational technology environments, identifying vulnerabilities and providing actionable remediation strategies.</p>
+                    <h3 data-i18n="service.1.title">OT/IT Security Assessments</h3>
+                    <p data-i18n="service.1.desc">Comprehensive vulnerability assessments and penetration testing for industrial environments.</p>
                     <ul class="service-features">
-                        <li><i class="fas fa-check-circle"></i> ICS/SCADA Security Audits</li>
-                        <li><i class="fas fa-check-circle"></i> Vulnerability Assessments</li>
-                        <li><i class="fas fa-check-circle"></i> Risk Analysis & Mitigation</li>
-                        <li><i class="fas fa-check-circle"></i> Security Architecture Review</li>
+                        <li data-i18n="service.1.features">• Network architecture review<br>• ICS/SCADA security assessment<br>• Gap analysis & risk management<br>• Compliance validation</li>
                     </ul>
                 </div>
 
@@ -111,13 +145,10 @@
                     <div class="service-icon">
                         <i class="fas fa-network-wired"></i>
                     </div>
-                    <h3>Network Segmentation & Monitoring</h3>
-                    <p>Design and implement secure network architectures with proper OT/IT segmentation, firewalls, and continuous monitoring solutions.</p>
+                    <h3 data-i18n="service.3.title">Network Segmentation</h3>
+                    <p data-i18n="service.3.desc">Strategic isolation and protection of critical OT networks from IT and external threats.</p>
                     <ul class="service-features">
-                        <li><i class="fas fa-check-circle"></i> Network Segmentation Design</li>
-                        <li><i class="fas fa-check-circle"></i> Industrial Firewall Configuration</li>
-                        <li><i class="fas fa-check-circle"></i> Intrusion Detection Systems</li>
-                        <li><i class="fas fa-check-circle"></i> Network Traffic Analysis</li>
+                        <li data-i18n="service.3.features">• Purdue model implementation<br>• Firewall configuration & DMZ setup<br>• Access control policies<br>• Secure remote access solutions</li>
                     </ul>
                 </div>
 
@@ -126,13 +157,10 @@
                     <div class="service-icon">
                         <i class="fas fa-user-shield"></i>
                     </div>
-                    <h3>Threat Detection & Response</h3>
-                    <p>24/7 security monitoring, threat intelligence, and incident response services tailored for industrial environments and critical infrastructure.</p>
+                    <h3 data-i18n="service.2.title">Threat Detection & Monitoring</h3>
+                    <p data-i18n="service.2.desc">24/7 monitoring and threat intelligence tailored for industrial control systems.</p>
                     <ul class="service-features">
-                        <li><i class="fas fa-check-circle"></i> Security Monitoring (SOC)</li>
-                        <li><i class="fas fa-check-circle"></i> Threat Intelligence</li>
-                        <li><i class="fas fa-check-circle"></i> Incident Response</li>
-                        <li><i class="fas fa-check-circle"></i> Forensic Analysis</li>
+                        <li data-i18n="service.2.features">• Real-time anomaly detection<br>• SIEM integration & analysis<br>• Incident response planning<br>• Security operations center services</li>
                     </ul>
                 </div>
 
@@ -141,13 +169,10 @@
                     <div class="service-icon">
                         <i class="fas fa-file-shield"></i>
                     </div>
-                    <h3>Compliance & Standards</h3>
-                    <p>Ensure compliance with industry standards and regulatory requirements including NERC CIP, IEC 62443, NIST, and other critical frameworks.</p>
+                    <h3 data-i18n="service.4.title">Compliance & Standards</h3>
+                    <p data-i18n="service.4.desc">Expert guidance for meeting regulatory requirements and industry standards.</p>
                     <ul class="service-features">
-                        <li><i class="fas fa-check-circle"></i> NERC CIP Compliance</li>
-                        <li><i class="fas fa-check-circle"></i> IEC 62443 Implementation</li>
-                        <li><i class="fas fa-check-circle"></i> NIST Cybersecurity Framework</li>
-                        <li><i class="fas fa-check-circle"></i> Compliance Auditing</li>
+                        <li data-i18n="service.4.features">• NERC CIP compliance<br>• IEC 62443 implementation<br>• NIST cybersecurity framework<br>• Audit readiness & documentation</li>
                     </ul>
                 </div>
 
@@ -266,8 +291,8 @@
     <section id="industries" class="industries-section">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Industries We Serve</h2>
-                <p class="section-subtitle">Specialized expertise across critical industrial sectors</p>
+                <h2 class="section-title" data-i18n="industries.title">Industries We Serve</h2>
+                <p class="section-subtitle" data-i18n="industries.subtitle">Specialized cybersecurity solutions for critical infrastructure sectors</p>
             </div>
 
             <div class="industries-grid">
@@ -275,32 +300,32 @@
                     <div class="industry-icon">
                         <i class="fas fa-oil-well"></i>
                     </div>
-                    <h3>Oil & Gas</h3>
-                    <p>Upstream, midstream, and downstream automation, telemetry, and cybersecurity solutions.</p>
+                    <h3 data-i18n="industry.oil">Oil & Gas</h3>
+                    <p data-i18n="industry.oil.desc">Upstream, midstream, and downstream operations with SCADA systems</p>
                 </div>
 
                 <div class="industry-card">
                     <div class="industry-icon">
                         <i class="fas fa-industry"></i>
                     </div>
-                    <h3>Manufacturing</h3>
-                    <p>Process control, MES integration, and Industry 4.0 digital transformation.</p>
+                    <h3 data-i18n="industry.manufacturing">Manufacturing</h3>
+                    <p data-i18n="industry.manufacturing.desc">Discrete and process manufacturing with ICS environments</p>
                 </div>
 
                 <div class="industry-card">
                     <div class="industry-icon">
                         <i class="fas fa-droplet"></i>
                     </div>
-                    <h3>Water & Wastewater</h3>
-                    <p>SCADA systems, remote monitoring, and compliance reporting for utilities.</p>
+                    <h3 data-i18n="industry.water">Water & Wastewater</h3>
+                    <p data-i18n="industry.water.desc">Municipal water treatment and distribution infrastructure</p>
                 </div>
 
                 <div class="industry-card">
                     <div class="industry-icon">
                         <i class="fas fa-bolt"></i>
                     </div>
-                    <h3>Energy & Utilities</h3>
-                    <p>Power generation, distribution automation, and renewable energy integration.</p>
+                    <h3 data-i18n="industry.energy">Energy & Utilities</h3>
+                    <p data-i18n="industry.energy.desc">Power generation, transmission, distribution, and renewable energy systems</p>
                 </div>
 
                 <div class="industry-card">
@@ -315,8 +340,16 @@
                     <div class="industry-icon">
                         <i class="fas fa-flask"></i>
                     </div>
-                    <h3>Chemical & Pharmaceutical</h3>
-                    <p>Regulatory compliance, process safety, and batch manufacturing systems.</p>
+                    <h3 data-i18n="industry.chemical">Chemical Processing</h3>
+                    <p data-i18n="industry.chemical.desc">Chemical plants and refineries with safety-critical systems</p>
+                </div>
+
+                <div class="industry-card">
+                    <div class="industry-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h3 data-i18n="industry.transportation">Transportation</h3>
+                    <p data-i18n="industry.transportation.desc">Rail, aviation, and maritime systems with operational technology</p>
                 </div>
             </div>
         </div>
@@ -328,8 +361,10 @@
             <div class="about-content">
                 <div class="about-text">
                     <div class="section-tag">Our Heritage</div>
-                    <h2>Over 15 Years of Industrial Security Expertise</h2>
-                    <p class="lead">INSA Automation Corp specializes in industrial cybersecurity, backed by INSA Ingeniería SAS with over 15 years of experience protecting critical infrastructure and industrial control systems across Colombia, Ecuador, and the United States.</p>
+                    <h2 data-i18n="about.title">About INSA Automation Corp</h2>
+                    <p class="lead" data-i18n="about.subtitle">Your trusted partner in industrial cybersecurity</p>
+                    <p data-i18n="about.desc">INSA Automation Corp is a Service-Disabled Veteran-Owned Small Business with over 15 years of experience protecting critical infrastructure and industrial control systems. We combine deep OT/IT expertise with cutting-edge cybersecurity solutions.</p>
+                    <p data-i18n="about.approach">Our approach integrates industry best practices, regulatory compliance, and real-world operational experience to deliver practical, effective security solutions that don't disrupt your operations.</p>
 
                     <div class="heritage-stats">
                         <div class="heritage-stat">
@@ -351,7 +386,7 @@
                         <div class="cert-grid">
                             <div class="cert-item">
                                 <i class="fas fa-certificate"></i>
-                                <span>SDVOSB Certified</span>
+                                <span data-i18n="about.sdvosb.title">SDVOSB Certified</span>
                             </div>
                             <div class="cert-item">
                                 <i class="fas fa-shield-halved"></i>
@@ -413,8 +448,9 @@
         <div class="container">
             <div class="contact-wrapper">
                 <div class="contact-info">
-                    <h2>Secure Your Industrial Operations</h2>
-                    <p class="lead">Ready to protect your critical infrastructure? Our team of cybersecurity experts is here to help you assess, secure, and monitor your industrial control systems.</p>
+                    <h2 data-i18n="contact.title">Get Started with INSA</h2>
+                    <p class="lead" data-i18n="contact.subtitle">Protect your critical infrastructure today</p>
+                    <p data-i18n="contact.desc">Schedule a consultation with our industrial cybersecurity experts to discuss your specific needs and challenges.</p>
 
                     <div class="info-items">
                         <div class="info-item">
@@ -432,7 +468,7 @@
                                 <i class="fas fa-phone"></i>
                             </div>
                             <div>
-                                <h4>Phone</h4>
+                                <h4 data-i18n="contact.info.phone">Phone</h4>
                                 <p>(+1) 786-737-9418</p>
                             </div>
                         </div>
@@ -442,8 +478,18 @@
                                 <i class="fas fa-envelope"></i>
                             </div>
                             <div>
-                                <h4>Email</h4>
+                                <h4 data-i18n="contact.info.email">Email</h4>
                                 <p>W.Aroca@insaing.com</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <h4 data-i18n="contact.info.hours">Business Hours</h4>
+                                <p data-i18n="contact.info.hours.value">Monday - Friday: 8AM - 6PM EST</p>
                             </div>
                         </div>
                     </div>
@@ -460,47 +506,45 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="name">Full Name *</label>
-                                <input type="text" id="name" name="name" required>
+                                <input type="text" id="name" name="name" required placeholder="" data-i18n="contact.form.name">
                             </div>
 
                             <div class="form-group">
                                 <label for="email">Email Address *</label>
-                                <input type="email" id="email" name="email" required>
+                                <input type="email" id="email" name="email" required placeholder="" data-i18n="contact.form.email">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="phone">Phone Number</label>
-                                <input type="tel" id="phone" name="phone">
+                                <input type="tel" id="phone" name="phone" placeholder="" data-i18n="contact.form.phone">
                             </div>
 
                             <div class="form-group">
                                 <label for="company">Company Name</label>
-                                <input type="text" id="company" name="company">
+                                <input type="text" id="company" name="company" placeholder="" data-i18n="contact.form.company">
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="service">Service Interest</label>
                             <select id="service" name="service">
-                                <option value="">Select a service</option>
-                                <option value="assessment">OT/IT Security Assessment</option>
-                                <option value="network">Network Segmentation & Monitoring</option>
-                                <option value="threat">Threat Detection & Response</option>
-                                <option value="compliance">Compliance & Standards</option>
-                                <option value="training">Security Training</option>
-                                <option value="pentesting">Penetration Testing</option>
-                                <option value="other">Other Security Services</option>
+                                <option value="" data-i18n="contact.service.option.default">Select a service</option>
+                                <option value="assessment" data-i18n="contact.service.option.assessment">Security Assessment</option>
+                                <option value="network" data-i18n="contact.service.option.monitoring">Threat Monitoring</option>
+                                <option value="threat" data-i18n="contact.service.option.segmentation">Network Segmentation</option>
+                                <option value="compliance" data-i18n="contact.service.option.compliance">Compliance Support</option>
+                                <option value="other" data-i18n="contact.service.option.other">Other / General Inquiry</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label for="message">Project Details *</label>
-                            <textarea id="message" name="message" rows="5" required></textarea>
+                            <textarea id="message" name="message" rows="5" required placeholder="" data-i18n="contact.form.message"></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-large">Send Message</button>
+                        <button type="submit" class="btn btn-primary btn-large" data-i18n="contact.form.submit">Schedule Consultation</button>
 
                         <p class="privacy-note">We respect your privacy and will never share your information.</p>
                     </form>
@@ -515,15 +559,15 @@
             <div class="footer-content">
                 <div class="footer-col">
                     <h3>INSA Automation Corp</h3>
-                    <p>Industrial cybersecurity solutions protecting critical infrastructure and operational technology environments.</p>
+                    <p data-i18n="footer.tagline">Protecting Critical Infrastructure, Securing Industrial Operations</p>
                     <div class="sdvosb-badge">
                         <i class="fas fa-shield"></i>
-                        <span>SDVOSB Certified</span>
+                        <span data-i18n="footer.sdvosb">Service-Disabled Veteran-Owned Small Business</span>
                     </div>
                 </div>
 
                 <div class="footer-col">
-                    <h4>Services</h4>
+                    <h4 data-i18n="footer.services">Services</h4>
                     <ul>
                         <li><a href="#services">OT/IT Security Assessment</a></li>
                         <li><a href="#services">Network Segmentation</a></li>
@@ -535,7 +579,7 @@
                 </div>
 
                 <div class="footer-col">
-                    <h4>Industries</h4>
+                    <h4 data-i18n="footer.industries">Industries</h4>
                     <ul>
                         <li><a href="#industries">Oil & Gas</a></li>
                         <li><a href="#industries">Manufacturing</a></li>
@@ -547,18 +591,19 @@
                 </div>
 
                 <div class="footer-col">
-                    <h4>Company</h4>
+                    <h4 data-i18n="footer.company">Company</h4>
                     <ul>
-                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#about" data-i18n="footer.about">About Us</a></li>
+                        <li><a href="#contact" data-i18n="footer.contact">Contact</a></li>
                         <li><a href="#about">Certifications</a></li>
                         <li><a href="https://www.insaing.com" target="_blank">INSA Ingeniería</a></li>
-                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#" data-i18n="footer.privacy">Privacy Policy</a></li>
                     </ul>
                 </div>
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; 2025 INSA Automation Corp. All rights reserved. Protecting critical infrastructure with over 15 years of industrial security expertise.</p>
+                <p data-i18n="footer.copyright">© 2024 INSA Automation Corp. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -591,5 +636,6 @@
             this.reset();
         });
     </script>
+    <script src="translations.js"></script>
 </body>
 </html>
