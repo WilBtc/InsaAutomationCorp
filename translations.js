@@ -438,6 +438,12 @@ function toggleLanguage() {
     setLanguage(currentLang === 'en' ? 'es' : 'en');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// Fix: Check if DOM is already loaded, if so run immediately
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setLanguage(currentLang);
+    });
+} else {
+    // DOM is already loaded, run immediately
     setLanguage(currentLang);
-});
+}
