@@ -428,22 +428,68 @@ function setLanguage(lang) {
 }
 
 function updateLanguageSwitcher() {
+
+// Store current language
+let currentLang = localStorage.getItem('language') || 'en';
+
+function setLanguage(lang) {
+    console.log('[Language Toggle] Setting language to:', lang);
+    currentLang = lang;
+    localStorage.setItem('language', lang);
+    document.documentElement.lang = lang;
+    
+    let elementCount = 0;
+    let errorCount = 0;
+    
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        
+        if (translations[lang] && translations[lang][key]) {
+            try {
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = translations[lang][key];
+                } else {
+                    el.innerHTML = translations[lang][key];
+                }
+                elementCount++;
+            } catch (error) {
+                console.error('[Language Toggle] Error updating element:', key, error);
+                errorCount++;
+            }
+        } else {
+            console.warn('[Language Toggle] Missing translation for key:', key, 'in language:', lang);
+        }
+    });
+    
+    console.log(`[Language Toggle] Updated ${elementCount} elements, ${errorCount} errors`);
+    updateLanguageSwitcher();
+}
+
+function updateLanguageSwitcher() {
     const toggle = document.querySelector('.language-toggle');
     if (toggle) {
         toggle.setAttribute('data-lang', currentLang);
+        console.log('[Language Toggle] Switcher updated to:', currentLang);
+    } else {
+        console.warn('[Language Toggle] Toggle element not found');
     }
 }
 
 function toggleLanguage() {
-    setLanguage(currentLang === 'en' ? 'es' : 'en');
+    const newLang = currentLang === 'en' ? 'es' : 'en';
+    console.log(`[Language Toggle] Toggling from ${currentLang} to ${newLang}`);
+    setLanguage(newLang);
 }
 
 // Fix: Check if DOM is already loaded, if so run immediately
+console.log('[Language Toggle] Script loaded, readyState:', document.readyState);
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
+        console.log('[Language Toggle] DOMContentLoaded fired');
         setLanguage(currentLang);
     });
 } else {
     // DOM is already loaded, run immediately
+    console.log('[Language Toggle] DOM already ready, initializing immediately');
     setLanguage(currentLang);
 }
