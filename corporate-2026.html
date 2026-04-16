@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INSA Group — Corporate Presentation 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a1628;
+  --navy-2: #0e1d33;
+  --navy-3: #132742;
+  --steel: #1c3454;
+  --border: #1e3a5a;
+  --muted: #4a6a8a;
+  --light: #8aafc8;
+  --text: #c8dce8;
+  --white: #e8f0f5;
+  --cyan: #00b4d8;
+  --cyan-dim: #00b4d820;
+  --cyan-glow: #00b4d840;
+  --amber: #f0a030;
+  --gold: #d4a843;
+  --green: #10b981;
+  --red: #ef4444;
+  --display: 'Outfit', system-ui, sans-serif;
+  --body: 'Source Serif 4', Georgia, serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-snap-type:y mandatory;scroll-behavior:smooth;}
+body{font-family:var(--body);background:var(--navy);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+/* ══ GRAIN ══ */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+/* ══ SLIDE ══ */
+.slide{min-height:100vh;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;padding:60px 80px;overflow:hidden;}
+.slide-inner{max-width:1100px;width:100%;position:relative;z-index:2;}
+.slide:nth-child(even){background:var(--navy-2);}
+
+/* Drawing number */
+.slide::after{content:attr(data-num);position:absolute;bottom:20px;right:30px;font-family:var(--display);font-size:10px;letter-spacing:2px;color:var(--border);text-transform:uppercase;}
+
+/* Grid bg */
+.grid-bg::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:80px 80px;opacity:0.06;}
+
+/* ══ TYPOGRAPHY ══ */
+h1,h2,h3,h4{font-family:var(--display);line-height:1.1;}
+.slide-tag{font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.slide-tag::before{content:'';width:28px;height:1px;background:var(--cyan);}
+.slide-h{font-size:clamp(32px,4.5vw,52px);font-weight:800;letter-spacing:-1px;color:var(--white);margin-bottom:10px;}
+.slide-h span{color:var(--cyan);}
+.slide-lead{font-size:17px;color:var(--muted);max-width:560px;margin-bottom:40px;font-style:italic;font-weight:300;}
+
+/* ══ NAV DOTS ══ */
+.nav-dots{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:8px;}
+.nav-dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--muted);background:transparent;cursor:pointer;transition:all 0.3s;}
+.nav-dot.active,.nav-dot:hover{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 8px var(--cyan-glow);}
+
+/* ══ CARDS ══ */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.card{background:var(--navy-3);border:1px solid var(--border);border-radius:8px;padding:24px;transition:border-color 0.3s,transform 0.3s;}
+.card:hover{border-color:var(--cyan);transform:translateY(-3px);}
+.card h3{font-family:var(--display);font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px;}
+.card p{font-size:13px;color:var(--muted);line-height:1.5;}
+
+/* ══ STAT ROW ══ */
+.stats{display:flex;gap:40px;flex-wrap:wrap;margin:32px 0;}
+.stat .num{font-family:var(--display);font-size:44px;font-weight:900;color:var(--cyan);line-height:1;}
+.stat .label{font-family:var(--display);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+
+/* ══ BADGES ══ */
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;}
+.badge{font-family:var(--display);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:3px;border:1px solid;}
+.b-sdvosb{border-color:var(--gold);color:var(--gold);background:#d4a84308;}
+.b-iso{border-color:var(--border);color:var(--light);}
+.b-siemens{border-color:#009e9e44;color:#00cccc;}
+.b-ab{border-color:#d32f2f33;color:#ff6b6b;}
+.b-epc{border-color:var(--cyan);color:var(--cyan);}
+
+/* ══ VALUE CHAIN ══ */
+.chain{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:32px;}
+.chain-phase{background:var(--navy-3);border:1px solid var(--border);border-top:3px solid var(--cyan);border-radius:6px;padding:16px 12px;text-align:center;}
+.chain-phase .phase-num{font-family:var(--display);font-size:28px;font-weight:900;color:var(--cyan);margin-bottom:4px;}
+.chain-phase .phase-name{font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--white);margin-bottom:10px;}
+.chain-phase ul{list-style:none;font-size:11px;color:var(--muted);}
+.chain-phase ul li{padding:3px 0;border-bottom:1px solid var(--border);}
+.chain-phase ul li:last-child{border:none;}
+
+/* ══ SUCCESS CARDS ══ */
+.success-card{background:var(--navy-3);border:1px solid var(--border);border-radius:8px;padding:24px;position:relative;}
+.success-card .revenue{position:absolute;top:16px;right:16px;font-family:var(--display);font-size:14px;font-weight:800;color:var(--navy);background:var(--cyan);padding:4px 12px;border-radius:4px;}
+.success-card h3{font-family:var(--display);font-size:17px;font-weight:700;color:var(--white);margin-bottom:4px;}
+.success-card .sector{font-family:var(--display);font-size:10px;color:var(--cyan);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.success-card p{font-size:13px;color:var(--muted);}
+
+/* ══ PARTNER GRID ══ */
+.partner-main{background:linear-gradient(135deg,var(--navy-3),var(--steel));border:1px solid var(--cyan);border-radius:8px;padding:28px;text-align:center;margin-bottom:16px;}
+.partner-main h3{font-size:20px;color:var(--white);margin-bottom:4px;}
+.partner-main p{color:var(--cyan);font-size:13px;}
+.partner-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.partner-item{background:var(--navy-3);border:1px solid var(--border);border-radius:6px;padding:14px;text-align:center;}
+.partner-item h4{font-family:var(--display);font-size:12px;font-weight:700;color:var(--white);}
+.partner-item p{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* ══ COUNTRY BTNS ══ */
+.country-row{display:flex;gap:12px;margin-top:32px;}
+.country-btn{font-family:var(--display);font-size:13px;font-weight:600;padding:12px 32px;background:var(--cyan);color:var(--navy);border-radius:4px;border:none;cursor:pointer;transition:all 0.2s;text-decoration:none;}
+.country-btn:hover{background:#00c9ef;transform:translateY(-2px);box-shadow:0 8px 24px var(--cyan-dim);}
+
+/* ══ CONTACT GRID ══ */
+.contact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:32px;}
+.contact-card{background:var(--navy-3);border:1px solid var(--border);border-top:3px solid var(--cyan);border-radius:6px;padding:20px;text-align:center;}
+.contact-card h4{font-family:var(--display);font-size:14px;font-weight:700;color:var(--cyan);margin-bottom:10px;}
+.contact-card p{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.contact-card a{color:var(--light);text-decoration:none;}
+
+/* ══ WHY GRID ══ */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;}
+.why-card{background:var(--navy-3);border:1px solid var(--border);border-left:3px solid var(--cyan);border-radius:6px;padding:20px;}
+.why-card h3{font-family:var(--display);font-size:14px;font-weight:700;color:var(--cyan);margin-bottom:6px;}
+.why-card p{font-size:12px;color:var(--muted);line-height:1.5;}
+.why-card.sdvosb{border-left-color:var(--gold);}
+.why-card.sdvosb h3{color:var(--gold);}
+
+/* ══ COVER ══ */
+.cover-logo{font-family:var(--display);font-size:72px;font-weight:900;letter-spacing:4px;color:var(--white);margin-bottom:4px;background:linear-gradient(180deg,var(--white) 30%,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.cover-tagline{font-family:var(--display);font-size:12px;letter-spacing:5px;text-transform:uppercase;color:var(--cyan);margin-bottom:40px;}
+.cover-title{font-family:var(--display);font-size:clamp(28px,3.5vw,42px);font-weight:700;color:var(--white);margin-bottom:12px;border-top:2px solid var(--cyan);padding-top:20px;}
+.cover-sub{font-size:16px;color:var(--muted);font-style:italic;margin-bottom:32px;}
+.cover-year{font-family:var(--display);font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:40px;}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:768px){.slide{padding:40px 24px;}.g2,.g3,.g4,.chain,.contact-grid,.partner-grid,.why-grid{grid-template-columns:1fr;}.stats{gap:20px;}.nav-dots{display:none;}}
+
+/* ══ PRINT ══ */
+@media print{.slide{min-height:auto;page-break-after:always;padding:40px;}.nav-dots{display:none;}body::after{display:none;}}
+</style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- ══════ SLIDE 1: COVER ══════ -->
+<div class="slide grid-bg" data-num="INSA-2026-01">
+<div class="slide-inner" style="text-align:center;">
+  <div class="cover-logo">INSA</div>
+  <div class="cover-tagline">Ideas That Make Engineering</div>
+  <div style="max-width:700px;margin:0 auto;">
+    <div class="cover-title">Engineering, Control & Technology for Industry</div>
+    <div class="cover-sub">Integrated solutions for measurement, automation, energy, and industrial digitalization.</div>
+  </div>
+  <div class="country-row" style="justify-content:center;">
+    <a class="country-btn" href="#contact">Colombia</a>
+    <a class="country-btn" href="#contact">Ecuador</a>
+    <a class="country-btn" href="#contact">United States</a>
+    <a class="country-btn" href="#contact">Venezuela</a>
+  </div>
+  <div class="cover-year">Corporate Presentation 2026</div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 2: WHO WE ARE ══════ -->
+<div class="slide" data-num="INSA-2026-02">
+<div class="slide-inner">
+  <div class="slide-tag">About Us</div>
+  <div class="slide-h">Who <span>We Are</span></div>
+  <div class="slide-lead">INSA designs, integrates, and guarantees technological solutions that allow industry to operate with precision, control, and reliability.</div>
+  <div class="stats">
+    <div class="stat"><div class="num">+15</div><div class="label">Years of experience</div></div>
+    <div class="stat"><div class="num">4</div><div class="label">Countries</div></div>
+    <div class="stat"><div class="num">+$7M</div><div class="label">USD in O&G projects</div></div>
+    <div class="stat"><div class="num">24/7</div><div class="label">Remote technical support</div></div>
+  </div>
+  <div style="font-size:14px;color:var(--muted);line-height:1.8;">
+    <p>&#8226; Colombian company with international presence in 4 countries</p>
+    <p>&#8226; Multi-brand industrial technology integrator with specialized in-house engineering</p>
+    <p>&#8226; ISO 9001 certification and strategic alliance as Siemens Solution Partner</p>
+    <p>&#8226; Full EPC capability: Engineering, Procurement, and Construction of complete industrial systems</p>
+    <p>&#8226; <strong style="color:var(--gold);">SDVOSB Certified</strong> — Service-Disabled Veteran-Owned Small Business (US)</p>
+  </div>
+  <div class="badges">
+    <span class="badge b-sdvosb">SDVOSB Certified</span>
+    <span class="badge b-iso">ISO 9001</span>
+    <span class="badge b-iso">ISO 17025</span>
+    <span class="badge b-siemens">Siemens Solution Partner</span>
+    <span class="badge b-ab">Allen-Bradley</span>
+    <span class="badge b-epc">Full EPC Capability</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 3: SOLUTIONS ECOSYSTEM ══════ -->
+<div class="slide grid-bg" data-num="INSA-2026-03">
+<div class="slide-inner">
+  <div class="slide-tag">Capabilities</div>
+  <div class="slide-h">Solutions <span>Ecosystem</span></div>
+  <div class="slide-lead">Eight integrated capabilities covering the complete cycle of industrial operations.</div>
+  <div class="g4">
+    <div class="card"><h3>Industrial Instrumentation</h3><p>Precision measurement of critical variables with certified technology for the most demanding environments.</p></div>
+    <div class="card"><h3>Automation & Control</h3><p>Connecting equipment, data, and operations under a unified and reliable control architecture.</p></div>
+    <div class="card"><h3>SCADA Integration</h3><p>Supervisory control and real-time data acquisition for distributed operations and centralized monitoring.</p></div>
+    <div class="card"><h3>Industry 4.0 / IIoT</h3><p>INSACloud platform — from sensor to cloud with AI analytics, predictive maintenance, and OT cybersecurity.</p></div>
+    <div class="card"><h3>Calibration Laboratory</h3><p>ISO 17025-aligned calibration services for pressure, temperature, and flow instruments.</p></div>
+    <div class="card"><h3>Maintenance & Support</h3><p>24/7 remote and on-site technical support, preventive and corrective maintenance programs.</p></div>
+    <div class="card"><h3>Energy Systems / RENERGY</h3><p>Conventional power infrastructure plus INSA RENERGY solar solutions: dual systems, off-grid, on-grid.</p></div>
+    <div class="card"><h3>Metal Fabrication</h3><p>In-house design and fabrication of skids, enclosures, pressure vessels, and turnkey packages.</p></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 4: VALUE CHAIN ══════ -->
+<div class="slide" data-num="INSA-2026-04">
+<div class="slide-inner">
+  <div class="slide-tag">EPC Capability</div>
+  <div class="slide-h">INSA <span>Value Chain</span></div>
+  <div class="slide-lead">Complete EPC capacity: from conceptual engineering to commissioning and ongoing support.</div>
+  <div class="chain">
+    <div class="chain-phase"><div class="phase-num">1</div><div class="phase-name">Engineering</div><ul><li>Conceptual</li><li>Basic</li><li>Detail</li></ul></div>
+    <div class="chain-phase"><div class="phase-num">2</div><div class="phase-name">Procurement</div><ul><li>Industrial equipment</li><li>Instrumentation & control</li><li>Materials</li></ul></div>
+    <div class="chain-phase"><div class="phase-num">3</div><div class="phase-name">Construction</div><ul><li>Fabrication</li><li>Systems integration</li><li>Assembly</li></ul></div>
+    <div class="chain-phase"><div class="phase-num">4</div><div class="phase-name">Installation</div><ul><li>Installation</li><li>Commissioning</li><li>Startup</li></ul></div>
+    <div class="chain-phase"><div class="phase-num">5</div><div class="phase-name">Commissioning</div><ul><li>FAT/SAT testing</li><li>Parameterization</li><li>Validation</li></ul></div>
+    <div class="chain-phase"><div class="phase-num">6</div><div class="phase-name">Support</div><ul><li>24/7 support</li><li>Calibration lab</li><li>Maintenance</li></ul></div>
+  </div>
+  <div style="margin-top:20px;background:var(--navy-3);border:1px solid var(--cyan);border-radius:6px;padding:14px 20px;text-align:center;font-style:italic;color:var(--cyan);font-size:14px;">INSA assumes full technical responsibility at each phase — from design to field operations.</div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 5: INSTRUMENTATION ══════ -->
+<div class="slide grid-bg" data-num="INSA-2026-05">
+<div class="slide-inner">
+  <div class="slide-tag">Core Services</div>
+  <div class="slide-h">Industrial <span>Instrumentation</span></div>
+  <div class="slide-lead">Precise measurement of critical variables with certified technology for the most demanding environments.</div>
+  <div class="g2">
+    <div>
+      <div class="card" style="margin-bottom:12px;border-left:3px solid var(--cyan);"><h3>Pressure & Temperature</h3><p>Smart transmitters with integrated diagnostics</p></div>
+      <div class="card" style="margin-bottom:12px;border-left:3px solid var(--cyan);"><h3>Flow Measurement</h3><p>Coriolis, turbine, ultrasonic, Vortex</p></div>
+      <div class="card" style="margin-bottom:12px;border-left:3px solid var(--cyan);"><h3>Level Measurement</h3><p>Radar, ultrasonic, differential pressure</p></div>
+      <div class="card" style="border-left:3px solid var(--cyan);"><h3>Process Analysis</h3><p>Chromatography, BSW, gas quality</p></div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px;"><h3 style="color:var(--cyan);">Industries</h3><p>Oil & Gas &#183; Energy &#183; Water &#183; Manufacturing &#183; Mining</p></div>
+      <div class="card"><h3 style="color:var(--cyan);">Brands</h3><p style="font-size:14px;color:var(--white);">Siemens &#183; Endress+Hauser &#183; Emerson/Rosemount &#183; Yokogawa &#183; Sullivan Process Controls &#183; Bernard Controls</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 6: AUTOMATION ══════ -->
+<div class="slide" data-num="INSA-2026-06">
+<div class="slide-inner">
+  <div class="slide-tag">Core Services</div>
+  <div class="slide-h">Automation & <span>Control</span></div>
+  <div class="slide-lead">Connecting equipment, data, and operations under a unified and reliable control architecture.</div>
+  <div class="g2">
+    <div class="card"><h3>Industrial PLCs</h3><p>Rockwell Allen-Bradley &#183; Siemens S7 / TIA Portal &#183; Schneider M340/M580 &#183; ABB AC500</p></div>
+    <div class="card"><h3>Technology Migration</h3><p>Legacy system modernization, PLC and HMI upgrades, documentation updates</p></div>
+    <div class="card"><h3>Integration & Protocols</h3><p>Modbus RTU/TCP &#183; OPC UA/DA &#183; Ethernet/IP &#183; HART &#183; DNP3 &#183; PROFIBUS &#183; PROFINET</p></div>
+    <div class="card"><h3>SCADA Systems</h3><p>Rockwell FactoryTalk &#183; Siemens WinCC &#183; Emerson DeltaV &#183; Wonderware InTouch &#183; Ignition</p></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 7: IIoT ══════ -->
+<div class="slide grid-bg" data-num="INSA-2026-07">
+<div class="slide-inner">
+  <div class="slide-tag">Digital Transformation</div>
+  <div class="slide-h">Industrial Digitalization — <span>IIoT & Industry 4.0</span></div>
+  <div class="slide-lead">The digital evolution of industrial operations, from sensor to cloud.</div>
+  <div class="g2">
+    <div class="card" style="border-top:3px solid var(--cyan);"><h3>Field Connectivity</h3><p>EDGE devices, wireless IoT sensors, and industrial gateways for real-time data capture.</p></div>
+    <div class="card" style="border-top:3px solid var(--cyan);"><h3>INSACloud Platform</h3><p>Proprietary remote monitoring platform with intelligent dashboards, alarms, and 24/7 historical reports.</p></div>
+    <div class="card" style="border-top:3px solid var(--cyan);"><h3>Analytics & Prediction</h3><p>Trend analysis, neural networks, and simulations for predictive maintenance and process optimization.</p></div>
+    <div class="card" style="border-top:3px solid var(--cyan);"><h3>OT Cybersecurity</h3><p>Network segmentation, industrial firewalls, VPNs, and access management aligned with IEC 62443.</p></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 8: SPECIALIZED SERVICES ══════ -->
+<div class="slide" data-num="INSA-2026-08">
+<div class="slide-inner">
+  <div class="slide-tag">Specialized</div>
+  <div class="slide-h">Specialized <span>Services</span></div>
+  <div class="slide-lead">Calibration laboratory and industrial equipment rental.</div>
+  <div class="g2">
+    <div class="card" style="border-top:3px solid var(--amber);">
+      <h3 style="color:var(--amber);">Calibration Laboratory</h3>
+      <ul style="list-style:none;font-size:13px;color:var(--muted);margin-top:12px;">
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Pressure calibration with traceable standards</li>
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Temperature calibration</li>
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Flow calibration (in-situ and laboratory)</li>
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Process instrumentation verification</li>
+        <li style="padding:6px 0;">&#8226; Service for Oil & Gas, Energy, and Industry</li>
+      </ul>
+      <div class="badges" style="margin-top:12px;"><span class="badge b-iso">ISO 17025 Aligned</span></div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--amber);">
+      <h3 style="color:var(--amber);">Industrial Equipment Rental</h3>
+      <ul style="list-style:none;font-size:13px;color:var(--muted);margin-top:12px;">
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Temporary measurement systems</li>
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Field instrumentation</li>
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Monitoring and control equipment</li>
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Field testing solutions</li>
+        <li style="padding:6px 0;">&#8226; CAPEX reduction for clients</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 9: MEASUREMENT & FABRICATION ══════ -->
+<div class="slide grid-bg" data-num="INSA-2026-09">
+<div class="slide-inner">
+  <div class="slide-tag">Products</div>
+  <div class="slide-h">Measurement Systems & <span>Metal Fabrication</span></div>
+  <div class="slide-lead">INSA designs, fabricates, and integrates complete measurement systems for custody transfer and process control.</div>
+  <div class="g2">
+    <div>
+      <div class="card" style="margin-bottom:12px;border-left:3px solid var(--cyan);"><h3>Crude Oil Measurement</h3><p>Coriolis/turbine skids &#183; API MPMS compliance &#183; Custody transfer</p></div>
+      <div class="card" style="margin-bottom:12px;border-left:3px solid var(--cyan);"><h3>Gas Measurement</h3><p>Ultrasonic/orifice meters &#183; Chromatography &#183; AGA 3, 7, 8, 9 compliance</p></div>
+      <div class="card" style="border-left:3px solid var(--cyan);"><h3>Water Measurement</h3><p>Electromagnetic meters &#183; Water cut control &#183; Continuous monitoring</p></div>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--amber);">Metal Fabrication</h3>
+      <ul style="list-style:none;font-size:13px;color:var(--muted);margin-top:12px;">
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Process and measurement skids</li>
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Industrial tanks</li>
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Pressure vessels</li>
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Process equipment</li>
+        <li style="padding:6px 0;border-bottom:1px solid var(--border);">&#8226; Modular skids for Oil & Gas</li>
+        <li style="padding:6px 0;">&#8226; Production facilities</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 10: ENERGY ══════ -->
+<div class="slide" data-num="INSA-2026-10">
+<div class="slide-inner">
+  <div class="slide-tag">Energy</div>
+  <div class="slide-h">Industrial Energy <span>Solutions</span></div>
+  <div class="slide-lead">Reliable, safe, and sustainable energy for industrial operations.</div>
+  <div class="g2">
+    <div class="card" style="border-top:3px solid var(--cyan);">
+      <h3 style="color:var(--cyan);">Conventional Energy</h3>
+      <ul style="list-style:none;font-size:13px;color:var(--muted);margin-top:12px;">
+        <li style="padding:6px 0;">&#8226; Efficient power generation and distribution</li>
+        <li style="padding:6px 0;">&#8226; Specialized electrical works</li>
+        <li style="padding:6px 0;">&#8226; Control and distribution boards</li>
+        <li style="padding:6px 0;">&#8226; Data communication networks</li>
+        <li style="padding:6px 0;">&#8226; Electrical infrastructure for operations</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--green);">
+      <h3 style="color:var(--green);">Renewable Energy — INSA RENERGY</h3>
+      <ul style="list-style:none;font-size:13px;color:var(--muted);margin-top:12px;">
+        <li style="padding:6px 0;">&#8226; DUAL systems: PV + batteries + grid</li>
+        <li style="padding:6px 0;">&#8226; Independent OFF-GRID systems</li>
+        <li style="padding:6px 0;">&#8226; Solar solutions for maximum efficiency</li>
+        <li style="padding:6px 0;">&#8226; Reliable, safe, and sustainable energy</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 11: INDUSTRIES ══════ -->
+<div class="slide grid-bg" data-num="INSA-2026-11">
+<div class="slide-inner">
+  <div class="slide-tag">Markets</div>
+  <div class="slide-h">Cross-Industry <span>Applications</span></div>
+  <div class="slide-lead">Adaptable and scalable solutions for multiple industrial sectors.</div>
+  <div class="g3">
+    <div class="card"><h3>Oil & Gas</h3><p>Fiscal measurement &#183; Well automation &#183; SCADA &#183; Flow computers &#183; Pumping stations</p></div>
+    <div class="card"><h3>Energy</h3><p>Gas generation &#183; Solar PV &#183; Control boards &#183; Distribution monitoring &#183; Protection systems</p></div>
+    <div class="card"><h3>Manufacturing</h3><p>Process control &#183; Line instrumentation &#183; PLC integration &#183; Telemetry &#183; Efficiency</p></div>
+    <div class="card"><h3>Water & Environmental</h3><p>Flow measurement &#183; Treatment &#183; Environmental monitoring &#183; Weather stations &#183; IoT</p></div>
+    <div class="card"><h3>Infrastructure</h3><p>Electrical works &#183; Data networks &#183; Fire protection systems &#183; Access control &#183; Shelters</p></div>
+    <div class="card"><h3>Telecommunications</h3><p>Satellite systems &#183; Industrial antennas &#183; IIoT networks &#183; VPNs &#183; 24/7 Cybersecurity</p></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 12: SUCCESS STORIES ══════ -->
+<div class="slide" data-num="INSA-2026-12">
+<div class="slide-inner">
+  <div class="slide-tag">Track Record</div>
+  <div class="slide-h">Featured <span>Success Stories</span></div>
+  <div class="g2" style="margin-top:24px;">
+    <div class="success-card">
+      <div class="revenue">$1.9M USD</div>
+      <h3>Gran Tierra Energy</h3>
+      <div class="sector">Oil & Gas &#183; Colombia & Ecuador</div>
+      <p>Gas/crude/water measurement &#183; SCADA Rockwell &#183; Polymer plant automation &#183; INSACloud deployment. Full digitalization, 24/7 support, OPEX savings.</p>
+    </div>
+    <div class="success-card">
+      <div class="revenue">$880K USD</div>
+      <h3>New Granada Energy (NGEC)</h3>
+      <div class="sector">Oil & Gas &#183; Dorotea, Leona, Cabiona</div>
+      <p>Complete automation &#183; SCADA + VFD &#183; Flow meters &#183; INSACloud telemetry. Real-time monitoring and maintenance optimization.</p>
+    </div>
+    <div class="success-card">
+      <div class="revenue">$330K USD</div>
+      <h3>Aggreko / ACRD-GTEC</h3>
+      <div class="sector">Energy &#183; Gas Treatment</div>
+      <p>Scrubber engineering & cooling &#183; Shutdown automation &#183; Full calibration. Total automation with 24/7 remote monitoring.</p>
+    </div>
+    <div class="success-card">
+      <div class="revenue">$182K USD</div>
+      <h3>GeoPark</h3>
+      <div class="sector">Oil & Gas &#183; Tigana/Jacana — Casanare</div>
+      <p>Basic & conceptual engineering &#183; Measurement system fabrication &#183; Pump integration. Reliable measurement, schedule compliance, OPEX savings.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 13: ALLIANCES ══════ -->
+<div class="slide grid-bg" data-num="INSA-2026-13">
+<div class="slide-inner">
+  <div class="slide-tag">Partners</div>
+  <div class="slide-h">Strategic <span>Alliances</span></div>
+  <div class="slide-lead">Multi-brand integrator backed by global leaders in industrial technology.</div>
+  <div class="partner-main"><h3>Siemens Solution Partner</h3><p>Official integrator of Siemens solutions for automation, control, and industrial digitalization.</p></div>
+  <div class="partner-grid">
+    <div class="partner-item"><h4>Sullivan Process Controls</h4><p>Control valves</p></div>
+    <div class="partner-item"><h4>Prosoft</h4><p>Communication modules</p></div>
+    <div class="partner-item"><h4>Rockwell / Allen-Bradley</h4><p>PLCs and SCADA</p></div>
+    <div class="partner-item"><h4>Ascot Energy</h4><p>Power generation</p></div>
+    <div class="partner-item"><h4>Myriota</h4><p>Satellite communication</p></div>
+    <div class="partner-item"><h4>Delval</h4><p>Cut-off valves</p></div>
+    <div class="partner-item"><h4>Hyundai Electric</h4><p>Electrical equipment</p></div>
+    <div class="partner-item"><h4>Bernard Controls</h4><p>Actuators</p></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 14: WHY INSA ══════ -->
+<div class="slide" data-num="INSA-2026-14">
+<div class="slide-inner">
+  <div class="slide-tag">Differentiators</div>
+  <div class="slide-h">Why Choose <span>INSA?</span></div>
+  <div class="slide-lead">Competitive differentiators that position us as an industrial technology integrator of reference.</div>
+  <div class="why-grid">
+    <div class="why-card"><h3>Multi-Brand Integrator</h3><p>We adapt to the client's technology ecosystem without imposing a single brand.</p></div>
+    <div class="why-card"><h3>In-House Engineering</h3><p>Field engineers specialized in instrumentation, automation, electrical works, and measurement.</p></div>
+    <div class="why-card"><h3>Metrological Focus</h3><p>Mastery of API, AGA, and ISO standards for fiscal measurement, custody transfer, and ISO 17025 calibration.</p></div>
+    <div class="why-card"><h3>Own Fabrication</h3><p>Design and fabrication of skids, enclosures, and turnkey solutions in our own workshops.</p></div>
+    <div class="why-card"><h3>+$7M USD O&G Experience</h3><p>Executed with operators, transporters, and industry across 4 countries and 15+ years.</p></div>
+    <div class="why-card"><h3>24/7 Technical Support</h3><p>Integral support from conceptual engineering through delivery to ongoing operations.</p></div>
+    <div class="why-card sdvosb" style="grid-column:span 3;"><h3>SDVOSB Certified — Service-Disabled Veteran-Owned Small Business</h3><p>INSA Automation Corp (US) is majority-owned by a service-disabled US veteran. Eligible for federal set-aside contracts and meeting supplier diversity requirements for major operators, EPC firms, and government agencies. Our SDVOSB status opens doors that other engineering firms cannot access.</p></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ SLIDE 15: CONTACT ══════ -->
+<div class="slide grid-bg" data-num="INSA-2026-15" id="contact">
+<div class="slide-inner" style="text-align:center;">
+  <div class="cover-logo" style="font-size:56px;">INSA</div>
+  <div class="cover-tagline">Ideas That Make Engineering</div>
+  <div style="font-size:16px;color:var(--white);font-style:italic;margin-bottom:32px;">INSA designs, integrates, and guarantees technological solutions for industry.</div>
+  <div class="contact-grid">
+    <div class="contact-card">
+      <h4>Colombia</h4>
+      <p>(+57) 316 741 6740</p>
+      <p>(+601) 805 5023</p>
+      <p><a href="mailto:comercial@insaing.com">comercial@insaing.com</a></p>
+    </div>
+    <div class="contact-card">
+      <h4>Ecuador</h4>
+      <p>(+593) 98 135 7571</p>
+      <p>(+593) 2 382 3809</p>
+      <p><a href="mailto:comercial.ecu@insaing.com">comercial.ecu@insaing.com</a></p>
+    </div>
+    <div class="contact-card" style="border-top-color:var(--gold);">
+      <h4 style="color:var(--gold);">United States</h4>
+      <p>(+1) 786 737 9418</p>
+      <p style="font-size:10px;color:var(--gold);">SDVOSB Certified</p>
+      <p><a href="mailto:W.Aroca@insaing.com">W.Aroca@insaing.com</a></p>
+    </div>
+    <div class="contact-card">
+      <h4>Venezuela</h4>
+      <p>(+58) 414 908 5355</p>
+      <p><a href="mailto:soporte.comercial@insaing.com">soporte.comercial@insaing.com</a></p>
+    </div>
+  </div>
+  <div style="margin-top:24px;font-size:13px;color:var(--muted);">
+    <a href="https://www.insaing.com" style="color:var(--cyan);text-decoration:none;">www.insaing.com</a>
+    &nbsp;&#183;&nbsp;
+    <a href="https://linkedin.com/company/insaingenieria" style="color:var(--cyan);text-decoration:none;">LinkedIn: /insaingenieria</a>
+    &nbsp;&#183;&nbsp;
+    <a href="https://linkedin.com/company/insa-automation-corp" style="color:var(--cyan);text-decoration:none;">LinkedIn US: /insa-automation-corp</a>
+  </div>
+</div>
+</div>
+
+<script>
+// Nav dots
+var slides=document.querySelectorAll('.slide');
+var dotsEl=document.getElementById('navDots');
+slides.forEach(function(s,i){
+  var d=document.createElement('div');
+  d.className='nav-dot';
+  d.onclick=function(){s.scrollIntoView({behavior:'smooth'});};
+  dotsEl.appendChild(d);
+});
+var dots=document.querySelectorAll('.nav-dot');
+var obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      var idx=Array.from(slides).indexOf(e.target);
+      dots.forEach(function(d,i){d.classList.toggle('active',i===idx);});
+    }
+  });
+},{threshold:0.5});
+slides.forEach(function(s){obs.observe(s);});
+</script>
+</body>
+</html>
